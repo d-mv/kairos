@@ -1,0 +1,21 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      name: oxlint
+      run: pnpm -r lint
+    format-check:
+      name: oxfmt check
+      run: pnpm -r format:check
+    typecheck:
+      name: tsc --noEmit
+      run: pnpm -r typecheck
+    test:
+      name: vitest
+      run: pnpm test
+
+pre-push:
+  commands:
+    build:
+      name: full build
+      run: pnpm build

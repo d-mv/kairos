@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(npm:*)",
+      "Bash(/opt/homebrew/bin/pnpm install:*)",
+      "Bash(/opt/homebrew/bin/pnpm approve-builds:*)",
+      "Bash(printf a\\\\n\\\\ny\\\\n:*)",
+      "Bash(/opt/homebrew/bin/pnpm:*)",
+      "Bash(python:*)"
+    ]
+  }
+}

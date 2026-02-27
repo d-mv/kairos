@@ -1,0 +1,37 @@
+{
+  "name": "@kairos/client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "pnpm --filter @kairos/shared build",
+    "dev": "vite",
+    "prebuild": "pnpm --filter @kairos/shared build",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "oxlint src",
+    "format": "oxfmt src",
+    "format:check": "oxfmt --check src",
+    "pretypecheck": "pnpm --filter @kairos/shared build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kairos/shared": "workspace:*",
+    "@supabase/auth-ui-react": "^0.4.7",
+    "@supabase/auth-ui-shared": "^0.1.8",
+    "@supabase/supabase-js": "^2.49.8",
+    "jotai": "^2.18.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.6.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^5.1.4",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.8.3",
+    "vite": "^7.3.1"
+  }
+}

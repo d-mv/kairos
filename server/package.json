@@ -1,0 +1,38 @@
+{
+  "name": "@kairos/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "pnpm --filter @kairos/shared build",
+    "dev": "tsx watch src/api/server.ts",
+    "prebuild": "pnpm --filter @kairos/shared build",
+    "build": "tsc",
+    "start": "node dist/api/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "pretypecheck": "pnpm --filter @kairos/shared build",
+    "lint": "oxlint src",
+    "format": "oxfmt src",
+    "format:check": "oxfmt --check src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@fastify/jwt": "^10.0.0",
+    "@fastify/websocket": "^11.2.0",
+    "@kairos/shared": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@supabase/supabase-js": "^2.49.8",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.7.4",
+    "fastify-plugin": "^5.1.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.18"
+  }
+}
