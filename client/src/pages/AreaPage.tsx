@@ -21,33 +21,42 @@ export default function AreaPage() {
 
   if (!area) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex h-full items-center justify-center">
         <p className="text-muted-foreground">Area not found</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 h-full">
-      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "mr-96" : ""}`}>
-        <div className="max-w-2xl mx-auto py-8 px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">{area.name}</h1>
+    <div className="flex h-full flex-1">
+      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "mr-[28rem]" : ""}`}>
+        <div className="mx-auto max-w-4xl px-6 py-10">
+          <div className="mb-8 flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
+                Area
+              </p>
+              <h1 className="mt-3 text-4xl font-semibold tracking-tight">{area.name}</h1>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Organize related projects and direct area-level work without losing visibility.
+              </p>
+            </div>
             <CreateProjectButton label="New Project" areaId={id} variant="outline" size="sm" />
           </div>
 
-          {/* Projects in this area */}
           {projects.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-lg font-semibold mb-3">Projects</h2>
-              <div className="grid gap-2">
+              <h2 className="mb-3 text-lg font-semibold">Projects</h2>
+              <div className="grid gap-3 md:grid-cols-2">
                 {projects.map((project) => (
                   <Link
                     key={project.id}
                     to={`/project/${project.id}`}
-                    className="flex items-center gap-3 p-3 border border-border rounded-md hover:bg-accent transition-colors"
+                    className="soft-panel flex items-center gap-3 rounded-[1.4rem] p-4 transition-colors hover:bg-accent/70"
                   >
-                    <span>📋</span>
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-base">
+                      #
+                    </span>
                     <span className="font-medium">{project.name}</span>
                   </Link>
                 ))}
@@ -55,9 +64,8 @@ export default function AreaPage() {
             </div>
           )}
 
-          {/* Tasks directly in this area */}
           <div>
-            <h2 className="text-lg font-semibold mb-3">Tasks</h2>
+            <h2 className="mb-3 text-lg font-semibold">Tasks</h2>
             <TaskList tasks={tasks} areaId={id} emptyMessage="No tasks in this area" />
           </div>
         </div>

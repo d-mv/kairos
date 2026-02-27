@@ -98,35 +98,36 @@ export function TaskDetailPanel() {
   };
 
   return (
-    <div className="fixed right-0 top-0 h-full w-96 border-l border-border bg-background shadow-xl z-10 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        <h2 className="font-semibold text-sm">Task Details</h2>
+    <div className="panel fixed right-4 top-4 z-10 flex h-[calc(100%-2rem)] w-[26rem] flex-col rounded-[1.8rem]">
+      <div className="flex items-center justify-between border-b border-border px-5 py-4">
+        <div>
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+            Inspector
+          </p>
+          <h2 className="mt-1 text-sm font-semibold">Task Details</h2>
+        </div>
         <Button
           onClick={() => setSelectedTaskId(null)}
           variant="ghost"
           size="icon"
-          className="h-7 w-7"
+          className="h-8 w-8 rounded-full"
         >
           ✕
         </Button>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Title */}
-        <div>
+      <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
+        <div className="soft-panel rounded-[1.4rem] p-4">
           <Input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={handleSave}
-            className="h-auto border-transparent px-0 py-1 text-lg font-medium shadow-none"
+            className="h-auto border-none bg-transparent px-0 py-1 text-lg font-semibold shadow-none focus-visible:ring-0"
           />
         </div>
 
-        {/* Description */}
-        <div>
+        <div className="soft-panel rounded-[1.4rem] p-4">
           <Label>Description</Label>
           <Textarea
             value={description}
@@ -134,19 +135,20 @@ export function TaskDetailPanel() {
             onBlur={handleSave}
             placeholder="Add a description..."
             rows={4}
-            className="mt-1 resize-none"
+            className="mt-2 resize-none border-none bg-transparent px-0 shadow-none focus-visible:ring-0"
           />
         </div>
 
-        {/* Status badge */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground">Status</span>
+        <div className="soft-panel flex items-center gap-2 rounded-[1.4rem] p-4">
+          <span className="text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">
+            Status
+          </span>
           <span
-            className={`text-xs px-2 py-0.5 rounded-full ${
+            className={`rounded-full px-2.5 py-1 text-xs ${
               task.status === "done"
-                ? "bg-green-100 text-green-700"
+                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300"
                 : task.status === "in_progress"
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-sky-500/15 text-sky-700 dark:text-sky-300"
                   : "bg-muted text-muted-foreground"
             }`}
           >
@@ -154,14 +156,14 @@ export function TaskDetailPanel() {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="soft-panel rounded-[1.4rem] p-4">
             <Label>Priority</Label>
             <Select
               value={priority}
               onChange={(e) => setPriority(Number(e.target.value) as TaskPriority)}
               onBlur={handleSave}
-              className="mt-1"
+              className="mt-2"
             >
               <option value={1}>P1</option>
               <option value={2}>P2</option>
@@ -169,20 +171,20 @@ export function TaskDetailPanel() {
               <option value={4}>P4</option>
             </Select>
           </div>
-          <div>
+          <div className="soft-panel rounded-[1.4rem] p-4">
             <Label>Due date</Label>
             <Input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               onBlur={handleSave}
-              className="mt-1"
+              className="mt-2"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="soft-panel rounded-[1.4rem] p-4">
             <Label>Duration</Label>
             <Input
               type="number"
@@ -192,16 +194,16 @@ export function TaskDetailPanel() {
               onChange={(e) => setDuration(e.target.value)}
               onBlur={handleSave}
               placeholder="e.g. 2"
-              className="mt-1"
+              className="mt-2"
             />
           </div>
-          <div>
+          <div className="soft-panel rounded-[1.4rem] p-4">
             <Label>Unit</Label>
             <Select
               value={durationUnit}
               onChange={(e) => setDurationUnit(e.target.value as TaskDurationUnit | "")}
               onBlur={handleSave}
-              className="mt-1"
+              className="mt-2"
             >
               <option value="">None</option>
               <option value="h">Hours</option>
@@ -212,17 +214,17 @@ export function TaskDetailPanel() {
           </div>
         </div>
 
-        {/* Subtasks (only for top-level tasks) */}
         {!task.parentTaskId && (
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Subtasks</label>
+          <div className="soft-panel rounded-[1.4rem] p-4">
+            <label className="text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">
+              Subtasks
+            </label>
             <SubtaskList parentTaskId={task.id} />
           </div>
         )}
       </div>
 
-      {/* Footer actions */}
-      <div className="p-4 border-t border-border space-y-2">
+      <div className="space-y-2 border-t border-border p-5">
         {!task.parentTaskId && (
           <Button onClick={handlePromote} className="w-full" variant="outline">
             Promote to Project

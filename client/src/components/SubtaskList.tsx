@@ -12,7 +12,7 @@ export function SubtaskList({ parentTaskId }: SubtaskListProps) {
   const subtasks = subtasksByParent.get(parentTaskId) ?? [];
 
   return (
-    <div className="mt-2">
+    <div className="mt-3 overflow-hidden rounded-[1.2rem] border border-border/70 bg-background/40">
       {subtasks.map((subtask) => (
         <TaskItem key={subtask.id} task={subtask} isSubtask />
       ))}

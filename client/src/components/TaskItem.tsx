@@ -35,22 +35,23 @@ export function TaskItem({ task, isSubtask = false }: TaskItemProps) {
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-2 hover:bg-accent/50 cursor-pointer rounded-md group ${
+      className={`group flex cursor-pointer items-center gap-3 border-b border-border/70 px-4 py-3 transition-colors hover:bg-accent/50 ${
         isSubtask ? "pl-10" : ""
       }`}
       onClick={() => setSelectedTaskId(task.id)}
     >
-      {/* Checkbox */}
       <Button
         onClick={handleComplete}
         variant="ghost"
         size="icon"
-        className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-colors ${
-          isDone ? "bg-primary border-primary" : "border-muted-foreground hover:border-primary"
+        className={`h-5 w-5 shrink-0 rounded-full border p-0 transition-colors ${
+          isDone
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-muted-foreground/50 bg-background hover:border-primary"
         }`}
         title={isDone ? "Completed" : "Mark complete"}
       >
-        {isDone && <img src="/icons/check.svg" alt="" className="w-full h-full p-0.5 invert" />}
+        {isDone && <img src="/icons/check.svg" alt="" className="h-full w-full p-1 invert dark:invert-0" />}
       </Button>
 
       {/* Priority dot */}
@@ -61,15 +62,19 @@ export function TaskItem({ task, isSubtask = false }: TaskItemProps) {
         ●
       </span>
 
-      {/* Title */}
-      <span className={`flex-1 text-sm ${isDone ? "line-through text-muted-foreground" : ""}`}>
+      <span
+        className={`flex-1 text-sm font-medium ${isDone ? "text-muted-foreground line-through" : ""}`}
+      >
         {task.title}
       </span>
 
-      {/* Due date */}
-      {task.dueDate && <span className="text-xs text-muted-foreground">{task.dueDate}</span>}
+      {task.dueDate && (
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[1.1rem] leading-none text-muted-foreground">
+          {task.dueDate}
+        </span>
+      )}
       {task.duration && task.durationUnit && (
-        <span className="text-xs text-muted-foreground">
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[1.1rem] leading-none text-muted-foreground">
           {task.duration}
           {task.durationUnit}
         </span>

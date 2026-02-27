@@ -23,7 +23,7 @@ export default function ProjectPage() {
 
   if (!project) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex h-full items-center justify-center">
         <p className="text-muted-foreground">Project not found</p>
       </div>
     );
@@ -43,11 +43,19 @@ export default function ProjectPage() {
   };
 
   return (
-    <div className="flex flex-1 h-full">
-      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "mr-96" : ""}`}>
-        <div className="max-w-2xl mx-auto py-8 px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">{project.name}</h1>
+    <div className="flex h-full flex-1">
+      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "mr-[28rem]" : ""}`}>
+        <div className="mx-auto max-w-4xl px-6 py-10">
+          <div className="mb-8 flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
+                Project
+              </p>
+              <h1 className="mt-3 text-4xl font-semibold tracking-tight">{project.name}</h1>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Plan the work, group related tasks, and promote or demote structure when needed.
+              </p>
+            </div>
             <Button onClick={handleDemote} variant="outline" size="sm">
               Demote to Task
             </Button>

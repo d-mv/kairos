@@ -83,7 +83,7 @@ export function CreateProjectButton({
             <DialogTitle>Create Project</DialogTitle>
             <DialogDescription>Create a new project in your workspace.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 px-4 py-3">
+          <div className="space-y-3 px-4 py-4">
             <Label>Project name</Label>
             <Input
               type="text"

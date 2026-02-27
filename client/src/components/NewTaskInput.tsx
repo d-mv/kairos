@@ -49,15 +49,17 @@ export function NewTaskInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 px-4 py-2">
-      <img src="/icons/plus.svg" alt="" className="h-4 w-4 opacity-60" />
+    <form onSubmit={handleSubmit} className="flex items-center gap-3 border-t border-border/70 px-4 py-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">
+        <img src="/icons/plus.svg" alt="" className="h-4 w-4 opacity-60" />
+      </div>
       <Input
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={placeholder}
         disabled={loading}
-        className="h-auto flex-1 border-transparent bg-transparent px-0 py-0 text-sm shadow-none placeholder:text-muted-foreground"
+        className="h-auto flex-1 border-none bg-transparent px-0 py-0 text-sm shadow-none focus-visible:ring-0"
       />
     </form>
   );

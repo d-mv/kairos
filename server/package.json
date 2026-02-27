@@ -9,6 +9,8 @@
     "prebuild": "pnpm --filter @kairos/shared build",
     "build": "tsc",
     "start": "node dist/api/server.js",
+    "mcp:stdio": "node dist/mcp/stdio.js",
+    "mcp:dev": "tsx src/mcp/stdio.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "pretypecheck": "pnpm --filter @kairos/shared build",
