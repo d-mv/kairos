@@ -1,7 +1,7 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { LinkType, EntityType } from '@kairos/shared';
-import { Link } from '../../domain/link/index.js';
-import type { LinkRepository } from '../../domain/link/index.js';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { LinkType, EntityType } from "@kairos/shared";
+import { Link } from "../../domain/link/index.js";
+import type { LinkRepository } from "../../domain/link/index.js";
 
 interface LinkRow {
   id: string;
@@ -31,10 +31,10 @@ export class SupabaseLinkRepository implements LinkRepository {
 
   async findById(id: string, userId: string): Promise<Link | null> {
     const { data, error } = await this.client
-      .from('links')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', userId)
+      .from("links")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", userId)
       .single();
     if (error || !data) return null;
     return toLink(data as LinkRow);
@@ -42,36 +42,36 @@ export class SupabaseLinkRepository implements LinkRepository {
 
   async findBySourceId(sourceId: string, userId: string): Promise<Link[]> {
     const { data, error } = await this.client
-      .from('links')
-      .select('*')
-      .eq('source_id', sourceId)
-      .eq('user_id', userId);
+      .from("links")
+      .select("*")
+      .eq("source_id", sourceId)
+      .eq("user_id", userId);
     if (error || !data) return [];
     return (data as LinkRow[]).map(toLink);
   }
 
   async findByTargetId(targetId: string, userId: string): Promise<Link[]> {
     const { data, error } = await this.client
-      .from('links')
-      .select('*')
-      .eq('target_id', targetId)
-      .eq('user_id', userId);
+      .from("links")
+      .select("*")
+      .eq("target_id", targetId)
+      .eq("user_id", userId);
     if (error || !data) return [];
     return (data as LinkRow[]).map(toLink);
   }
 
   async findByEntityId(entityId: string, userId: string): Promise<Link[]> {
     const { data, error } = await this.client
-      .from('links')
-      .select('*')
-      .eq('user_id', userId)
+      .from("links")
+      .select("*")
+      .eq("user_id", userId)
       .or(`source_id.eq.${entityId},target_id.eq.${entityId}`);
     if (error || !data) return [];
     return (data as LinkRow[]).map(toLink);
   }
 
   async save(link: Link): Promise<void> {
-    const { error } = await this.client.from('links').upsert({
+    const { error } = await this.client.from("links").upsert({
       id: link.id,
       source_id: link.sourceId,
       source_type: link.sourceType,
@@ -85,11 +85,7 @@ export class SupabaseLinkRepository implements LinkRepository {
   }
 
   async delete(id: string, userId: string): Promise<void> {
-    const { error } = await this.client
-      .from('links')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', userId);
+    const { error } = await this.client.from("links").delete().eq("id", id).eq("user_id", userId);
     if (error) throw new Error(`Failed to delete link: ${error.message}`);
   }
 }

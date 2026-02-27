@@ -1,4 +1,4 @@
-import type { Area } from './Area.js';
+import type { Area } from "./Area.js";
 
 export interface AreaRepository {
   findById(id: string, userId: string): Promise<Area | null>;

@@ -37,10 +37,10 @@
     margin: 0;
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family:
-      "Plus Jakarta Sans",
-      "Segoe UI",
-      sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-size: 62.5%;
+    font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }

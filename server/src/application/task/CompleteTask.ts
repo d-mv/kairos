@@ -1,8 +1,8 @@
-import type { TaskDTO } from '@kairos/shared';
-import type { TaskRepository } from '../../domain/task/index.js';
-import { Result } from '../../domain/shared/index.js';
-import type { EventBus } from '../EventBus.js';
-import { toTaskDTO } from '../mappers.js';
+import type { TaskDTO } from "@kairos/shared";
+import type { TaskRepository } from "../../domain/task/index.js";
+import { Result } from "../../domain/shared/index.js";
+import type { EventBus } from "../EventBus.js";
+import { toTaskDTO } from "../mappers.js";
 
 export class CompleteTask {
   constructor(
@@ -12,7 +12,7 @@ export class CompleteTask {
 
   async execute(id: string, userId: string): Promise<Result<TaskDTO, string>> {
     const task = await this.taskRepo.findById(id, userId);
-    if (!task) return Result.fail('Task not found');
+    if (!task) return Result.fail("Task not found");
 
     const result = task.complete();
     if (result.isErr) return Result.fail(result.error);

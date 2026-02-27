@@ -2,33 +2,33 @@
  * Dependency injection container.
  * Wires together infrastructure, application layer, and exports use-case instances.
  */
-import { supabase } from '../infrastructure/supabase/supabase.js';
-import { SupabaseAreaRepository } from '../infrastructure/supabase/SupabaseAreaRepository.js';
-import { SupabaseProjectRepository } from '../infrastructure/supabase/SupabaseProjectRepository.js';
-import { SupabaseTaskRepository } from '../infrastructure/supabase/SupabaseTaskRepository.js';
-import { SupabaseLinkRepository } from '../infrastructure/supabase/SupabaseLinkRepository.js';
-import { EnrichedEventBus } from '../infrastructure/websocket/EnrichedEventBus.js';
+import { supabase } from "../infrastructure/supabase/supabase.js";
+import { SupabaseAreaRepository } from "../infrastructure/supabase/SupabaseAreaRepository.js";
+import { SupabaseProjectRepository } from "../infrastructure/supabase/SupabaseProjectRepository.js";
+import { SupabaseTaskRepository } from "../infrastructure/supabase/SupabaseTaskRepository.js";
+import { SupabaseLinkRepository } from "../infrastructure/supabase/SupabaseLinkRepository.js";
+import { EnrichedEventBus } from "../infrastructure/websocket/EnrichedEventBus.js";
 
-import { CreateArea } from '../application/area/CreateArea.js';
-import { UpdateArea } from '../application/area/UpdateArea.js';
-import { DeleteArea } from '../application/area/DeleteArea.js';
-import { ListAreas } from '../application/area/ListAreas.js';
+import { CreateArea } from "../application/area/CreateArea.js";
+import { UpdateArea } from "../application/area/UpdateArea.js";
+import { DeleteArea } from "../application/area/DeleteArea.js";
+import { ListAreas } from "../application/area/ListAreas.js";
 
-import { CreateProject } from '../application/project/CreateProject.js';
-import { UpdateProject } from '../application/project/UpdateProject.js';
-import { DeleteProject } from '../application/project/DeleteProject.js';
-import { ListProjects } from '../application/project/ListProjects.js';
-import { DemoteProject } from '../application/project/DemoteProject.js';
+import { CreateProject } from "../application/project/CreateProject.js";
+import { UpdateProject } from "../application/project/UpdateProject.js";
+import { DeleteProject } from "../application/project/DeleteProject.js";
+import { ListProjects } from "../application/project/ListProjects.js";
+import { DemoteProject } from "../application/project/DemoteProject.js";
 
-import { CreateTask } from '../application/task/CreateTask.js';
-import { UpdateTask } from '../application/task/UpdateTask.js';
-import { DeleteTask } from '../application/task/DeleteTask.js';
-import { CompleteTask } from '../application/task/CompleteTask.js';
-import { ListTasks } from '../application/task/ListTasks.js';
-import { PromoteTask } from '../application/task/PromoteTask.js';
+import { CreateTask } from "../application/task/CreateTask.js";
+import { UpdateTask } from "../application/task/UpdateTask.js";
+import { DeleteTask } from "../application/task/DeleteTask.js";
+import { CompleteTask } from "../application/task/CompleteTask.js";
+import { ListTasks } from "../application/task/ListTasks.js";
+import { PromoteTask } from "../application/task/PromoteTask.js";
 
-import { CreateLink } from '../application/link/CreateLink.js';
-import { DeleteLink } from '../application/link/DeleteLink.js';
+import { CreateLink } from "../application/link/CreateLink.js";
+import { DeleteLink } from "../application/link/DeleteLink.js";
 
 // Repositories
 export const areaRepo = new SupabaseAreaRepository(supabase);

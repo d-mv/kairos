@@ -1,15 +1,15 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAtom, useSetAtom } from 'jotai';
-import { sessionAtom, isAuthenticatedAtom } from './atoms/auth.js';
-import { supabase } from './lib/supabase.js';
-import { wsClient } from './lib/ws.js';
-import { lastWsEventAtom } from './atoms/ws.js';
-import LoginPage from './pages/LoginPage.js';
-import InboxPage from './pages/InboxPage.js';
-import ProjectPage from './pages/ProjectPage.js';
-import AreaPage from './pages/AreaPage.js';
-import { AppLayout } from './components/AppLayout.js';
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAtom, useSetAtom } from "jotai";
+import { sessionAtom, isAuthenticatedAtom } from "./atoms/auth.js";
+import { supabase } from "./lib/supabase.js";
+import { wsClient } from "./lib/ws.js";
+import { lastWsEventAtom } from "./atoms/ws.js";
+import LoginPage from "./pages/LoginPage.js";
+import InboxPage from "./pages/InboxPage.js";
+import ProjectPage from "./pages/ProjectPage.js";
+import AreaPage from "./pages/AreaPage.js";
+import { AppLayout } from "./components/AppLayout.js";
 
 export default function App() {
   const [session, setSession] = useAtom(sessionAtom);
@@ -37,7 +37,7 @@ export default function App() {
     }
 
     wsClient.connect(session.access_token);
-    const unsubscribe = wsClient.onEvent(event => setLastEvent(event));
+    const unsubscribe = wsClient.onEvent((event) => setLastEvent(event));
     return () => {
       unsubscribe();
     };

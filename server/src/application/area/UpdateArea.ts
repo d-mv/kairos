@@ -1,8 +1,8 @@
-import type { AreaDTO } from '@kairos/shared';
-import type { AreaRepository } from '../../domain/area/index.js';
-import { Result } from '../../domain/shared/index.js';
-import type { EventBus } from '../EventBus.js';
-import { toAreaDTO } from '../mappers.js';
+import type { AreaDTO } from "@kairos/shared";
+import type { AreaRepository } from "../../domain/area/index.js";
+import { Result } from "../../domain/shared/index.js";
+import type { EventBus } from "../EventBus.js";
+import { toAreaDTO } from "../mappers.js";
 
 export interface UpdateAreaInput {
   id: string;
@@ -18,7 +18,7 @@ export class UpdateArea {
 
   async execute(input: UpdateAreaInput): Promise<Result<AreaDTO, string>> {
     const area = await this.areaRepo.findById(input.id, input.userId);
-    if (!area) return Result.fail('Area not found');
+    if (!area) return Result.fail("Area not found");
 
     const result = area.rename(input.name);
     if (result.isErr) return Result.fail(result.error);

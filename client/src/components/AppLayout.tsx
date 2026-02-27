@@ -1,6 +1,6 @@
-import { Outlet } from 'react-router-dom';
-import { Sidebar } from './Sidebar.js';
-import { useDataSync } from '../hooks/useDataSync.js';
+import { Outlet } from "react-router-dom";
+import { Sidebar } from "./Sidebar.js";
+import { useDataSync } from "../hooks/useDataSync.js";
 
 export function AppLayout() {
   useDataSync();

@@ -1,9 +1,9 @@
-import type { LinkDTO, LinkType, EntityType } from '@kairos/shared';
-import { Link } from '../../domain/link/index.js';
-import type { LinkRepository } from '../../domain/link/index.js';
-import { Result } from '../../domain/shared/index.js';
-import type { EventBus } from '../EventBus.js';
-import { toLinkDTO } from '../mappers.js';
+import type { LinkDTO, LinkType, EntityType } from "@kairos/shared";
+import { Link } from "../../domain/link/index.js";
+import type { LinkRepository } from "../../domain/link/index.js";
+import { Result } from "../../domain/shared/index.js";
+import type { EventBus } from "../EventBus.js";
+import { toLinkDTO } from "../mappers.js";
 
 export interface CreateLinkInput {
   sourceId: string;

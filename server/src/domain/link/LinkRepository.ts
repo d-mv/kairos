@@ -1,4 +1,4 @@
-import type { Link } from './Link.js';
+import type { Link } from "./Link.js";
 
 export interface LinkRepository {
   findById(id: string, userId: string): Promise<Link | null>;

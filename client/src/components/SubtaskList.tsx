@@ -1,7 +1,7 @@
-import { useAtomValue } from 'jotai';
-import { subtasksByParentAtom } from '../atoms/tasks.js';
-import { TaskItem } from './TaskItem.js';
-import { NewTaskInput } from './NewTaskInput.js';
+import { useAtomValue } from "jotai";
+import { subtasksByParentAtom } from "../atoms/tasks.js";
+import { TaskItem } from "./TaskItem.js";
+import { NewTaskInput } from "./NewTaskInput.js";
 
 interface SubtaskListProps {
   parentTaskId: string;
@@ -13,7 +13,7 @@ export function SubtaskList({ parentTaskId }: SubtaskListProps) {
 
   return (
     <div className="mt-2">
-      {subtasks.map(subtask => (
+      {subtasks.map((subtask) => (
         <TaskItem key={subtask.id} task={subtask} isSubtask />
       ))}
       <div className="pl-6">

@@ -1,7 +1,7 @@
-import type { AreaRepository } from '../../domain/area/index.js';
-import { AreaDeleted } from '../../domain/area/index.js';
-import { Result } from '../../domain/shared/index.js';
-import type { EventBus } from '../EventBus.js';
+import type { AreaRepository } from "../../domain/area/index.js";
+import { AreaDeleted } from "../../domain/area/index.js";
+import { Result } from "../../domain/shared/index.js";
+import type { EventBus } from "../EventBus.js";
 
 export interface DeleteAreaInput {
   id: string;
@@ -16,7 +16,7 @@ export class DeleteArea {
 
   async execute(input: DeleteAreaInput): Promise<Result<void, string>> {
     const area = await this.areaRepo.findById(input.id, input.userId);
-    if (!area) return Result.fail('Area not found');
+    if (!area) return Result.fail("Area not found");
 
     await this.areaRepo.delete(input.id, input.userId);
     await this.eventBus.publish([new AreaDeleted(input.id)]);

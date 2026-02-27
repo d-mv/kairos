@@ -1,6 +1,6 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { Project } from '../../domain/project/index.js';
-import type { ProjectRepository } from '../../domain/project/index.js';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { Project } from "../../domain/project/index.js";
+import type { ProjectRepository } from "../../domain/project/index.js";
 
 interface ProjectRow {
   id: string;
@@ -26,10 +26,10 @@ export class SupabaseProjectRepository implements ProjectRepository {
 
   async findById(id: string, userId: string): Promise<Project | null> {
     const { data, error } = await this.client
-      .from('projects')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', userId)
+      .from("projects")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", userId)
       .single();
     if (error || !data) return null;
     return toProject(data as ProjectRow);
@@ -37,27 +37,27 @@ export class SupabaseProjectRepository implements ProjectRepository {
 
   async findAll(userId: string): Promise<Project[]> {
     const { data, error } = await this.client
-      .from('projects')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: true });
+      .from("projects")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true });
     if (error || !data) return [];
     return (data as ProjectRow[]).map(toProject);
   }
 
   async findByAreaId(areaId: string, userId: string): Promise<Project[]> {
     const { data, error } = await this.client
-      .from('projects')
-      .select('*')
-      .eq('area_id', areaId)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: true });
+      .from("projects")
+      .select("*")
+      .eq("area_id", areaId)
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true });
     if (error || !data) return [];
     return (data as ProjectRow[]).map(toProject);
   }
 
   async save(project: Project): Promise<void> {
-    const { error } = await this.client.from('projects').upsert({
+    const { error } = await this.client.from("projects").upsert({
       id: project.id,
       name: project.name,
       area_id: project.areaId,
@@ -70,10 +70,10 @@ export class SupabaseProjectRepository implements ProjectRepository {
 
   async delete(id: string, userId: string): Promise<void> {
     const { error } = await this.client
-      .from('projects')
+      .from("projects")
       .delete()
-      .eq('id', id)
-      .eq('user_id', userId);
+      .eq("id", id)
+      .eq("user_id", userId);
     if (error) throw new Error(`Failed to delete project: ${error.message}`);
   }
 }

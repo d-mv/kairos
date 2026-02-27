@@ -1,9 +1,9 @@
-import type { AreaDTO } from '@kairos/shared';
-import { Area } from '../../domain/area/index.js';
-import type { AreaRepository } from '../../domain/area/index.js';
-import { Result } from '../../domain/shared/index.js';
-import type { EventBus } from '../EventBus.js';
-import { toAreaDTO } from '../mappers.js';
+import type { AreaDTO } from "@kairos/shared";
+import { Area } from "../../domain/area/index.js";
+import type { AreaRepository } from "../../domain/area/index.js";
+import { Result } from "../../domain/shared/index.js";
+import type { EventBus } from "../EventBus.js";
+import { toAreaDTO } from "../mappers.js";
 
 export interface CreateAreaInput {
   name: string;

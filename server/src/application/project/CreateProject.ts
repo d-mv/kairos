@@ -1,9 +1,9 @@
-import type { ProjectDTO } from '@kairos/shared';
-import { Project } from '../../domain/project/index.js';
-import type { ProjectRepository } from '../../domain/project/index.js';
-import { Result } from '../../domain/shared/index.js';
-import type { EventBus } from '../EventBus.js';
-import { toProjectDTO } from '../mappers.js';
+import type { ProjectDTO } from "@kairos/shared";
+import { Project } from "../../domain/project/index.js";
+import type { ProjectRepository } from "../../domain/project/index.js";
+import { Result } from "../../domain/shared/index.js";
+import type { EventBus } from "../EventBus.js";
+import { toProjectDTO } from "../mappers.js";
 
 export interface CreateProjectInput {
   name: string;

@@ -1,11 +1,11 @@
-import type { TaskDTO } from '@kairos/shared';
-import type { TaskRepository } from '../../domain/task/index.js';
-import type { ProjectRepository } from '../../domain/project/index.js';
-import { Task } from '../../domain/task/index.js';
-import { ProjectDeleted } from '../../domain/project/index.js';
-import { Result } from '../../domain/shared/index.js';
-import type { EventBus } from '../EventBus.js';
-import { toTaskDTO } from '../mappers.js';
+import type { TaskDTO } from "@kairos/shared";
+import type { TaskRepository } from "../../domain/task/index.js";
+import type { ProjectRepository } from "../../domain/project/index.js";
+import { Task } from "../../domain/task/index.js";
+import { ProjectDeleted } from "../../domain/project/index.js";
+import { Result } from "../../domain/shared/index.js";
+import type { EventBus } from "../EventBus.js";
+import { toTaskDTO } from "../mappers.js";
 
 export class DemoteProject {
   constructor(
@@ -16,7 +16,7 @@ export class DemoteProject {
 
   async execute(projectId: string, userId: string): Promise<Result<TaskDTO, string>> {
     const project = await this.projectRepo.findById(projectId, userId);
-    if (!project) return Result.fail('Project not found');
+    if (!project) return Result.fail("Project not found");
 
     // Load all tasks in this project
     const projectTasks = await this.taskRepo.findByProjectId(projectId, userId);
@@ -65,7 +65,7 @@ export class DemoteProject {
 
     const allEvents = [
       ...newTask.domainEvents,
-      ...newSubtasks.flatMap(t => t.domainEvents),
+      ...newSubtasks.flatMap((t) => t.domainEvents),
       new ProjectDeleted(projectId),
     ];
     await this.eventBus.publish(allEvents);

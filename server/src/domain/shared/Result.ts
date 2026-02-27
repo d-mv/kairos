@@ -27,14 +27,14 @@ export class Result<T, E = string> {
 
   get value(): T {
     if (!this._isOk) {
-      throw new Error('Cannot get value from a failed Result');
+      throw new Error("Cannot get value from a failed Result");
     }
     return this._value as T;
   }
 
   get error(): E {
     if (this._isOk) {
-      throw new Error('Cannot get error from a successful Result');
+      throw new Error("Cannot get error from a successful Result");
     }
     return this._error as E;
   }

@@ -1,4 +1,4 @@
-import type { WsEvent } from '@kairos/shared';
+import type { WsEvent } from "@kairos/shared";
 
 type EventHandler = (event: WsEvent) => void;
 
@@ -34,7 +34,7 @@ export class WsClient {
     this.ws.onmessage = (msg) => {
       try {
         const event = JSON.parse(msg.data as string) as WsEvent;
-        this.handlers.forEach(h => h(event));
+        this.handlers.forEach((h) => h(event));
       } catch {
         // ignore malformed messages
       }
@@ -65,7 +65,7 @@ export class WsClient {
   onEvent(handler: EventHandler): () => void {
     this.handlers.push(handler);
     return () => {
-      this.handlers = this.handlers.filter(h => h !== handler);
+      this.handlers = this.handlers.filter((h) => h !== handler);
     };
   }
 
@@ -84,6 +84,6 @@ export class WsClient {
   }
 }
 
-const fallbackWsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}:3000/ws`;
-const WS_URL = import.meta.env['VITE_WS_URL'] ?? fallbackWsUrl;
+const fallbackWsUrl = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:3000/ws`;
+const WS_URL = import.meta.env["VITE_WS_URL"] ?? fallbackWsUrl;
 export const wsClient = new WsClient(WS_URL);

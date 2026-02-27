@@ -1,11 +1,12 @@
-import { useParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import { useAtomValue } from 'jotai';
-import { areasAtom } from '../atoms/areas.js';
-import { projectsByAreaAtom } from '../atoms/projects.js';
-import { tasksByAreaAtom, selectedTaskIdAtom } from '../atoms/tasks.js';
-import { TaskList } from '../components/TaskList.js';
-import { TaskDetailPanel } from '../components/TaskDetailPanel.js';
+import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useAtomValue } from "jotai";
+import { areasAtom } from "../atoms/areas.js";
+import { projectsByAreaAtom } from "../atoms/projects.js";
+import { tasksByAreaAtom, selectedTaskIdAtom } from "../atoms/tasks.js";
+import { TaskList } from "../components/TaskList.js";
+import { TaskDetailPanel } from "../components/TaskDetailPanel.js";
+import { CreateProjectButton } from "../components/CreateProjectButton.js";
 
 export default function AreaPage() {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +15,7 @@ export default function AreaPage() {
   const tasksByArea = useAtomValue(tasksByAreaAtom);
   const selectedTaskId = useAtomValue(selectedTaskIdAtom);
 
-  const area = areas.find(a => a.id === id);
+  const area = areas.find((a) => a.id === id);
   const projects = id ? (projectsByArea.get(id) ?? []) : [];
   const tasks = id ? (tasksByArea.get(id) ?? []) : [];
 
@@ -28,16 +29,19 @@ export default function AreaPage() {
 
   return (
     <div className="flex flex-1 h-full">
-      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? 'mr-96' : ''}`}>
+      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "mr-96" : ""}`}>
         <div className="max-w-2xl mx-auto py-8 px-4">
-          <h1 className="text-2xl font-bold mb-6">{area.name}</h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold">{area.name}</h1>
+            <CreateProjectButton label="New Project" areaId={id} variant="outline" size="sm" />
+          </div>
 
           {/* Projects in this area */}
           {projects.length > 0 && (
             <div className="mb-8">
               <h2 className="text-lg font-semibold mb-3">Projects</h2>
               <div className="grid gap-2">
-                {projects.map(project => (
+                {projects.map((project) => (
                   <Link
                     key={project.id}
                     to={`/project/${project.id}`}

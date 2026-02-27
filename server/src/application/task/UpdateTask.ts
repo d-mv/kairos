@@ -1,8 +1,8 @@
-import type { TaskDTO, TaskPriority, TaskDurationUnit } from '@kairos/shared';
-import type { TaskRepository } from '../../domain/task/index.js';
-import { Result } from '../../domain/shared/index.js';
-import type { EventBus } from '../EventBus.js';
-import { toTaskDTO } from '../mappers.js';
+import type { TaskDTO, TaskPriority, TaskDurationUnit } from "@kairos/shared";
+import type { TaskRepository } from "../../domain/task/index.js";
+import { Result } from "../../domain/shared/index.js";
+import type { EventBus } from "../EventBus.js";
+import { toTaskDTO } from "../mappers.js";
 
 export interface UpdateTaskInput {
   id: string;
@@ -25,14 +25,14 @@ export class UpdateTask {
 
   async execute(input: UpdateTaskInput): Promise<Result<TaskDTO, string>> {
     const task = await this.taskRepo.findById(input.id, input.userId);
-    if (!task) return Result.fail('Task not found');
+    if (!task) return Result.fail("Task not found");
 
     if (input.title !== undefined) {
       const r = task.updateTitle(input.title);
       if (r.isErr) return Result.fail(r.error);
     }
 
-    if ('description' in input) {
+    if ("description" in input) {
       task.updateDescription(input.description ?? null);
     }
 
@@ -40,13 +40,13 @@ export class UpdateTask {
       task.updatePriority(input.priority);
     }
 
-    if ('dueDate' in input) {
+    if ("dueDate" in input) {
       task.updateDueDate(input.dueDate ? new Date(input.dueDate) : null);
     }
 
-    if ('duration' in input || 'durationUnit' in input) {
-      const duration = 'duration' in input ? input.duration ?? null : task.duration;
-      const unit = 'durationUnit' in input ? input.durationUnit ?? null : task.durationUnit;
+    if ("duration" in input || "durationUnit" in input) {
+      const duration = "duration" in input ? (input.duration ?? null) : task.duration;
+      const unit = "durationUnit" in input ? (input.durationUnit ?? null) : task.durationUnit;
       const r = task.updateDuration(duration, unit);
       if (r.isErr) return Result.fail(r.error);
     }

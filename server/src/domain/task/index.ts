@@ -1,5 +1,5 @@
-export { Task } from './Task.js';
-export type { TaskRepository } from './TaskRepository.js';
+export { Task } from "./Task.js";
+export type { TaskRepository } from "./TaskRepository.js";
 export {
   TaskCreated,
   TaskCompleted,
@@ -9,4 +9,4 @@ export {
   TaskAssignedToArea,
   TaskMovedToInbox,
   SubtaskAdded,
-} from './TaskDomainEvents.js';
+} from "./TaskDomainEvents.js";

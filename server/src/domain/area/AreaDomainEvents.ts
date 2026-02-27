@@ -1,10 +1,10 @@
-import type { DomainEvent } from '../shared/index.js';
-import { UniqueId } from '../shared/index.js';
+import type { DomainEvent } from "../shared/index.js";
+import { UniqueId } from "../shared/index.js";
 
 export class AreaCreated implements DomainEvent {
   readonly eventId = new UniqueId().value;
   readonly occurredOn = new Date();
-  readonly eventName = 'area.created';
+  readonly eventName = "area.created";
 
   constructor(
     public readonly areaId: string,
@@ -16,7 +16,7 @@ export class AreaCreated implements DomainEvent {
 export class AreaRenamed implements DomainEvent {
   readonly eventId = new UniqueId().value;
   readonly occurredOn = new Date();
-  readonly eventName = 'area.renamed';
+  readonly eventName = "area.renamed";
 
   constructor(
     public readonly areaId: string,
@@ -28,7 +28,7 @@ export class AreaRenamed implements DomainEvent {
 export class AreaDeleted implements DomainEvent {
   readonly eventId = new UniqueId().value;
   readonly occurredOn = new Date();
-  readonly eventName = 'area.deleted';
+  readonly eventName = "area.deleted";
 
   constructor(public readonly areaId: string) {}
 }

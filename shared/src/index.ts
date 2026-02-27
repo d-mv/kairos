@@ -1,10 +1,10 @@
 // Shared types between server and client
 
-export type TaskStatus = 'todo' | 'in_progress' | 'done';
+export type TaskStatus = "todo" | "in_progress" | "done";
 export type TaskPriority = 1 | 2 | 3 | 4;
-export type TaskDurationUnit = 'h' | 'd' | 'w' | 'm';
-export type LinkType = 'blocks' | 'blocked_by' | 'related_to';
-export type EntityType = 'task' | 'project';
+export type TaskDurationUnit = "h" | "d" | "w" | "m";
+export type LinkType = "blocks" | "blocked_by" | "related_to";
+export type EntityType = "task" | "project";
 
 export interface TaskDTO {
   id: string;
@@ -53,14 +53,14 @@ export interface LinkDTO {
 
 // WebSocket event types
 export type WsEvent =
-  | { type: 'task:created'; payload: TaskDTO }
-  | { type: 'task:updated'; payload: TaskDTO }
-  | { type: 'task:deleted'; payload: { id: string } }
-  | { type: 'project:created'; payload: ProjectDTO }
-  | { type: 'project:updated'; payload: ProjectDTO }
-  | { type: 'project:deleted'; payload: { id: string } }
-  | { type: 'area:created'; payload: AreaDTO }
-  | { type: 'area:updated'; payload: AreaDTO }
-  | { type: 'area:deleted'; payload: { id: string } }
-  | { type: 'link:created'; payload: LinkDTO }
-  | { type: 'link:deleted'; payload: { id: string } };
+  | { type: "task:created"; payload: TaskDTO }
+  | { type: "task:updated"; payload: TaskDTO }
+  | { type: "task:deleted"; payload: { id: string } }
+  | { type: "project:created"; payload: ProjectDTO }
+  | { type: "project:updated"; payload: ProjectDTO }
+  | { type: "project:deleted"; payload: { id: string } }
+  | { type: "area:created"; payload: AreaDTO }
+  | { type: "area:updated"; payload: AreaDTO }
+  | { type: "area:deleted"; payload: { id: string } }
+  | { type: "link:created"; payload: LinkDTO }
+  | { type: "link:deleted"; payload: { id: string } };

@@ -1,5 +1,5 @@
-import { atom } from 'jotai';
-import type { ProjectDTO } from '@kairos/shared';
+import { atom } from "jotai";
+import type { ProjectDTO } from "@kairos/shared";
 
 export const projectsAtom = atom<ProjectDTO[]>([]);
 

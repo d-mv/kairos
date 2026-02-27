@@ -1,6 +1,6 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { Area } from '../../domain/area/index.js';
-import type { AreaRepository } from '../../domain/area/index.js';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { Area } from "../../domain/area/index.js";
+import type { AreaRepository } from "../../domain/area/index.js";
 
 interface AreaRow {
   id: string;
@@ -24,10 +24,10 @@ export class SupabaseAreaRepository implements AreaRepository {
 
   async findById(id: string, userId: string): Promise<Area | null> {
     const { data, error } = await this.client
-      .from('areas')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', userId)
+      .from("areas")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", userId)
       .single();
 
     if (error || !data) return null;
@@ -36,17 +36,17 @@ export class SupabaseAreaRepository implements AreaRepository {
 
   async findAll(userId: string): Promise<Area[]> {
     const { data, error } = await this.client
-      .from('areas')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: true });
+      .from("areas")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true });
 
     if (error || !data) return [];
     return (data as AreaRow[]).map(toArea);
   }
 
   async save(area: Area): Promise<void> {
-    const { error } = await this.client.from('areas').upsert({
+    const { error } = await this.client.from("areas").upsert({
       id: area.id,
       name: area.name,
       user_id: area.userId,
@@ -57,11 +57,7 @@ export class SupabaseAreaRepository implements AreaRepository {
   }
 
   async delete(id: string, userId: string): Promise<void> {
-    const { error } = await this.client
-      .from('areas')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', userId);
+    const { error } = await this.client.from("areas").delete().eq("id", id).eq("user_id", userId);
     if (error) throw new Error(`Failed to delete area: ${error.message}`);
   }
 }

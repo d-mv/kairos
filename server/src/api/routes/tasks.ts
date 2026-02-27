@@ -1,6 +1,6 @@
-import type { FastifyInstance } from 'fastify';
-import type { TaskPriority, TaskDurationUnit } from '@kairos/shared';
-import * as container from '../container.js';
+import type { FastifyInstance } from "fastify";
+import type { TaskPriority, TaskDurationUnit } from "@kairos/shared";
+import * as container from "../container.js";
 
 export async function taskRoutes(fastify: FastifyInstance) {
   // GET /api/v1/tasks
@@ -11,12 +11,12 @@ export async function taskRoutes(fastify: FastifyInstance) {
       inbox?: string;
       parentTaskId?: string;
     };
-  }>('/', async (req, reply) => {
+  }>("/", async (req, reply) => {
     const result = await container.listTasks.execute({
       userId: req.userId,
       projectId: req.query.projectId,
       areaId: req.query.areaId,
-      inbox: req.query.inbox === 'true',
+      inbox: req.query.inbox === "true",
       parentTaskId: req.query.parentTaskId,
     });
     return result.isOk ? result.value : reply.status(500).send({ error: result.error });
@@ -35,7 +35,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       duration?: number;
       durationUnit?: TaskDurationUnit;
     };
-  }>('/', async (req, reply) => {
+  }>("/", async (req, reply) => {
     try {
       const result = await container.createTask.execute({
         ...req.body,
@@ -44,18 +44,18 @@ export async function taskRoutes(fastify: FastifyInstance) {
       if (result.isErr) return reply.status(400).send({ error: result.error });
       return reply.status(201).send(result.value);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create task';
-      req.log.error({ err }, 'Create task failed');
+      const message = err instanceof Error ? err.message : "Failed to create task";
+      req.log.error({ err }, "Create task failed");
       return reply.status(500).send({ error: message });
     }
   });
 
   // GET /api/v1/tasks/:id
-  fastify.get<{ Params: { id: string } }>('/:id', async (req, reply) => {
+  fastify.get<{ Params: { id: string } }>("/:id", async (req, reply) => {
     const all = await container.listTasks.execute({ userId: req.userId });
     if (all.isErr) return reply.status(500).send({ error: all.error });
-    const task = all.value.find(t => t.id === req.params.id);
-    if (!task) return reply.status(404).send({ error: 'Task not found' });
+    const task = all.value.find((t) => t.id === req.params.id);
+    if (!task) return reply.status(404).send({ error: "Task not found" });
     return task;
   });
 
@@ -72,7 +72,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       duration?: number | null;
       durationUnit?: TaskDurationUnit | null;
     };
-  }>('/:id', async (req, reply) => {
+  }>("/:id", async (req, reply) => {
     const result = await container.updateTask.execute({
       id: req.params.id,
       userId: req.userId,
@@ -83,28 +83,28 @@ export async function taskRoutes(fastify: FastifyInstance) {
   });
 
   // DELETE /api/v1/tasks/:id
-  fastify.delete<{ Params: { id: string } }>('/:id', async (req, reply) => {
+  fastify.delete<{ Params: { id: string } }>("/:id", async (req, reply) => {
     const result = await container.deleteTask.execute(req.params.id, req.userId);
     if (result.isErr) return reply.status(404).send({ error: result.error });
     return reply.status(204).send();
   });
 
   // POST /api/v1/tasks/:id/complete
-  fastify.post<{ Params: { id: string } }>('/:id/complete', async (req, reply) => {
+  fastify.post<{ Params: { id: string } }>("/:id/complete", async (req, reply) => {
     const result = await container.completeTask.execute(req.params.id, req.userId);
     if (result.isErr) return reply.status(400).send({ error: result.error });
     return result.value;
   });
 
   // POST /api/v1/tasks/:id/promote
-  fastify.post<{ Params: { id: string } }>('/:id/promote', async (req, reply) => {
+  fastify.post<{ Params: { id: string } }>("/:id/promote", async (req, reply) => {
     try {
       const result = await container.promoteTask.execute(req.params.id, req.userId);
       if (result.isErr) return reply.status(400).send({ error: result.error });
       return result.value;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to promote task';
-      req.log.error({ err }, 'Promote task failed');
+      const message = err instanceof Error ? err.message : "Failed to promote task";
+      req.log.error({ err }, "Promote task failed");
       return reply.status(500).send({ error: message });
     }
   });

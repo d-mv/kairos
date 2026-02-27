@@ -1,6 +1,6 @@
-import type { DomainEvent } from '../../domain/shared/index.js';
-import type { EventBus } from '../../application/EventBus.js';
-import type { WsEvent } from '@kairos/shared';
+import type { DomainEvent } from "../../domain/shared/index.js";
+import type { EventBus } from "../../application/EventBus.js";
+import type { WsEvent } from "@kairos/shared";
 
 type WsClient = {
   readyState: number;

@@ -1,30 +1,35 @@
-import { useState, useEffect } from 'react';
-import { useAtomValue, useSetAtom } from 'jotai';
-import type { TaskDurationUnit, TaskPriority } from '@kairos/shared';
-import { selectedTaskIdAtom, selectedTaskAtom, tasksAtom } from '../atoms/tasks.js';
-import { SubtaskList } from './SubtaskList.js';
-import { api } from '../lib/api.js';
+import { useState, useEffect } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import type { TaskDurationUnit, TaskPriority } from "@kairos/shared";
+import { selectedTaskIdAtom, selectedTaskAtom, tasksAtom } from "../atoms/tasks.js";
+import { SubtaskList } from "./SubtaskList.js";
+import { api } from "../lib/api.js";
+import { Button } from "./ui/button.js";
+import { Input } from "./ui/input.js";
+import { Label } from "./ui/label.js";
+import { Select } from "./ui/select.js";
+import { Textarea } from "./ui/textarea.js";
 
 export function TaskDetailPanel() {
   const setSelectedTaskId = useSetAtom(selectedTaskIdAtom);
   const task = useAtomValue(selectedTaskAtom);
   const setTasks = useSetAtom(tasksAtom);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>(1);
-  const [dueDate, setDueDate] = useState('');
-  const [duration, setDuration] = useState('');
-  const [durationUnit, setDurationUnit] = useState<TaskDurationUnit | ''>('');
+  const [dueDate, setDueDate] = useState("");
+  const [duration, setDuration] = useState("");
+  const [durationUnit, setDurationUnit] = useState<TaskDurationUnit | "">("");
   const [_saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (task) {
       setTitle(task.title);
-      setDescription(task.description ?? '');
+      setDescription(task.description ?? "");
       setPriority(task.priority);
-      setDueDate(task.dueDate ?? '');
-      setDuration(task.duration ? String(task.duration) : '');
-      setDurationUnit(task.durationUnit ?? '');
+      setDueDate(task.dueDate ?? "");
+      setDuration(task.duration ? String(task.duration) : "");
+      setDurationUnit(task.durationUnit ?? "");
     }
   }, [task]);
 
@@ -35,18 +40,18 @@ export function TaskDetailPanel() {
 
     let parsedDuration: number | null = null;
     let parsedDurationUnit: TaskDurationUnit | null = null;
-    if (duration !== '') {
+    if (duration !== "") {
       parsedDuration = Number(duration);
       if (!Number.isInteger(parsedDuration) || parsedDuration <= 0) {
-        window.alert('Duration must be a positive whole number');
+        window.alert("Duration must be a positive whole number");
         return;
       }
     }
-    if (durationUnit !== '') {
+    if (durationUnit !== "") {
       parsedDurationUnit = durationUnit;
     }
     if ((parsedDuration === null) !== (parsedDurationUnit === null)) {
-      window.alert('Set both duration and duration unit, or leave both empty');
+      window.alert("Set both duration and duration unit, or leave both empty");
       return;
     }
 
@@ -60,9 +65,9 @@ export function TaskDetailPanel() {
         duration: parsedDuration,
         durationUnit: parsedDurationUnit,
       });
-      setTasks(prev => prev.map(t => (t.id === task.id ? updated : t)));
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
     } catch (err) {
-      console.error('Failed to update task', err);
+      console.error("Failed to update task", err);
     } finally {
       setSaving(false);
     }
@@ -71,23 +76,23 @@ export function TaskDetailPanel() {
   const handleDelete = async () => {
     try {
       await api.tasks.delete(task.id);
-      setTasks(prev => prev.filter(t => t.id !== task.id));
+      setTasks((prev) => prev.filter((t) => t.id !== task.id));
       setSelectedTaskId(null);
     } catch (err) {
-      console.error('Failed to delete task', err);
+      console.error("Failed to delete task", err);
     }
   };
 
   const handlePromote = async () => {
     try {
       const project = await api.tasks.promote(task.id);
-      setTasks(prev => prev.filter(t => t.id !== task.id && t.parentTaskId !== task.id));
+      setTasks((prev) => prev.filter((t) => t.id !== task.id && t.parentTaskId !== task.id));
       setSelectedTaskId(null);
       // Projects atom will be updated via WebSocket or re-fetch
       window.location.href = `/project/${project.id}`;
     } catch (err) {
-      console.error('Failed to promote task', err);
-      const message = err instanceof Error ? err.message : 'Failed to promote task';
+      console.error("Failed to promote task", err);
+      const message = err instanceof Error ? err.message : "Failed to promote task";
       window.alert(message);
     }
   };
@@ -97,37 +102,39 @@ export function TaskDetailPanel() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <h2 className="font-semibold text-sm">Task Details</h2>
-        <button
+        <Button
           onClick={() => setSelectedTaskId(null)}
-          className="text-muted-foreground hover:text-foreground"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
         >
           ✕
-        </button>
+        </Button>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Title */}
         <div>
-          <input
+          <Input
             type="text"
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
             onBlur={handleSave}
-            className="w-full text-lg font-medium bg-transparent outline-none border-b border-transparent focus:border-border pb-1"
+            className="h-auto border-transparent px-0 py-1 text-lg font-medium shadow-none"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Description</label>
-          <textarea
+          <Label>Description</Label>
+          <Textarea
             value={description}
-            onChange={e => setDescription(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
             onBlur={handleSave}
             placeholder="Add a description..."
             rows={4}
-            className="w-full mt-1 text-sm bg-transparent outline-none resize-none border border-border rounded-md p-2 focus:border-ring"
+            className="mt-1 resize-none"
           />
         </div>
 
@@ -136,11 +143,11 @@ export function TaskDetailPanel() {
           <span className="text-xs font-medium text-muted-foreground">Status</span>
           <span
             className={`text-xs px-2 py-0.5 rounded-full ${
-              task.status === 'done'
-                ? 'bg-green-100 text-green-700'
-                : task.status === 'in_progress'
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-muted text-muted-foreground'
+              task.status === "done"
+                ? "bg-green-100 text-green-700"
+                : task.status === "in_progress"
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-muted text-muted-foreground"
             }`}
           >
             {task.status}
@@ -149,59 +156,59 @@ export function TaskDetailPanel() {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Priority</label>
-            <select
+            <Label>Priority</Label>
+            <Select
               value={priority}
-              onChange={e => setPriority(Number(e.target.value) as TaskPriority)}
+              onChange={(e) => setPriority(Number(e.target.value) as TaskPriority)}
               onBlur={handleSave}
-              className="w-full mt-1 text-sm bg-transparent outline-none border border-border rounded-md p-2 focus:border-ring"
+              className="mt-1"
             >
               <option value={1}>P1</option>
               <option value={2}>P2</option>
               <option value={3}>P3</option>
               <option value={4}>P4</option>
-            </select>
+            </Select>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Due date</label>
-            <input
+            <Label>Due date</Label>
+            <Input
               type="date"
               value={dueDate}
-              onChange={e => setDueDate(e.target.value)}
+              onChange={(e) => setDueDate(e.target.value)}
               onBlur={handleSave}
-              className="w-full mt-1 text-sm bg-transparent outline-none border border-border rounded-md p-2 focus:border-ring"
+              className="mt-1"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Duration</label>
-            <input
+            <Label>Duration</Label>
+            <Input
               type="number"
               min={1}
               step={1}
               value={duration}
-              onChange={e => setDuration(e.target.value)}
+              onChange={(e) => setDuration(e.target.value)}
               onBlur={handleSave}
               placeholder="e.g. 2"
-              className="w-full mt-1 text-sm bg-transparent outline-none border border-border rounded-md p-2 focus:border-ring"
+              className="mt-1"
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Unit</label>
-            <select
+            <Label>Unit</Label>
+            <Select
               value={durationUnit}
-              onChange={e => setDurationUnit(e.target.value as TaskDurationUnit | '')}
+              onChange={(e) => setDurationUnit(e.target.value as TaskDurationUnit | "")}
               onBlur={handleSave}
-              className="w-full mt-1 text-sm bg-transparent outline-none border border-border rounded-md p-2 focus:border-ring"
+              className="mt-1"
             >
               <option value="">None</option>
               <option value="h">Hours</option>
               <option value="d">Days</option>
               <option value="w">Weeks</option>
               <option value="m">Months</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -217,19 +224,13 @@ export function TaskDetailPanel() {
       {/* Footer actions */}
       <div className="p-4 border-t border-border space-y-2">
         {!task.parentTaskId && (
-          <button
-            onClick={handlePromote}
-            className="w-full text-sm text-center py-2 border border-border rounded-md hover:bg-accent transition-colors"
-          >
+          <Button onClick={handlePromote} className="w-full" variant="outline">
             Promote to Project
-          </button>
+          </Button>
         )}
-        <button
-          onClick={handleDelete}
-          className="w-full text-sm text-center py-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-        >
+        <Button onClick={handleDelete} className="w-full" variant="destructive">
           Delete task
-        </button>
+        </Button>
       </div>
     </div>
   );

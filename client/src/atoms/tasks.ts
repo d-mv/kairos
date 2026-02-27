@@ -1,11 +1,11 @@
-import { atom } from 'jotai';
-import type { TaskDTO } from '@kairos/shared';
+import { atom } from "jotai";
+import type { TaskDTO } from "@kairos/shared";
 
 export const tasksAtom = atom<TaskDTO[]>([]);
 
 export const inboxTasksAtom = atom((get) =>
   get(tasksAtom).filter(
-    t => t.parentTaskId === null && t.projectId === null && t.areaId === null,
+    (t) => t.parentTaskId === null && t.projectId === null && t.areaId === null,
   ),
 );
 
@@ -50,5 +50,5 @@ export const selectedTaskIdAtom = atom<string | null>(null);
 export const selectedTaskAtom = atom((get) => {
   const id = get(selectedTaskIdAtom);
   if (!id) return null;
-  return get(tasksAtom).find(t => t.id === id) ?? null;
+  return get(tasksAtom).find((t) => t.id === id) ?? null;
 });

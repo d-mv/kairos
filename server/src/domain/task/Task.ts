@@ -1,5 +1,5 @@
-import type { TaskStatus, TaskPriority, TaskDurationUnit } from '@kairos/shared';
-import { Entity, UniqueId, Result } from '../shared/index.js';
+import type { TaskStatus, TaskPriority, TaskDurationUnit } from "@kairos/shared";
+import { Entity, UniqueId, Result } from "../shared/index.js";
 import {
   TaskCreated,
   TaskCompleted,
@@ -8,7 +8,7 @@ import {
   TaskAssignedToProject,
   TaskAssignedToArea,
   TaskMovedToInbox,
-} from './TaskDomainEvents.js';
+} from "./TaskDomainEvents.js";
 
 interface TaskProps {
   title: string;
@@ -48,28 +48,28 @@ export class Task extends Entity<TaskProps> {
   ): Result<Task, string> {
     const trimmed = title.trim();
     if (trimmed.length === 0) {
-      return Result.fail('Task title cannot be empty');
+      return Result.fail("Task title cannot be empty");
     }
     // A subtask cannot also own a project or area
     if (opts.parentTaskId && (opts.projectId || opts.areaId)) {
-      return Result.fail('A subtask cannot be directly assigned to a project or area');
+      return Result.fail("A subtask cannot be directly assigned to a project or area");
     }
     // A task cannot belong to both a project and an area
     if (opts.projectId && opts.areaId) {
-      return Result.fail('A task cannot belong to both a project and an area');
+      return Result.fail("A task cannot belong to both a project and an area");
     }
     if ((opts.duration === undefined) !== (opts.durationUnit === undefined)) {
-      return Result.fail('Duration and duration unit must be provided together');
+      return Result.fail("Duration and duration unit must be provided together");
     }
     if (opts.duration !== undefined && (!Number.isInteger(opts.duration) || opts.duration <= 0)) {
-      return Result.fail('Duration must be a positive integer');
+      return Result.fail("Duration must be a positive integer");
     }
 
     const task = new Task(
       {
         title: trimmed,
         description: opts.description ?? null,
-        status: 'todo',
+        status: "todo",
         priority: opts.priority ?? 1,
         parentTaskId: opts.parentTaskId ?? null,
         projectId: opts.projectId ?? null,
@@ -92,19 +92,45 @@ export class Task extends Entity<TaskProps> {
   }
 
   // ── Getters ──────────────────────────────────────────────────────────
-  get title(): string { return this.props.title; }
-  get description(): string | null { return this.props.description; }
-  get status(): TaskStatus { return this.props.status; }
-  get priority(): TaskPriority { return this.props.priority; }
-  get parentTaskId(): string | null { return this.props.parentTaskId; }
-  get projectId(): string | null { return this.props.projectId; }
-  get areaId(): string | null { return this.props.areaId; }
-  get userId(): string { return this.props.userId; }
-  get dueDate(): Date | null { return this.props.dueDate; }
-  get duration(): number | null { return this.props.duration; }
-  get durationUnit(): TaskDurationUnit | null { return this.props.durationUnit; }
-  get createdAt(): Date { return this.props.createdAt; }
-  get updatedAt(): Date { return this.props.updatedAt; }
+  get title(): string {
+    return this.props.title;
+  }
+  get description(): string | null {
+    return this.props.description;
+  }
+  get status(): TaskStatus {
+    return this.props.status;
+  }
+  get priority(): TaskPriority {
+    return this.props.priority;
+  }
+  get parentTaskId(): string | null {
+    return this.props.parentTaskId;
+  }
+  get projectId(): string | null {
+    return this.props.projectId;
+  }
+  get areaId(): string | null {
+    return this.props.areaId;
+  }
+  get userId(): string {
+    return this.props.userId;
+  }
+  get dueDate(): Date | null {
+    return this.props.dueDate;
+  }
+  get duration(): number | null {
+    return this.props.duration;
+  }
+  get durationUnit(): TaskDurationUnit | null {
+    return this.props.durationUnit;
+  }
+  get createdAt(): Date {
+    return this.props.createdAt;
+  }
+  get updatedAt(): Date {
+    return this.props.updatedAt;
+  }
 
   // ── Domain Queries ────────────────────────────────────────────────────
   isSubtask(): boolean {
@@ -112,27 +138,29 @@ export class Task extends Entity<TaskProps> {
   }
 
   isInInbox(): boolean {
-    return this.props.parentTaskId === null
-      && this.props.projectId === null
-      && this.props.areaId === null;
+    return (
+      this.props.parentTaskId === null &&
+      this.props.projectId === null &&
+      this.props.areaId === null
+    );
   }
 
   // ── Commands ──────────────────────────────────────────────────────────
   complete(): Result<void, string> {
-    if (this.props.status === 'done') {
-      return Result.fail('Task is already completed');
+    if (this.props.status === "done") {
+      return Result.fail("Task is already completed");
     }
-    this.props.status = 'done';
+    this.props.status = "done";
     this.props.updatedAt = new Date();
     this.addDomainEvent(new TaskCompleted(this.id));
     return Result.ok(undefined);
   }
 
   reopen(): Result<void, string> {
-    if (this.props.status !== 'done') {
-      return Result.fail('Task is not completed');
+    if (this.props.status !== "done") {
+      return Result.fail("Task is not completed");
     }
-    this.props.status = 'todo';
+    this.props.status = "todo";
     this.props.updatedAt = new Date();
     this.addDomainEvent(new TaskReopened(this.id));
     return Result.ok(undefined);
@@ -141,7 +169,7 @@ export class Task extends Entity<TaskProps> {
   updateTitle(title: string): Result<void, string> {
     const trimmed = title.trim();
     if (trimmed.length === 0) {
-      return Result.fail('Task title cannot be empty');
+      return Result.fail("Task title cannot be empty");
     }
     this.props.title = trimmed;
     this.props.updatedAt = new Date();
@@ -167,12 +195,15 @@ export class Task extends Entity<TaskProps> {
     this.addDomainEvent(new TaskUpdated(this.id));
   }
 
-  updateDuration(duration: number | null, durationUnit: TaskDurationUnit | null): Result<void, string> {
+  updateDuration(
+    duration: number | null,
+    durationUnit: TaskDurationUnit | null,
+  ): Result<void, string> {
     if ((duration === null) !== (durationUnit === null)) {
-      return Result.fail('Duration and duration unit must be provided together');
+      return Result.fail("Duration and duration unit must be provided together");
     }
     if (duration !== null && (!Number.isInteger(duration) || duration <= 0)) {
-      return Result.fail('Duration must be a positive integer');
+      return Result.fail("Duration must be a positive integer");
     }
 
     this.props.duration = duration;
@@ -184,7 +215,7 @@ export class Task extends Entity<TaskProps> {
 
   assignToProject(projectId: string): Result<void, string> {
     if (this.isSubtask()) {
-      return Result.fail('A subtask cannot be directly assigned to a project');
+      return Result.fail("A subtask cannot be directly assigned to a project");
     }
     this.props.projectId = projectId;
     this.props.areaId = null;
@@ -195,7 +226,7 @@ export class Task extends Entity<TaskProps> {
 
   assignToArea(areaId: string): Result<void, string> {
     if (this.isSubtask()) {
-      return Result.fail('A subtask cannot be directly assigned to an area');
+      return Result.fail("A subtask cannot be directly assigned to an area");
     }
     this.props.areaId = areaId;
     this.props.projectId = null;
@@ -206,7 +237,7 @@ export class Task extends Entity<TaskProps> {
 
   moveToInbox(): Result<void, string> {
     if (this.isSubtask()) {
-      return Result.fail('A subtask cannot be moved to inbox — remove it from its parent first');
+      return Result.fail("A subtask cannot be moved to inbox — remove it from its parent first");
     }
     this.props.projectId = null;
     this.props.areaId = null;
@@ -222,7 +253,7 @@ export class Task extends Entity<TaskProps> {
    */
   canHaveSubtask(): Result<void, string> {
     if (this.isSubtask()) {
-      return Result.fail('Subtasks cannot have children — only one level of nesting is allowed');
+      return Result.fail("Subtasks cannot have children — only one level of nesting is allowed");
     }
     return Result.ok(undefined);
   }

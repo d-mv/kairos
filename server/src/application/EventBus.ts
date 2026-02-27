@@ -1,4 +1,4 @@
-import type { DomainEvent } from '../domain/shared/index.js';
+import type { DomainEvent } from "../domain/shared/index.js";
 
 export interface EventBus {
   publish(events: ReadonlyArray<DomainEvent>): Promise<void>;

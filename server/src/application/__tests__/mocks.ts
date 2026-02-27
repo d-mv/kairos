@@ -1,9 +1,9 @@
-import type { Area, AreaRepository } from '../../domain/area/index.js';
-import type { Project, ProjectRepository } from '../../domain/project/index.js';
-import type { Task, TaskRepository } from '../../domain/task/index.js';
-import type { Link, LinkRepository } from '../../domain/link/index.js';
-import type { EventBus } from '../EventBus.js';
-import type { DomainEvent } from '../../domain/shared/index.js';
+import type { Area, AreaRepository } from "../../domain/area/index.js";
+import type { Project, ProjectRepository } from "../../domain/project/index.js";
+import type { Task, TaskRepository } from "../../domain/task/index.js";
+import type { Link, LinkRepository } from "../../domain/link/index.js";
+import type { EventBus } from "../EventBus.js";
+import type { DomainEvent } from "../../domain/shared/index.js";
 
 export class InMemoryAreaRepository implements AreaRepository {
   private store = new Map<string, Area>();
@@ -14,7 +14,7 @@ export class InMemoryAreaRepository implements AreaRepository {
   }
 
   async findAll(userId: string): Promise<Area[]> {
-    return [...this.store.values()].filter(a => a.userId === userId);
+    return [...this.store.values()].filter((a) => a.userId === userId);
   }
 
   async save(area: Area): Promise<void> {
@@ -35,13 +35,11 @@ export class InMemoryProjectRepository implements ProjectRepository {
   }
 
   async findAll(userId: string): Promise<Project[]> {
-    return [...this.store.values()].filter(p => p.userId === userId);
+    return [...this.store.values()].filter((p) => p.userId === userId);
   }
 
   async findByAreaId(areaId: string, userId: string): Promise<Project[]> {
-    return [...this.store.values()].filter(
-      p => p.userId === userId && p.areaId === areaId,
-    );
+    return [...this.store.values()].filter((p) => p.userId === userId && p.areaId === areaId);
   }
 
   async save(project: Project): Promise<void> {
@@ -62,30 +60,26 @@ export class InMemoryTaskRepository implements TaskRepository {
   }
 
   async findAll(userId: string): Promise<Task[]> {
-    return [...this.store.values()].filter(t => t.userId === userId);
+    return [...this.store.values()].filter((t) => t.userId === userId);
   }
 
   async findByProjectId(projectId: string, userId: string): Promise<Task[]> {
     return [...this.store.values()].filter(
-      t => t.userId === userId && t.projectId === projectId && !t.isSubtask(),
+      (t) => t.userId === userId && t.projectId === projectId && !t.isSubtask(),
     );
   }
 
   async findByAreaId(areaId: string, userId: string): Promise<Task[]> {
-    return [...this.store.values()].filter(
-      t => t.userId === userId && t.areaId === areaId,
-    );
+    return [...this.store.values()].filter((t) => t.userId === userId && t.areaId === areaId);
   }
 
   async findInbox(userId: string): Promise<Task[]> {
-    return [...this.store.values()].filter(
-      t => t.userId === userId && t.isInInbox(),
-    );
+    return [...this.store.values()].filter((t) => t.userId === userId && t.isInInbox());
   }
 
   async findSubtasks(parentTaskId: string, userId: string): Promise<Task[]> {
     return [...this.store.values()].filter(
-      t => t.userId === userId && t.parentTaskId === parentTaskId,
+      (t) => t.userId === userId && t.parentTaskId === parentTaskId,
     );
   }
 
@@ -107,20 +101,16 @@ export class InMemoryLinkRepository implements LinkRepository {
   }
 
   async findBySourceId(sourceId: string, userId: string): Promise<Link[]> {
-    return [...this.store.values()].filter(
-      l => l.userId === userId && l.sourceId === sourceId,
-    );
+    return [...this.store.values()].filter((l) => l.userId === userId && l.sourceId === sourceId);
   }
 
   async findByTargetId(targetId: string, userId: string): Promise<Link[]> {
-    return [...this.store.values()].filter(
-      l => l.userId === userId && l.targetId === targetId,
-    );
+    return [...this.store.values()].filter((l) => l.userId === userId && l.targetId === targetId);
   }
 
   async findByEntityId(entityId: string, userId: string): Promise<Link[]> {
     return [...this.store.values()].filter(
-      l => l.userId === userId && (l.sourceId === entityId || l.targetId === entityId),
+      (l) => l.userId === userId && (l.sourceId === entityId || l.targetId === entityId),
     );
   }
 

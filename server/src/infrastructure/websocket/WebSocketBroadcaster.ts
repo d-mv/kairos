@@ -1,6 +1,6 @@
-import type { DomainEvent } from '../../domain/shared/index.js';
-import type { EventBus } from '../../application/EventBus.js';
-import type { WsEvent } from '@kairos/shared';
+import type { DomainEvent } from "../../domain/shared/index.js";
+import type { EventBus } from "../../application/EventBus.js";
+import type { WsEvent } from "@kairos/shared";
 
 export type BroadcastMessage = WsEvent;
 
@@ -32,7 +32,8 @@ export class WebSocketBroadcaster implements EventBus {
   private broadcast(event: WsEvent): void {
     const payload = JSON.stringify(event);
     for (const client of this.clients) {
-      if (client.readyState === 1) { // OPEN
+      if (client.readyState === 1) {
+        // OPEN
         try {
           client.send(payload);
         } catch {
@@ -47,13 +48,13 @@ export class WebSocketBroadcaster implements EventBus {
     // The actual payload will be enriched by the application layer
     // For now we emit minimal notifications; UI will re-fetch on demand
     switch (event.eventName) {
-      case 'task.created':
-      case 'task.updated':
-      case 'task.completed':
-      case 'task.reopened':
-      case 'task.assigned_to_project':
-      case 'task.assigned_to_area':
-      case 'task.moved_to_inbox':
+      case "task.created":
+      case "task.updated":
+      case "task.completed":
+      case "task.reopened":
+      case "task.assigned_to_project":
+      case "task.assigned_to_area":
+      case "task.moved_to_inbox":
         return null; // Will be handled by enriched event bus
       default:
         return null;

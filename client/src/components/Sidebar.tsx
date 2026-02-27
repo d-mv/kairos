@@ -1,8 +1,10 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useAtomValue } from 'jotai';
-import { areasAtom } from '../atoms/areas.js';
-import { projectsByAreaAtom } from '../atoms/projects.js';
-import { supabase } from '../lib/supabase.js';
+import { Link, useLocation } from "react-router-dom";
+import { useAtomValue } from "jotai";
+import { areasAtom } from "../atoms/areas.js";
+import { projectsByAreaAtom } from "../atoms/projects.js";
+import { supabase } from "../lib/supabase.js";
+import { CreateProjectButton } from "./CreateProjectButton.js";
+import { Button } from "./ui/button.js";
 
 function NavIcon({ src, alt }: { src: string; alt: string }) {
   return <img src={src} alt={alt} className="h-4 w-4 shrink-0" />;
@@ -28,9 +30,9 @@ export function Sidebar() {
         <Link
           to="/inbox"
           className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-            isActive('/inbox')
-              ? 'bg-accent text-accent-foreground'
-              : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+            isActive("/inbox")
+              ? "bg-accent text-accent-foreground"
+              : "text-foreground hover:bg-accent hover:text-accent-foreground"
           }`}
         >
           <NavIcon src="/icons/inbox.svg" alt="Inbox" />
@@ -38,30 +40,37 @@ export function Sidebar() {
         </Link>
 
         {/* Unassigned projects */}
-        {unassignedProjects.length > 0 && (
-          <div className="mt-2">
+        <div className="mt-2">
+          <CreateProjectButton
+            label="+ New project"
+            className="w-full text-left px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            navigateToProject
+            size="sm"
+          />
+
+          {unassignedProjects.length > 0 && (
             <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               Projects
             </p>
-            {unassignedProjects.map(project => (
-              <Link
-                key={project.id}
-                to={`/project/${project.id}`}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                  isActive(`/project/${project.id}`)
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-foreground hover:bg-accent hover:text-accent-foreground'
-                }`}
-              >
-                <NavIcon src="/icons/clipboard-document-list.svg" alt="Project" />
-                <span className="truncate">{project.name}</span>
-              </Link>
-            ))}
-          </div>
-        )}
+          )}
+          {unassignedProjects.map((project) => (
+            <Link
+              key={project.id}
+              to={`/project/${project.id}`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
+                isActive(`/project/${project.id}`)
+                  ? "bg-accent text-accent-foreground"
+                  : "text-foreground hover:bg-accent hover:text-accent-foreground"
+              }`}
+            >
+              <NavIcon src="/icons/clipboard-document-list.svg" alt="Project" />
+              <span className="truncate">{project.name}</span>
+            </Link>
+          ))}
+        </div>
 
         {/* Areas and their projects */}
-        {areas.map(area => {
+        {areas.map((area) => {
           const areaProjects = projectsByArea.get(area.id) ?? [];
           return (
             <div key={area.id} className="mt-2">
@@ -69,22 +78,22 @@ export function Sidebar() {
                 to={`/area/${area.id}`}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors ${
                   isActive(`/area/${area.id}`)
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                    ? "bg-accent text-accent-foreground"
+                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
                 }`}
               >
                 <NavIcon src="/icons/folder.svg" alt="Area" />
                 <span className="truncate">{area.name}</span>
               </Link>
 
-              {areaProjects.map(project => (
+              {areaProjects.map((project) => (
                 <Link
                   key={project.id}
                   to={`/project/${project.id}`}
                   className={`flex items-center gap-2 pl-8 pr-3 py-2 rounded-md text-sm transition-colors ${
                     isActive(`/project/${project.id}`)
-                      ? 'bg-accent text-accent-foreground'
-                      : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                      ? "bg-accent text-accent-foreground"
+                      : "text-foreground hover:bg-accent hover:text-accent-foreground"
                   }`}
                 >
                   <NavIcon src="/icons/clipboard-document-list.svg" alt="Project" />
@@ -98,13 +107,14 @@ export function Sidebar() {
 
       {/* Sign out */}
       <div className="p-4 border-t border-border">
-        <button
+        <Button
           onClick={() => supabase.auth.signOut()}
-          className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors text-left inline-flex items-center gap-2"
+          variant="ghost"
+          className="w-full justify-start text-sm text-muted-foreground hover:text-foreground"
         >
           <NavIcon src="/icons/arrow-right-on-rectangle.svg" alt="" />
           Sign out
-        </button>
+        </Button>
       </div>
     </aside>
   );

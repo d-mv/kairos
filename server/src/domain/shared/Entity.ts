@@ -1,5 +1,5 @@
-import type { DomainEvent } from './DomainEvent.js';
-import { UniqueId } from './UniqueId.js';
+import type { DomainEvent } from "./DomainEvent.js";
+import { UniqueId } from "./UniqueId.js";
 
 export abstract class Entity<T> {
   protected readonly _id: UniqueId;

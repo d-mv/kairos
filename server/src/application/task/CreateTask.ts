@@ -1,9 +1,9 @@
-import type { TaskDTO, TaskPriority, TaskDurationUnit } from '@kairos/shared';
-import { Task } from '../../domain/task/index.js';
-import type { TaskRepository } from '../../domain/task/index.js';
-import { Result } from '../../domain/shared/index.js';
-import type { EventBus } from '../EventBus.js';
-import { toTaskDTO } from '../mappers.js';
+import type { TaskDTO, TaskPriority, TaskDurationUnit } from "@kairos/shared";
+import { Task } from "../../domain/task/index.js";
+import type { TaskRepository } from "../../domain/task/index.js";
+import { Result } from "../../domain/shared/index.js";
+import type { EventBus } from "../EventBus.js";
+import { toTaskDTO } from "../mappers.js";
 
 export interface CreateTaskInput {
   title: string;
@@ -28,7 +28,7 @@ export class CreateTask {
     // If adding a subtask, validate parent exists and can have subtasks
     if (input.parentTaskId) {
       const parent = await this.taskRepo.findById(input.parentTaskId, input.userId);
-      if (!parent) return Result.fail('Parent task not found');
+      if (!parent) return Result.fail("Parent task not found");
       const canAdd = parent.canHaveSubtask();
       if (canAdd.isErr) return Result.fail(canAdd.error);
     }

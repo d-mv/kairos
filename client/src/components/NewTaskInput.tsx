@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useSetAtom } from 'jotai';
-import { tasksAtom } from '../atoms/tasks.js';
-import { api } from '../lib/api.js';
+import { useState } from "react";
+import { useSetAtom } from "jotai";
+import { tasksAtom } from "../atoms/tasks.js";
+import { api } from "../lib/api.js";
+import { Input } from "./ui/input.js";
 
 interface NewTaskInputProps {
   projectId?: string;
@@ -14,9 +15,9 @@ export function NewTaskInput({
   projectId,
   areaId,
   parentTaskId,
-  placeholder = 'Add a task...',
+  placeholder = "Add a task...",
 }: NewTaskInputProps) {
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const setTasks = useSetAtom(tasksAtom);
 
@@ -38,10 +39,10 @@ export function NewTaskInput({
       if (parentTaskId) createInput.parentTaskId = parentTaskId;
 
       const task = await api.tasks.create(createInput);
-      setTasks(prev => [...prev, task]);
-      setTitle('');
+      setTasks((prev) => [...prev, task]);
+      setTitle("");
     } catch (err) {
-      console.error('Failed to create task', err);
+      console.error("Failed to create task", err);
     } finally {
       setLoading(false);
     }
@@ -50,13 +51,13 @@ export function NewTaskInput({
   return (
     <form onSubmit={handleSubmit} className="flex items-center gap-2 px-4 py-2">
       <img src="/icons/plus.svg" alt="" className="h-4 w-4 opacity-60" />
-      <input
+      <Input
         type="text"
         value={title}
-        onChange={e => setTitle(e.target.value)}
+        onChange={(e) => setTitle(e.target.value)}
         placeholder={placeholder}
         disabled={loading}
-        className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        className="h-auto flex-1 border-transparent bg-transparent px-0 py-0 text-sm shadow-none placeholder:text-muted-foreground"
       />
     </form>
   );

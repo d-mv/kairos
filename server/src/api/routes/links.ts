@@ -1,6 +1,6 @@
-import type { FastifyInstance } from 'fastify';
-import type { LinkType, EntityType } from '@kairos/shared';
-import * as container from '../container.js';
+import type { FastifyInstance } from "fastify";
+import type { LinkType, EntityType } from "@kairos/shared";
+import * as container from "../container.js";
 
 export async function linkRoutes(fastify: FastifyInstance) {
   // POST /api/v1/links
@@ -12,7 +12,7 @@ export async function linkRoutes(fastify: FastifyInstance) {
       targetType: EntityType;
       linkType: LinkType;
     };
-  }>('/', async (req, reply) => {
+  }>("/", async (req, reply) => {
     const result = await container.createLink.execute({
       ...req.body,
       userId: req.userId,
@@ -22,7 +22,7 @@ export async function linkRoutes(fastify: FastifyInstance) {
   });
 
   // DELETE /api/v1/links/:id
-  fastify.delete<{ Params: { id: string } }>('/:id', async (req, reply) => {
+  fastify.delete<{ Params: { id: string } }>("/:id", async (req, reply) => {
     const result = await container.deleteLink.execute(req.params.id, req.userId);
     if (result.isErr) return reply.status(404).send({ error: result.error });
     return reply.status(204).send();

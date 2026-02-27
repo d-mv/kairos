@@ -1,4 +1,4 @@
-import type { Task } from './Task.js';
+import type { Task } from "./Task.js";
 
 export interface TaskRepository {
   findById(id: string, userId: string): Promise<Task | null>;

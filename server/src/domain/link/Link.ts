@@ -1,6 +1,6 @@
-import type { LinkType, EntityType } from '@kairos/shared';
-import { Entity, UniqueId, Result } from '../shared/index.js';
-import { LinkCreated } from './LinkDomainEvents.js';
+import type { LinkType, EntityType } from "@kairos/shared";
+import { Entity, UniqueId, Result } from "../shared/index.js";
+import { LinkCreated } from "./LinkDomainEvents.js";
 
 interface LinkProps {
   sourceId: string;
@@ -13,9 +13,9 @@ interface LinkProps {
 }
 
 const INVERSE: Record<LinkType, LinkType> = {
-  blocks: 'blocked_by',
-  blocked_by: 'blocks',
-  related_to: 'related_to',
+  blocks: "blocked_by",
+  blocked_by: "blocks",
+  related_to: "related_to",
 };
 
 export class Link extends Entity<LinkProps> {
@@ -33,7 +33,7 @@ export class Link extends Entity<LinkProps> {
     id?: string,
   ): Result<Link, string> {
     if (sourceId === targetId) {
-      return Result.fail('A link cannot connect an entity to itself');
+      return Result.fail("A link cannot connect an entity to itself");
     }
     const link = new Link(
       { sourceId, sourceType, targetId, targetType, linkType, userId, createdAt: new Date() },
@@ -47,13 +47,27 @@ export class Link extends Entity<LinkProps> {
     return new Link(props, new UniqueId(id));
   }
 
-  get sourceId(): string { return this.props.sourceId; }
-  get sourceType(): EntityType { return this.props.sourceType; }
-  get targetId(): string { return this.props.targetId; }
-  get targetType(): EntityType { return this.props.targetType; }
-  get linkType(): LinkType { return this.props.linkType; }
-  get userId(): string { return this.props.userId; }
-  get createdAt(): Date { return this.props.createdAt; }
+  get sourceId(): string {
+    return this.props.sourceId;
+  }
+  get sourceType(): EntityType {
+    return this.props.sourceType;
+  }
+  get targetId(): string {
+    return this.props.targetId;
+  }
+  get targetType(): EntityType {
+    return this.props.targetType;
+  }
+  get linkType(): LinkType {
+    return this.props.linkType;
+  }
+  get userId(): string {
+    return this.props.userId;
+  }
+  get createdAt(): Date {
+    return this.props.createdAt;
+  }
 
   /**
    * Creates a pair [forward, inverse] for a given link.
@@ -71,7 +85,14 @@ export class Link extends Entity<LinkProps> {
     if (forwardResult.isErr) return Result.fail(forwardResult.error);
 
     const inverseLinkType = INVERSE[linkType];
-    const inverseResult = Link.create(targetId, targetType, sourceId, sourceType, inverseLinkType, userId);
+    const inverseResult = Link.create(
+      targetId,
+      targetType,
+      sourceId,
+      sourceType,
+      inverseLinkType,
+      userId,
+    );
     if (inverseResult.isErr) return Result.fail(inverseResult.error);
 
     return Result.ok([forwardResult.value, inverseResult.value]);

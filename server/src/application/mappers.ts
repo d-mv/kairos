@@ -1,8 +1,8 @@
-import type { AreaDTO, ProjectDTO, TaskDTO, LinkDTO } from '@kairos/shared';
-import type { Area } from '../domain/area/index.js';
-import type { Project } from '../domain/project/index.js';
-import type { Task } from '../domain/task/index.js';
-import type { Link } from '../domain/link/index.js';
+import type { AreaDTO, ProjectDTO, TaskDTO, LinkDTO } from "@kairos/shared";
+import type { Area } from "../domain/area/index.js";
+import type { Project } from "../domain/project/index.js";
+import type { Task } from "../domain/task/index.js";
+import type { Link } from "../domain/link/index.js";
 
 export function toAreaDTO(area: Area): AreaDTO {
   return {
@@ -36,7 +36,7 @@ export function toTaskDTO(task: Task): TaskDTO {
     projectId: task.projectId,
     areaId: task.areaId,
     userId: task.userId,
-    dueDate: task.dueDate?.toISOString().split('T')[0] ?? null,
+    dueDate: task.dueDate?.toISOString().split("T")[0] ?? null,
     duration: task.duration,
     durationUnit: task.durationUnit,
     createdAt: task.createdAt.toISOString(),
