@@ -1,15 +1,14 @@
-import "dotenv/config";
-import Fastify from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
-import fp from "fastify-plugin";
+import "dotenv/config";
+import Fastify from "fastify";
 
+import { eventBus } from "./container.js";
 import authPlugin from "./plugins/auth.js";
 import { areaRoutes } from "./routes/areas.js";
+import { linkRoutes } from "./routes/links.js";
 import { projectRoutes } from "./routes/projects.js";
 import { taskRoutes } from "./routes/tasks.js";
-import { linkRoutes } from "./routes/links.js";
-import { eventBus } from "./container.js";
 
 const fastify = Fastify({ logger: true });
 
@@ -41,10 +40,6 @@ await fastify.register(linkRoutes, { prefix: "/api/v1/links" });
 
 // ── Health check ──────────────────────────────────────────────────────────
 fastify.get("/health", { config: { skipAuth: true } }, async () => ({ status: "ok" }));
-
-// ── MCP plugin ────────────────────────────────────────────────────────────
-const { mcpPlugin } = await import("../mcp/mcp.plugin.js");
-await fastify.register(fp(mcpPlugin));
 
 // ── Start ─────────────────────────────────────────────────────────────────
 const port = Number(process.env["PORT"] ?? 3000);

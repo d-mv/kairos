@@ -1,4 +1,4 @@
 packages:
-  - 'shared'
-  - 'server'
-  - 'client'
+  - "shared"
+  - "server"
+  - "client"

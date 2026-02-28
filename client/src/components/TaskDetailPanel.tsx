@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import type { TaskDurationUnit, TaskPriority } from "@kairos/shared";
 import { selectedTaskIdAtom, selectedTaskAtom, tasksAtom } from "../atoms/tasks.js";
 import { SubtaskList } from "./SubtaskList.js";
 import { api } from "../lib/api.js";
 import { Button } from "./ui/button.js";
+import { TrashIcon, XIcon } from "./ui/icons.js";
 import { Input } from "./ui/input.js";
 import { Label } from "./ui/label.js";
 import { Select } from "./ui/select.js";
@@ -21,6 +22,26 @@ export function TaskDetailPanel() {
   const [duration, setDuration] = useState("");
   const [durationUnit, setDurationUnit] = useState<TaskDurationUnit | "">("");
   const [_saving, setSaving] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const lastSyncedRef = useRef("");
+  const savedIndicatorTimeoutRef = useRef<number | null>(null);
+
+  const serializeTaskState = (value: {
+    title: string;
+    description: string;
+    priority: TaskPriority;
+    dueDate: string;
+    duration: string;
+    durationUnit: TaskDurationUnit | "";
+  }) =>
+    JSON.stringify({
+      title: value.title.trim(),
+      description: value.description,
+      priority: value.priority,
+      dueDate: value.dueDate,
+      duration: value.duration,
+      durationUnit: value.durationUnit,
+    });
 
   useEffect(() => {
     if (task) {
@@ -30,56 +51,161 @@ export function TaskDetailPanel() {
       setDueDate(task.dueDate ?? "");
       setDuration(task.duration ? String(task.duration) : "");
       setDurationUnit(task.durationUnit ?? "");
+      setSaveState("idle");
+      lastSyncedRef.current = serializeTaskState({
+        title: task.title,
+        description: task.description ?? "",
+        priority: task.priority,
+        dueDate: task.dueDate ?? "",
+        duration: task.duration ? String(task.duration) : "",
+        durationUnit: task.durationUnit ?? "",
+      });
     }
   }, [task]);
 
   if (!task) return null;
 
-  const handleSave = async () => {
-    if (!title.trim()) return;
+  const persistTaskChanges = async (overrides?: {
+    title?: string;
+    description?: string;
+    priority?: TaskPriority;
+    dueDate?: string;
+    duration?: string;
+    durationUnit?: TaskDurationUnit | "";
+    silentValidation?: boolean;
+  }) => {
+    const nextTitle = overrides?.title ?? title;
+    const nextDescription = overrides?.description ?? description;
+    const nextPriority = overrides?.priority ?? priority;
+    const nextDueDate = overrides?.dueDate ?? dueDate;
+    const nextDuration = overrides?.duration ?? duration;
+    const nextDurationUnit = overrides?.durationUnit ?? durationUnit;
+    const nextSnapshot = serializeTaskState({
+      title: nextTitle,
+      description: nextDescription,
+      priority: nextPriority,
+      dueDate: nextDueDate,
+      duration: nextDuration,
+      durationUnit: nextDurationUnit,
+    });
+
+    if (nextSnapshot === lastSyncedRef.current) return;
+
+    if (!nextTitle.trim()) return;
 
     let parsedDuration: number | null = null;
     let parsedDurationUnit: TaskDurationUnit | null = null;
-    if (duration !== "") {
-      parsedDuration = Number(duration);
+    if (nextDuration !== "") {
+      parsedDuration = Number(nextDuration);
       if (!Number.isInteger(parsedDuration) || parsedDuration <= 0) {
-        window.alert("Duration must be a positive whole number");
+        if (!overrides?.silentValidation) {
+          window.alert("Duration must be a positive whole number");
+        }
         return;
       }
     }
-    if (durationUnit !== "") {
-      parsedDurationUnit = durationUnit;
+    if (nextDurationUnit !== "") {
+      parsedDurationUnit = nextDurationUnit;
     }
     if ((parsedDuration === null) !== (parsedDurationUnit === null)) {
-      window.alert("Set both duration and duration unit, or leave both empty");
+      if (!overrides?.silentValidation) {
+        window.alert("Set both duration and duration unit, or leave both empty");
+      }
+      setSaveState("error");
       return;
     }
 
     setSaving(true);
+    setSaveState("saving");
+    const previousTask = task;
+    const previousSnapshot = lastSyncedRef.current;
+    lastSyncedRef.current = nextSnapshot;
+    const optimisticTask = {
+      ...task,
+      title: nextTitle.trim(),
+      description: nextDescription || null,
+      priority: nextPriority,
+      dueDate: nextDueDate || null,
+      duration: parsedDuration,
+      durationUnit: parsedDurationUnit,
+      updatedAt: new Date().toISOString(),
+    };
+
+    setTasks((prev) => prev.map((t) => (t.id === task.id ? optimisticTask : t)));
+
     try {
       const updated = await api.tasks.update(task.id, {
-        title: title.trim(),
-        description: description || null,
-        priority,
-        dueDate: dueDate || null,
+        title: nextTitle.trim(),
+        description: nextDescription || null,
+        priority: nextPriority,
+        dueDate: nextDueDate || null,
         duration: parsedDuration,
         durationUnit: parsedDurationUnit,
       });
       setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
+      setSaveState("saved");
+      if (savedIndicatorTimeoutRef.current) {
+        window.clearTimeout(savedIndicatorTimeoutRef.current);
+      }
+      savedIndicatorTimeoutRef.current = window.setTimeout(() => {
+        setSaveState("idle");
+      }, 1500);
     } catch (err) {
       console.error("Failed to update task", err);
+      lastSyncedRef.current = previousSnapshot;
+      setSaveState("error");
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? previousTask : t)));
     } finally {
       setSaving(false);
     }
   };
 
+  const handleSave = async () => {
+    await persistTaskChanges();
+  };
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void persistTaskChanges({
+        title,
+        description,
+        duration,
+        silentValidation: true,
+      });
+    }, 500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [description, duration, title]);
+
+  useEffect(() => {
+    return () => {
+      if (savedIndicatorTimeoutRef.current) {
+        window.clearTimeout(savedIndicatorTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleDelete = async () => {
+    const previousTasks = (() => {
+      let snapshot: (typeof task)[] = [];
+      setTasks((prev) => {
+        snapshot = prev.filter((t) => t.id === task.id || t.parentTaskId === task.id);
+        return prev.filter((t) => t.id !== task.id && t.parentTaskId !== task.id);
+      });
+      return snapshot;
+    })();
+    setSelectedTaskId(null);
+
     try {
       await api.tasks.delete(task.id);
-      setTasks((prev) => prev.filter((t) => t.id !== task.id));
-      setSelectedTaskId(null);
     } catch (err) {
       console.error("Failed to delete task", err);
+      setTasks((prev) => {
+        const existingIds = new Set(prev.map((t) => t.id));
+        const restored = previousTasks.filter((item) => !existingIds.has(item.id));
+        return [...prev, ...restored];
+      });
+      setSelectedTaskId(task.id);
     }
   };
 
@@ -98,21 +224,37 @@ export function TaskDetailPanel() {
   };
 
   return (
-    <div className="panel fixed right-4 top-4 z-10 flex h-[calc(100%-2rem)] w-[26rem] flex-col rounded-[1.8rem]">
+    <div className="panel fixed inset-x-3 bottom-3 top-[11rem] z-10 flex flex-col rounded-[1.8rem] lg:inset-x-auto lg:bottom-4 lg:right-4 lg:top-4 lg:h-[calc(100%-2rem)] lg:w-[42rem]">
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <div>
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
             Inspector
           </p>
-          <h2 className="mt-1 text-sm font-semibold">Task Details</h2>
+          <div className="mt-1 flex items-center gap-2">
+            <h2 className="text-sm font-semibold">Task Details</h2>
+            {saveState !== "idle" && (
+              <span
+                className={`rounded-full px-[1rem] py-[0.5rem] text-[1.1rem] leading-none ${
+                  saveState === "saving"
+                    ? "bg-sky-500/15 text-sky-700 dark:text-sky-300"
+                    : saveState === "saved"
+                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                      : "bg-destructive/15 text-destructive"
+                }`}
+              >
+                {saveState === "saving" ? "Saving" : saveState === "saved" ? "Saved" : "Not saved"}
+              </span>
+            )}
+          </div>
         </div>
         <Button
           onClick={() => setSelectedTaskId(null)}
           variant="ghost"
           size="icon"
-          className="h-8 w-8 rounded-full"
+          className="h-[3.2rem] w-[3.2rem] rounded-full"
+          aria-label="Close task details"
         >
-          ✕
+          <XIcon size={14} />
         </Button>
       </div>
 
@@ -156,13 +298,16 @@ export function TaskDetailPanel() {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="soft-panel rounded-[1.4rem] p-4">
             <Label>Priority</Label>
             <Select
               value={priority}
-              onChange={(e) => setPriority(Number(e.target.value) as TaskPriority)}
-              onBlur={handleSave}
+              onChange={(e) => {
+                const nextPriority = Number(e.target.value) as TaskPriority;
+                setPriority(nextPriority);
+                void persistTaskChanges({ priority: nextPriority });
+              }}
               className="mt-2"
             >
               <option value={1}>P1</option>
@@ -176,14 +321,17 @@ export function TaskDetailPanel() {
             <Input
               type="date"
               value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              onBlur={handleSave}
+              onChange={(e) => {
+                const nextDueDate = e.target.value;
+                setDueDate(nextDueDate);
+                void persistTaskChanges({ dueDate: nextDueDate });
+              }}
               className="mt-2"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="soft-panel rounded-[1.4rem] p-4">
             <Label>Duration</Label>
             <Input
@@ -201,8 +349,11 @@ export function TaskDetailPanel() {
             <Label>Unit</Label>
             <Select
               value={durationUnit}
-              onChange={(e) => setDurationUnit(e.target.value as TaskDurationUnit | "")}
-              onBlur={handleSave}
+              onChange={(e) => {
+                const nextDurationUnit = e.target.value as TaskDurationUnit | "";
+                setDurationUnit(nextDurationUnit);
+                void persistTaskChanges({ durationUnit: nextDurationUnit });
+              }}
               className="mt-2"
             >
               <option value="">None</option>
@@ -231,7 +382,8 @@ export function TaskDetailPanel() {
           </Button>
         )}
         <Button onClick={handleDelete} className="w-full" variant="destructive">
-          Delete task
+          <TrashIcon size={16} />
+          <span>Delete task</span>
         </Button>
       </div>
     </div>

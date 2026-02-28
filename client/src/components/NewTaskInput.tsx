@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useSetAtom } from "jotai";
+import type { TaskDTO } from "@kairos/shared";
 import { tasksAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
+import { createOptimisticId } from "../lib/optimistic.js";
 import { Input } from "./ui/input.js";
 
 interface NewTaskInputProps {
@@ -27,6 +29,27 @@ export function NewTaskInput({
     if (!trimmed) return;
 
     setLoading(true);
+    setTitle("");
+
+    const optimisticTask: TaskDTO = {
+      id: createOptimisticId("task"),
+      title: trimmed,
+      description: null,
+      status: "todo",
+      priority: 1,
+      parentTaskId: parentTaskId ?? null,
+      projectId: projectId ?? null,
+      areaId: areaId ?? null,
+      userId: "optimistic",
+      dueDate: null,
+      duration: null,
+      durationUnit: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setTasks((prev) => [...prev, optimisticTask]);
+
     try {
       const createInput: {
         title: string;
@@ -39,17 +62,25 @@ export function NewTaskInput({
       if (parentTaskId) createInput.parentTaskId = parentTaskId;
 
       const task = await api.tasks.create(createInput);
-      setTasks((prev) => [...prev, task]);
-      setTitle("");
+      setTasks((prev) => {
+        const withoutOptimistic = prev.filter((item) => item.id !== optimisticTask.id);
+        if (withoutOptimistic.some((item) => item.id === task.id)) return withoutOptimistic;
+        return [...withoutOptimistic, task];
+      });
     } catch (err) {
       console.error("Failed to create task", err);
+      setTasks((prev) => prev.filter((item) => item.id !== optimisticTask.id));
+      setTitle(trimmed);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-3 border-t border-border/70 px-4 py-3">
+    <form
+      onSubmit={handleSubmit}
+      className="flex items-center gap-3 border-t border-border/70 px-4 py-3"
+    >
       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">
         <img src="/icons/plus.svg" alt="" className="h-4 w-4 opacity-60" />
       </div>

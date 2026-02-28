@@ -9,7 +9,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-10">
-      <div className="panel relative z-10 w-full max-w-5xl overflow-hidden rounded-[2rem]">
+      <div className="panel relative z-10 w-full max-w-[108rem] overflow-hidden rounded-[2rem]">
         <div className="grid min-h-[42rem] lg:grid-cols-[1.1fr_0.9fr]">
           <div className="flex flex-col justify-between bg-primary px-8 py-8 text-primary-foreground lg:px-10 lg:py-10">
             <div className="flex items-center justify-between gap-4">
@@ -17,7 +17,7 @@ export default function LoginPage() {
                 <p className="text-[0.74rem] font-semibold uppercase tracking-[0.34em] text-primary-foreground/65">
                   Kairos
                 </p>
-                <h1 className="mt-3 max-w-md text-4xl font-semibold tracking-tight lg:text-5xl">
+                <h1 className="mt-3 max-w-[34rem] text-4xl font-semibold tracking-tight lg:text-5xl">
                   Shape work with a calmer system.
                 </h1>
               </div>
@@ -34,7 +34,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-center justify-center px-6 py-8 lg:px-10">
-            <div className="w-full max-w-sm space-y-6">
+            <div className="w-full max-w-[34rem] space-y-6">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
                   Sign in

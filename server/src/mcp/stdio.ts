@@ -1,5 +1,5 @@
-import "dotenv/config";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import "dotenv/config";
 import { createKairosMcpServer } from "./kairosMcpServer.js";
 
 const server = createKairosMcpServer();

@@ -1,16 +1,14 @@
-import { useAtomValue, useSetAtom } from "jotai";
-import { useState } from "react";
+import { useSetAtom } from "jotai";
 import { useNavigate } from "react-router-dom";
-import type { ProjectDTO } from "@kairos/shared";
+import { useState } from "react";
+import type { AreaDTO } from "@kairos/shared";
 import { areasAtom } from "../atoms/areas.js";
-import { projectsAtom } from "../atoms/projects.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
 import { Button, type ButtonProps } from "./ui/button.js";
 import { PlusIcon } from "./ui/icons.js";
 import { Input } from "./ui/input.js";
 import { Label } from "./ui/label.js";
-import { Select } from "./ui/select.js";
 import {
   Dialog,
   DialogContent,
@@ -20,69 +18,62 @@ import {
   DialogTitle,
 } from "./ui/dialog.js";
 
-interface CreateProjectButtonProps {
+interface CreateAreaButtonProps {
   label: string;
   className?: string;
-  areaId?: string;
-  navigateToProject?: boolean;
+  navigateToArea?: boolean;
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
 }
 
-export function CreateProjectButton({
+export function CreateAreaButton({
   label,
   className,
-  areaId,
-  navigateToProject = false,
+  navigateToArea = false,
   variant = "ghost",
   size = "default",
-}: CreateProjectButtonProps) {
-  const areas = useAtomValue(areasAtom);
-  const setProjects = useSetAtom(projectsAtom);
+}: CreateAreaButtonProps) {
+  const setAreas = useSetAtom(areasAtom);
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [selectedAreaId, setSelectedAreaId] = useState(areaId ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleCreateProject = async () => {
+  const handleCreateArea = async () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      setError("Project name is required");
+      setError("Area name is required");
       return;
     }
 
     setLoading(true);
     setError(null);
-    const nextAreaId = areaId ?? (selectedAreaId || undefined);
-    const optimisticProject: ProjectDTO = {
-      id: createOptimisticId("project"),
+    const optimisticArea: AreaDTO = {
+      id: createOptimisticId("area"),
       name: trimmed,
-      areaId: nextAreaId ?? null,
       userId: "optimistic",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    setProjects((prev) => [...prev, optimisticProject]);
+    setAreas((prev) => [...prev, optimisticArea]);
 
     try {
-      const project = await api.projects.create(trimmed, nextAreaId);
-      setProjects((prev) => {
-        const withoutOptimistic = prev.filter((item) => item.id !== optimisticProject.id);
-        if (withoutOptimistic.some((item) => item.id === project.id)) return withoutOptimistic;
-        return [...withoutOptimistic, project];
+      const area = await api.areas.create(trimmed);
+      setAreas((prev) => {
+        const withoutOptimistic = prev.filter((item) => item.id !== optimisticArea.id);
+        if (withoutOptimistic.some((item) => item.id === area.id)) return withoutOptimistic;
+        return [...withoutOptimistic, area];
       });
       setOpen(false);
       setName("");
-      setSelectedAreaId(areaId ?? "");
-      if (navigateToProject) {
-        navigate(`/project/${project.id}`);
+      if (navigateToArea) {
+        navigate(`/area/${area.id}`);
       }
     } catch (err) {
-      setProjects((prev) => prev.filter((item) => item.id !== optimisticProject.id));
-      setError(err instanceof Error ? err.message : "Failed to create project");
+      setAreas((prev) => prev.filter((item) => item.id !== optimisticArea.id));
+      setError(err instanceof Error ? err.message : "Failed to create area");
     } finally {
       setLoading(false);
     }
@@ -101,17 +92,18 @@ export function CreateProjectButton({
           setOpen(nextOpen);
           if (!nextOpen) {
             setError(null);
-            setSelectedAreaId(areaId ?? "");
           }
         }}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Project</DialogTitle>
-            <DialogDescription>Create a new project in your workspace.</DialogDescription>
+            <DialogTitle>Create Area</DialogTitle>
+            <DialogDescription>
+              Create a new area for grouping projects and direct work.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 px-4 py-4">
-            <Label>Project name</Label>
+            <Label>Area name</Label>
             <Input
               type="text"
               value={name}
@@ -119,30 +111,13 @@ export function CreateProjectButton({
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  void handleCreateProject();
+                  void handleCreateArea();
                 }
               }}
-              placeholder="e.g. Website Redesign"
+              placeholder="e.g. Product"
               disabled={loading}
               autoFocus
             />
-            {!areaId && (
-              <>
-                <Label>Area</Label>
-                <Select
-                  value={selectedAreaId}
-                  onChange={(e) => setSelectedAreaId(e.target.value)}
-                  disabled={loading}
-                >
-                  <option value="">Unassigned</option>
-                  {areas.map((area) => (
-                    <option key={area.id} value={area.id}>
-                      {area.name}
-                    </option>
-                  ))}
-                </Select>
-              </>
-            )}
             {error && <p className="text-xs text-destructive">{error}</p>}
           </div>
           <DialogFooter>
@@ -160,7 +135,7 @@ export function CreateProjectButton({
               >
                 Cancel
               </Button>
-              <Button type="button" onClick={handleCreateProject} size="sm" disabled={loading}>
+              <Button type="button" onClick={handleCreateArea} size="sm" disabled={loading}>
                 {loading ? "Creating..." : "Create"}
               </Button>
             </div>

@@ -3,6 +3,26 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+  --font-sans: "Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif;
+  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --text-xs: 1.2rem;
+  --text-xs--line-height: calc(1.8 / 1.2);
+  --text-sm: 1.4rem;
+  --text-sm--line-height: calc(2 / 1.4);
+  --text-base: 1.6rem;
+  --text-base--line-height: calc(2.4 / 1.6);
+  --text-lg: 1.8rem;
+  --text-lg--line-height: calc(2.6 / 1.8);
+  --text-xl: 2rem;
+  --text-xl--line-height: calc(2.8 / 2);
+  --text-2xl: 2.4rem;
+  --text-2xl--line-height: calc(3.2 / 2.4);
+  --text-3xl: 3rem;
+  --text-3xl--line-height: calc(3.6 / 3);
+  --text-4xl: 3.6rem;
+  --text-4xl--line-height: calc(4.2 / 3.6);
+  --text-5xl: 4.8rem;
+  --text-5xl--line-height: calc(5.4 / 4.8);
   --color-background: hsl(210 33% 99%);
   --color-foreground: hsl(222 47% 11%);
   --color-card: hsl(0 0% 100% / 0.88);
@@ -62,6 +82,10 @@
     height: 100%;
   }
 
+  html {
+    font-size: 62.5%;
+  }
+
   * {
     box-sizing: border-box;
     border-color: var(--color-border);
@@ -71,8 +95,7 @@
     margin: 0;
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-size: 62.5%;
-    font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+    font-family: var(--font-sans);
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
@@ -96,6 +119,17 @@
   select {
     font: inherit;
   }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-ring) 24%, transparent);
+  }
 }
 
 @layer utilities {
@@ -111,5 +145,26 @@
     backdrop-filter: blur(16px);
     border: 1px solid color-mix(in srgb, var(--color-border) 92%, transparent);
     box-shadow: var(--shadow-soft);
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-muted) 88%, transparent) 0%,
+      color-mix(in srgb, var(--color-accent) 84%, transparent) 50%,
+      color-mix(in srgb, var(--color-muted) 88%, transparent) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.6s linear infinite;
+  }
+
+  @keyframes skeleton-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+
+    100% {
+      background-position: -200% 0;
+    }
   }
 }

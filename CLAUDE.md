@@ -7,6 +7,7 @@ This file contains the full project specification, architecture decisions, and d
 ## Project Overview
 
 A self-hosted, open-source task management application to replace Todoist. Key differentiators:
+
 - No subscription fees
 - Built-in MCP server (AI-accessible via Claude)
 - Gantt chart with dependency tracking
@@ -17,6 +18,7 @@ A self-hosted, open-source task management application to replace Todoist. Key d
 ## Tech Stack
 
 ### Backend
+
 - **Runtime:** Node.js
 - **Framework:** Fastify + TypeScript
 - **Database:** Supabase (PostgreSQL + Auth)
@@ -25,6 +27,7 @@ A self-hosted, open-source task management application to replace Todoist. Key d
 - **Deploy:** Fly.io
 
 ### Frontend
+
 - **Framework:** React + TypeScript
 - **State:** Jotai
 - **UI Kit:** shadcn/ui + Tailwind CSS
@@ -33,6 +36,7 @@ A self-hosted, open-source task management application to replace Todoist. Key d
 - **Deploy:** Netlify
 
 ### Testing & Design
+
 - **Test runner:** Vitest
 - **Methodology:** TDD (Test-Driven Development)
 - **Architecture:** Domain-Driven Design (DDD)
@@ -70,27 +74,32 @@ A self-hosted, open-source task management application to replace Todoist. Key d
 ### Entities
 
 #### Area
+
 - Top-level organizational container (e.g. Home, Work, Personal)
 - Projects and Tasks can belong to an Area
 - A project can be unassigned (no area) but cannot be in the Inbox
 
 #### Project
+
 - Belongs to an **Area**, or is **unassigned** (no area)
 - Projects do **not** go to Inbox — only Tasks do
 - Contains first-level Tasks only (no nested projects)
 - Can be demoted to a Task (see rules below)
 
 #### Task
+
 - Belongs to one of: **Inbox**, **Area**, or **Project** — never more than one
 - Can have **Subtasks** (one level deep only)
 - Can be promoted to a Project (see rules below)
 
 #### Subtask
+
 - A child of a Task
 - **Hard domain rule: Subtasks cannot have children** — enforced at domain level, not just UI
 - Attempting to add a child to a subtask throws a domain error
 
 #### Inbox
+
 - Holds Tasks that have not been assigned to an Area or Project
 - Only Tasks can be in the Inbox (not Projects)
 
@@ -99,35 +108,41 @@ A self-hosted, open-source task management application to replace Todoist. Key d
 ## Domain Rules
 
 ### Ownership (Exclusive)
+
 - A Task belongs to exactly one of: Inbox, Area, or Project
 - A Project belongs to an Area, or is unassigned — never Inbox
 - These are mutually exclusive — no entity can belong to multiple containers
 
 ### Subtask Depth
+
 - Tasks can have Subtasks (depth = 1)
 - Subtasks cannot have children (depth limit = 1, hard rule)
 - This is enforced at the domain layer
 
 ### Task → Project Promotion
+
 - A Task is promoted to a Project
 - Its Subtasks become first-level Tasks of the new Project
 - The promoted Task inherits its Area (if any)
 
 ### Project → Task Demotion
+
 - A Project can only be demoted to a Task if **none of its Tasks have Subtasks**
 - If any Task within the Project has Subtasks, demotion is **blocked** at the domain level (throws a domain error)
 - If demotion is allowed, the Project's Tasks become Subtasks of the new Task
 
 ### Links (Dependencies)
+
 Links connect Tasks, Subtasks, and Projects to each other for Gantt dependency tracking.
 
-| Link Type    | Inverse       | Bidirectional? |
-|--------------|---------------|----------------|
-| `blocks`     | `blocked_by`  | Yes — auto-creates inverse |
-| `blocked_by` | `blocks`      | Yes — auto-creates inverse |
-| `related_to` | `related_to`  | Yes — symmetric, auto-creates inverse |
+| Link Type    | Inverse      | Bidirectional?                        |
+| ------------ | ------------ | ------------------------------------- |
+| `blocks`     | `blocked_by` | Yes — auto-creates inverse            |
+| `blocked_by` | `blocks`     | Yes — auto-creates inverse            |
+| `related_to` | `related_to` | Yes — symmetric, auto-creates inverse |
 
 **Link rules:**
+
 - Creating a `blocks` link auto-creates the corresponding `blocked_by` link and vice versa
 - `related_to` is symmetric — creating it in one direction auto-creates it in the other
 - **Self-links are forbidden** at the domain level (a task/project cannot link to itself)
@@ -167,6 +182,7 @@ MCP ←→  Application Layer → DB changes → WebSocket broadcast → UI upda
 ## Phases
 
 ### Phase 1 — Foundation
+
 - [ ] Supabase schema (areas, projects, tasks, subtasks, links)
 - [ ] Shared domain primitives (Entity, ValueObject, DomainEvent, Result)
 - [ ] Task aggregate + tests
@@ -182,6 +198,7 @@ MCP ←→  Application Layer → DB changes → WebSocket broadcast → UI upda
 - [ ] Supabase Auth integration (frontend + backend)
 
 ### Phase 2 — Enhanced UI + Additional Features
+
 - [ ] Gantt chart with dependency visualization (using Links)
 - [ ] Drag and drop
 - [ ] Keyboard shortcuts

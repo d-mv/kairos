@@ -23,11 +23,21 @@ export function TaskItem({ task, isSubtask = false }: TaskItemProps) {
 
   const handleComplete = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    const previousTask = task;
+    const optimisticTask: TaskDTO = {
+      ...task,
+      status: task.status === "done" ? "todo" : "done",
+      updatedAt: new Date().toISOString(),
+    };
+
+    setTasks((prev) => prev.map((t) => (t.id === task.id ? optimisticTask : t)));
+
     try {
       const updated = await api.tasks.complete(task.id);
       setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
     } catch (err) {
       console.error("Failed to complete task", err);
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? previousTask : t)));
     }
   };
 
@@ -51,7 +61,9 @@ export function TaskItem({ task, isSubtask = false }: TaskItemProps) {
         }`}
         title={isDone ? "Completed" : "Mark complete"}
       >
-        {isDone && <img src="/icons/check.svg" alt="" className="h-full w-full p-1 invert dark:invert-0" />}
+        {isDone && (
+          <img src="/icons/check.svg" alt="" className="h-full w-full p-1 invert dark:invert-0" />
+        )}
       </Button>
 
       {/* Priority dot */}
@@ -69,12 +81,12 @@ export function TaskItem({ task, isSubtask = false }: TaskItemProps) {
       </span>
 
       {task.dueDate && (
-        <span className="rounded-full bg-muted px-2.5 py-1 text-[1.1rem] leading-none text-muted-foreground">
+        <span className="rounded-full bg-muted px-[1rem] py-[0.6rem] text-[1.1rem] leading-none text-muted-foreground">
           {task.dueDate}
         </span>
       )}
       {task.duration && task.durationUnit && (
-        <span className="rounded-full bg-muted px-2.5 py-1 text-[1.1rem] leading-none text-muted-foreground">
+        <span className="rounded-full bg-muted px-[1rem] py-[0.6rem] text-[1.1rem] leading-none text-muted-foreground">
           {task.duration}
           {task.durationUnit}
         </span>

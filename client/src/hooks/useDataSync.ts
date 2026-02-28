@@ -3,6 +3,12 @@ import { useSetAtom, useAtomValue } from "jotai";
 import { areasAtom } from "../atoms/areas.js";
 import { projectsAtom } from "../atoms/projects.js";
 import { tasksAtom } from "../atoms/tasks.js";
+import {
+  workspaceErrorAtom,
+  workspaceLoadingAtom,
+  workspaceReadyAtom,
+  workspaceReloadAtom,
+} from "../atoms/workspace.js";
 import { lastWsEventAtom } from "../atoms/ws.js";
 import { api } from "../lib/api.js";
 
@@ -14,16 +20,60 @@ export function useDataSync() {
   const setAreas = useSetAtom(areasAtom);
   const setProjects = useSetAtom(projectsAtom);
   const setTasks = useSetAtom(tasksAtom);
+  const setWorkspaceError = useSetAtom(workspaceErrorAtom);
+  const setWorkspaceLoading = useSetAtom(workspaceLoadingAtom);
+  const setWorkspaceReady = useSetAtom(workspaceReadyAtom);
+  const reloadTick = useAtomValue(workspaceReloadAtom);
   const lastEvent = useAtomValue(lastWsEventAtom);
 
-  // Initial load
   useEffect(() => {
-    api.areas.list().then(setAreas).catch(console.error);
-    api.projects.list().then(setProjects).catch(console.error);
-    api.tasks.list().then(setTasks).catch(console.error);
-  }, [setAreas, setProjects, setTasks]);
+    let cancelled = false;
 
-  // Apply WebSocket patches
+    const loadWorkspace = async () => {
+      setWorkspaceLoading(true);
+      setWorkspaceReady(false);
+      setWorkspaceError(null);
+
+      try {
+        const [areas, projects, tasks] = await Promise.all([
+          api.areas.list(),
+          api.projects.list(),
+          api.tasks.list(),
+        ]);
+
+        if (cancelled) return;
+
+        setAreas(areas);
+        setProjects(projects);
+        setTasks(tasks);
+        setWorkspaceReady(true);
+      } catch (error) {
+        if (!cancelled) {
+          console.error(error);
+          setWorkspaceError(error instanceof Error ? error.message : "Failed to load workspace");
+        }
+      } finally {
+        if (!cancelled) {
+          setWorkspaceLoading(false);
+        }
+      }
+    };
+
+    void loadWorkspace();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    reloadTick,
+    setAreas,
+    setProjects,
+    setTasks,
+    setWorkspaceError,
+    setWorkspaceLoading,
+    setWorkspaceReady,
+  ]);
+
   useEffect(() => {
     if (!lastEvent) return;
 
