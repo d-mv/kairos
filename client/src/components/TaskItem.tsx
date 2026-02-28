@@ -4,6 +4,7 @@ import { selectedTaskIdAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
 import { tasksAtom } from "../atoms/tasks.js";
 import { Button } from "./ui/button.js";
+import { CheckIcon } from "./ui/icons.js";
 
 interface TaskItemProps {
   task: TaskDTO;
@@ -61,9 +62,7 @@ export function TaskItem({ task, isSubtask = false }: TaskItemProps) {
         }`}
         title={isDone ? "Completed" : "Mark complete"}
       >
-        {isDone && (
-          <img src="/icons/check.svg" alt="" className="h-full w-full p-1 invert dark:invert-0" />
-        )}
+        {isDone && <CheckIcon size={12} />}
       </Button>
 
       {/* Priority dot */}

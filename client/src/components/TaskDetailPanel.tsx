@@ -25,6 +25,7 @@ export function TaskDetailPanel() {
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const lastSyncedRef = useRef("");
   const savedIndicatorTimeoutRef = useRef<number | null>(null);
+  const selectedTaskIdRef = useRef<string | null>(null);
 
   const serializeTaskState = (value: {
     title: string;
@@ -45,13 +46,17 @@ export function TaskDetailPanel() {
 
   useEffect(() => {
     if (task) {
+      const taskChanged = selectedTaskIdRef.current !== task.id;
+      selectedTaskIdRef.current = task.id;
       setTitle(task.title);
       setDescription(task.description ?? "");
       setPriority(task.priority);
       setDueDate(task.dueDate ?? "");
       setDuration(task.duration ? String(task.duration) : "");
       setDurationUnit(task.durationUnit ?? "");
-      setSaveState("idle");
+      if (taskChanged) {
+        setSaveState("idle");
+      }
       lastSyncedRef.current = serializeTaskState({
         title: task.title,
         description: task.description ?? "",
@@ -60,6 +65,8 @@ export function TaskDetailPanel() {
         duration: task.duration ? String(task.duration) : "",
         durationUnit: task.durationUnit ?? "",
       });
+    } else {
+      selectedTaskIdRef.current = null;
     }
   }, [task]);
 

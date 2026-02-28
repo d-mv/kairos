@@ -5,6 +5,7 @@ import { tasksAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
 import { Input } from "./ui/input.js";
+import { PlusIcon } from "./ui/icons.js";
 
 interface NewTaskInputProps {
   projectId?: string;
@@ -81,8 +82,8 @@ export function NewTaskInput({
       onSubmit={handleSubmit}
       className="flex items-center gap-3 border-t border-border/70 px-4 py-3"
     >
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">
-        <img src="/icons/plus.svg" alt="" className="h-4 w-4 opacity-60" />
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-foreground/60">
+        <PlusIcon size={16} />
       </div>
       <Input
         type="text"

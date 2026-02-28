@@ -13,7 +13,7 @@ import { projectsAtom } from "../atoms/projects.js";
 import { tasksAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
 import { Button } from "../components/ui/button.js";
-import { TrashIcon } from "../components/ui/icons.js";
+import { ClipboardListIcon, TrashIcon } from "../components/ui/icons.js";
 import { useState } from "react";
 
 export default function AreaPage() {
@@ -159,7 +159,7 @@ export default function AreaPage() {
   return (
     <div className="flex h-full flex-1">
       <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[45rem]" : ""}`}>
-        <div className="mx-auto max-w-[72rem] px-5 py-8 sm:px-6 sm:py-[4rem]">
+        <div className="mx-auto max-w-[72rem] px-[2.4rem] py-[4rem] sm:px-[3.2rem] sm:py-[4.8rem]">
           <div className="mb-8 flex flex-col gap-4 sm:items-start sm:justify-between lg:flex-row">
             <div>
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
@@ -232,12 +232,8 @@ export default function AreaPage() {
                           to={`/project/${project.id}`}
                           className="flex min-w-0 flex-1 items-center gap-3 transition-colors hover:text-accent-foreground"
                         >
-                          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent">
-                            <img
-                              src="/icons/clipboard-document-list.svg"
-                              alt=""
-                              className="h-4 w-4 opacity-70 dark:invert dark:opacity-90"
-                            />
+                          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-foreground/70">
+                            <ClipboardListIcon size={16} />
                           </span>
                           <span className="truncate font-medium">{project.name}</span>
                         </Link>

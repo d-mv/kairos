@@ -1,6 +1,6 @@
 import type { TaskDTO } from "@kairos/shared";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { projectsAtom, projectsByAreaAtom } from "../atoms/projects.js";
@@ -13,11 +13,24 @@ import { CreateProjectButton } from "./CreateProjectButton.js";
 import { RenameEntityButton } from "./RenameEntityButton.js";
 import { ThemeToggle } from "./ThemeToggle.js";
 import { Button } from "./ui/button.js";
-import { TrashIcon } from "./ui/icons.js";
+import {
+  ClipboardListIcon,
+  FolderIcon,
+  InboxIcon,
+  LogOutIcon,
+  MenuIcon,
+  TrashIcon,
+  XIcon,
+} from "./ui/icons.js";
 
-function NavIcon({ src, alt }: { src: string; alt: string }) {
+function NavIcon({ alt, children }: { alt: string; children: React.ReactNode }) {
   return (
-    <img src={src} alt={alt} className="h-4 w-4 shrink-0 opacity-70 dark:invert dark:opacity-90" />
+    <span
+      aria-label={alt}
+      className="flex h-[1.6rem] w-[1.6rem] shrink-0 items-center justify-center opacity-70"
+    >
+      {children}
+    </span>
   );
 }
 
@@ -30,6 +43,7 @@ export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [busyProjectId, setBusyProjectId] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -38,6 +52,10 @@ export function Sidebar() {
     unassignedProjects,
     ...areas.map((area) => projectsByArea.get(area.id) ?? []),
   ].flat();
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   const handleRenameProject = async (projectId: string, name: string) => {
     const currentProject = allProjects.find((project) => project.id === projectId);
@@ -101,11 +119,11 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="mx-3 mb-0 mt-3 flex max-h-[calc(100vh-1.2rem)] min-h-0 flex-col overflow-hidden rounded-[1.6rem] border border-[var(--color-sidebar-border)] bg-[var(--color-sidebar)] text-[var(--color-sidebar-foreground)] shadow-[var(--shadow-panel)] backdrop-blur-xl lg:m-3 lg:h-[calc(100vh-1.5rem)] lg:w-[28rem]">
-      <div className="border-b border-[var(--color-sidebar-border)] px-5 py-5">
+    <aside className="mx-3 mb-0 mt-3 flex min-h-0 flex-col overflow-hidden rounded-[1.6rem] border border-[var(--color-sidebar-border)] bg-[var(--color-sidebar)] text-[var(--color-sidebar-foreground)] shadow-[var(--shadow-panel)] backdrop-blur-xl lg:m-3 lg:h-[calc(100vh-1.5rem)] lg:max-h-[calc(100vh-1.5rem)] lg:w-[28rem]">
+      <div className="border-b border-[var(--color-sidebar-border)] px-6 py-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[0.95rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+            <p className="text-[1.1rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
               Workspace
             </p>
             <h1 className="mt-2 text-[2.4rem] font-semibold tracking-tight">Kairos</h1>
@@ -113,11 +131,25 @@ export function Sidebar() {
               Tasks, projects, and timing in one place.
             </p>
           </div>
-          <ThemeToggle className="shrink-0" />
+          <div className="flex items-center gap-2">
+            <ThemeToggle className="shrink-0" />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="shrink-0 lg:hidden"
+              onClick={() => setMobileOpen((current) => !current)}
+              aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+            >
+              {mobileOpen ? <XIcon size={16} /> : <MenuIcon size={16} />}
+            </Button>
+          </div>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+      <nav
+        className={`${mobileOpen ? "block flex-1" : "hidden"} space-y-5 overflow-y-auto px-3 py-5 lg:block lg:flex-1`}
+      >
         {isLoading ? (
           <>
             <div className="skeleton h-[4.6rem] rounded-2xl" />
@@ -144,7 +176,9 @@ export function Sidebar() {
                   : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
               }`}
             >
-              <NavIcon src="/icons/inbox.svg" alt="Inbox" />
+              <NavIcon alt="Inbox">
+                <InboxIcon size={16} />
+              </NavIcon>
               <span>Inbox</span>
             </Link>
 
@@ -175,7 +209,9 @@ export function Sidebar() {
                       to={`/project/${project.id}`}
                       className="flex min-w-0 flex-1 items-center gap-3 rounded-[1.2rem] px-2 py-2 text-sm transition-colors"
                     >
-                      <NavIcon src="/icons/clipboard-document-list.svg" alt="Project" />
+                      <NavIcon alt="Project">
+                        <ClipboardListIcon size={16} />
+                      </NavIcon>
                       <span className="truncate">{project.name}</span>
                     </Link>
                     <div className="flex shrink-0 items-center gap-2">
@@ -231,7 +267,9 @@ export function Sidebar() {
                             : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
                         }`}
                       >
-                        <NavIcon src="/icons/folder.svg" alt="Area" />
+                        <NavIcon alt="Area">
+                          <FolderIcon size={16} />
+                        </NavIcon>
                         <span className="truncate">{area.name}</span>
                       </Link>
 
@@ -249,7 +287,9 @@ export function Sidebar() {
                               to={`/project/${project.id}`}
                               className="flex min-w-0 flex-1 items-center gap-3 rounded-[1.2rem] px-2 py-2 text-sm transition-colors"
                             >
-                              <NavIcon src="/icons/clipboard-document-list.svg" alt="Project" />
+                              <NavIcon alt="Project">
+                                <ClipboardListIcon size={16} />
+                              </NavIcon>
                               <span className="truncate">{project.name}</span>
                             </Link>
                             <div className="flex shrink-0 items-center gap-2">
@@ -307,13 +347,17 @@ export function Sidebar() {
         )}
       </nav>
 
-      <div className="border-t border-[var(--color-sidebar-border)] p-4">
+      <div
+        className={`${mobileOpen ? "block" : "hidden"} border-t border-[var(--color-sidebar-border)] p-4 lg:block`}
+      >
         <Button
           onClick={() => supabase.auth.signOut()}
           variant="ghost"
           className="w-full justify-start rounded-2xl px-4 py-3 text-sm"
         >
-          <NavIcon src="/icons/arrow-right-on-rectangle.svg" alt="" />
+          <NavIcon alt="Sign out">
+            <LogOutIcon size={16} />
+          </NavIcon>
           Sign out
         </Button>
       </div>

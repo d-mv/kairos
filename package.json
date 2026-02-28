@@ -11,6 +11,7 @@
     "build": "pnpm --filter shared build && pnpm --filter server build && pnpm --filter client build",
     "test": "pnpm --filter server test",
     "test:watch": "pnpm --filter server test:watch",
+    "test:ui": "node scripts/run-ui-regression.mjs",
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
     "format:check": "pnpm -r format:check",
@@ -23,6 +24,7 @@
     "oxfmt": "^0.35.0",
     "oxlint": "^1.50.0",
     "pg": "^8.13.1",
+    "playwright": "^1.58.2",
     "typescript": "^5.8.3"
   },
   "pnpm": {
