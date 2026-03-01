@@ -10,7 +10,8 @@ import type {
   EntityType,
 } from "@kairos/shared";
 
-const BASE = "/api/v1";
+const apiOrigin = (import.meta.env["VITE_API_URL"] as string | undefined)?.replace(/\/$/, "") ?? "";
+const BASE = `${apiOrigin}/api/v1`;
 
 async function getAuthHeader(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession();
