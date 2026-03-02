@@ -14,7 +14,7 @@ import { Button } from "../components/ui/button.js";
 import { RenameEntityButton } from "../components/RenameEntityButton.js";
 import { Select } from "../components/ui/select.js";
 import { TrashIcon } from "../components/ui/icons.js";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ProjectPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +30,25 @@ export default function ProjectPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [moveLoading, setMoveLoading] = useState(false);
   const [actionState, setActionState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const actionResetTimeoutRef = useRef<number | null>(null);
+
+  const scheduleActionReset = () => {
+    if (actionResetTimeoutRef.current) {
+      window.clearTimeout(actionResetTimeoutRef.current);
+    }
+    actionResetTimeoutRef.current = window.setTimeout(() => {
+      setActionState("idle");
+      actionResetTimeoutRef.current = null;
+    }, 1500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (actionResetTimeoutRef.current) {
+        window.clearTimeout(actionResetTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const project = projects.find((p) => p.id === id);
   const tasks = id ? (tasksByProject.get(id) ?? []) : [];
@@ -73,7 +92,7 @@ export default function ProjectPage() {
       throw err instanceof Error ? err : new Error("Failed to rename project");
     } finally {
       setRenameLoading(false);
-      window.setTimeout(() => setActionState("idle"), 1500);
+      scheduleActionReset();
     }
   };
 
@@ -135,7 +154,7 @@ export default function ProjectPage() {
       window.alert(err instanceof Error ? err.message : "Failed to move project");
     } finally {
       setMoveLoading(false);
-      window.setTimeout(() => setActionState("idle"), 1500);
+      scheduleActionReset();
     }
   };
 

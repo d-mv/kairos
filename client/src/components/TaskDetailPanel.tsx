@@ -4,6 +4,7 @@ import type { TaskDurationUnit, TaskPriority } from "@kairos/shared";
 import { selectedTaskIdAtom, selectedTaskAtom, tasksAtom } from "../atoms/tasks.js";
 import { SubtaskList } from "./SubtaskList.js";
 import { api } from "../lib/api.js";
+import { getTaskErrorMessage } from "../lib/task-errors.js";
 import { Button } from "./ui/button.js";
 import { TrashIcon, XIcon } from "./ui/icons.js";
 import { Input } from "./ui/input.js";
@@ -21,8 +22,8 @@ export function TaskDetailPanel() {
   const [dueDate, setDueDate] = useState("");
   const [duration, setDuration] = useState("");
   const [durationUnit, setDurationUnit] = useState<TaskDurationUnit | "">("");
-  const [_saving, setSaving] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
   const lastSyncedRef = useRef("");
   const savedIndicatorTimeoutRef = useRef<number | null>(null);
   const selectedTaskIdRef = useRef<string | null>(null);
@@ -56,6 +57,7 @@ export function TaskDetailPanel() {
       setDurationUnit(task.durationUnit ?? "");
       if (taskChanged) {
         setSaveState("idle");
+        setSaveError(null);
       }
       lastSyncedRef.current = serializeTaskState({
         title: task.title,
@@ -119,11 +121,12 @@ export function TaskDetailPanel() {
         window.alert("Set both duration and duration unit, or leave both empty");
       }
       setSaveState("error");
+      setSaveError("Set both duration and duration unit, or leave both empty");
       return;
     }
 
-    setSaving(true);
     setSaveState("saving");
+    setSaveError(null);
     const previousTask = task;
     const previousSnapshot = lastSyncedRef.current;
     lastSyncedRef.current = nextSnapshot;
@@ -151,6 +154,7 @@ export function TaskDetailPanel() {
       });
       setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
       setSaveState("saved");
+      setSaveError(null);
       if (savedIndicatorTimeoutRef.current) {
         window.clearTimeout(savedIndicatorTimeoutRef.current);
       }
@@ -158,12 +162,12 @@ export function TaskDetailPanel() {
         setSaveState("idle");
       }, 1500);
     } catch (err) {
+      const message = getTaskErrorMessage(err, "Failed to update task");
       console.error("Failed to update task", err);
       lastSyncedRef.current = previousSnapshot;
       setSaveState("error");
+      setSaveError(message);
       setTasks((prev) => prev.map((t) => (t.id === task.id ? previousTask : t)));
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -206,6 +210,7 @@ export function TaskDetailPanel() {
     try {
       await api.tasks.delete(task.id);
     } catch (err) {
+      const message = getTaskErrorMessage(err, "Failed to delete task");
       console.error("Failed to delete task", err);
       setTasks((prev) => {
         const existingIds = new Set(prev.map((t) => t.id));
@@ -213,6 +218,7 @@ export function TaskDetailPanel() {
         return [...prev, ...restored];
       });
       setSelectedTaskId(task.id);
+      window.alert(message);
     }
   };
 
@@ -274,6 +280,7 @@ export function TaskDetailPanel() {
             onBlur={handleSave}
             className="h-auto border-none bg-transparent px-0 py-1 text-lg font-semibold shadow-none focus-visible:ring-0"
           />
+          {saveError ? <p className="mt-2 text-xs text-destructive">{saveError}</p> : null}
         </div>
 
         <div className="soft-panel rounded-[1.4rem] p-4">

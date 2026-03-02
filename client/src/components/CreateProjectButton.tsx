@@ -6,7 +6,8 @@ import { areasAtom } from "../atoms/areas.js";
 import { projectsAtom } from "../atoms/projects.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
-import { Button } from "./ui/button.js";
+import { cn } from "../lib/utils.js";
+import { Button, type ButtonProps } from "./ui/button.js";
 import {
   Dialog,
   DialogContent,
@@ -20,21 +21,21 @@ import { Label } from "./ui/label.js";
 import { Select } from "./ui/select.js";
 
 interface CreateProjectButtonProps {
-  // label: string;
-  // className?: string;
+  label?: string;
+  className?: string;
   areaId?: string;
   navigateToProject?: boolean;
-  // variant?: ButtonProps["variant"];
-  // size?: ButtonProps["size"];
+  variant?: ButtonProps["variant"];
+  size?: ButtonProps["size"];
 }
 
 export function CreateProjectButton({
-  // label,
-  // className,
+  label = "New project",
+  className,
   areaId,
   navigateToProject = false,
-  // variant = "ghost",
-  // size = "default",
+  variant = "ghost",
+  size = "default",
 }: CreateProjectButtonProps) {
   const areas = useAtomValue(areasAtom);
   const setProjects = useSetAtom(projectsAtom);
@@ -89,12 +90,18 @@ export function CreateProjectButton({
 
   return (
     <>
-      <button
+      <Button
+        type="button"
         onClick={() => setOpen(true)}
-        className="w-full flex items-center gap-3 justify-start rounded-2xl pie-3 py-4 text-left text-sm"
+        variant={variant}
+        size={size}
+        className={cn(
+          "w-full justify-start rounded-2xl px-4 py-3 text-left text-sm",
+          className,
+        )}
       >
-        <span>+ New project</span>
-      </button>
+        {label}
+      </Button>
       <Dialog
         open={open}
         onOpenChange={(nextOpen) => {

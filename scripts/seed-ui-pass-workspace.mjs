@@ -11,6 +11,7 @@ if (!email || !password) {
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const apiBaseUrl = process.env.KAIROS_API_BASE_URL ?? "http://127.0.0.1:3000";
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
@@ -37,7 +38,7 @@ if (!token) {
 }
 
 const api = async (path, method, body) => {
-  const response = await fetch(`http://127.0.0.1:3000/api/v1${path}`, {
+  const response = await fetch(`${apiBaseUrl}/api/v1${path}`, {
     method,
     headers: {
       Authorization: `Bearer ${token}`,

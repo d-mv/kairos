@@ -8,9 +8,9 @@ import { tasksAtom } from "./atoms/tasks.js";
 import { workspaceErrorAtom, workspaceLoadingAtom, workspaceReadyAtom } from "./atoms/workspace.js";
 import { lastWsEventAtom } from "./atoms/ws.js";
 import { AppLayout } from "./components/AppLayout.js";
+import { resolveInitialSession } from "./lib/auth-bootstrap.js";
 import { supabase } from "./lib/supabase.js";
 import { wsClient } from "./lib/ws.js";
-import { useAppState } from "./useAppState.js";
 
 const LoginPage = lazy(() => import("./pages/LoginPage.js"));
 const InboxPage = lazy(() => import("./pages/InboxPage.js"));
@@ -39,13 +39,17 @@ export default function App() {
   const setWorkspaceError = useSetAtom(workspaceErrorAtom);
   const [authResolved, setAuthResolved] = useState(false);
 
-  useAppState();
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setAuthResolved(true);
-    });
+    resolveInitialSession(
+      () => supabase.auth.getSession(),
+      (error) => console.error("Failed to resolve auth session", error),
+    )
+      .then((nextSession) => {
+        setSession(nextSession);
+      })
+      .finally(() => {
+        setAuthResolved(true);
+      });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);

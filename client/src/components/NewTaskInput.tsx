@@ -4,6 +4,7 @@ import type { TaskDTO } from "@kairos/shared";
 import { tasksAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
+import { getTaskErrorMessage } from "../lib/task-errors.js";
 import { Input } from "./ui/input.js";
 import { PlusIcon } from "./ui/icons.js";
 
@@ -22,6 +23,7 @@ export function NewTaskInput({
 }: NewTaskInputProps) {
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const setTasks = useSetAtom(tasksAtom);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,6 +32,7 @@ export function NewTaskInput({
     if (!trimmed) return;
 
     setLoading(true);
+    setError(null);
     setTitle("");
 
     const optimisticTask: TaskDTO = {
@@ -69,30 +72,35 @@ export function NewTaskInput({
         return [...withoutOptimistic, task];
       });
     } catch (err) {
+      const message = getTaskErrorMessage(err, "Failed to create task");
       console.error("Failed to create task", err);
       setTasks((prev) => prev.filter((item) => item.id !== optimisticTask.id));
       setTitle(trimmed);
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex items-center gap-3 border-t border-border/70 px-4 py-3"
-    >
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-foreground/60">
-        <PlusIcon size={16} />
-      </div>
-      <Input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder={placeholder}
-        disabled={loading}
-        className="h-auto flex-1 border-none bg-transparent px-0 py-0 text-sm shadow-none focus-visible:ring-0"
-      />
-    </form>
+    <div className="border-t border-border/70 px-4 py-3">
+      <form onSubmit={handleSubmit} className="flex items-center gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-foreground/60">
+          <PlusIcon size={16} />
+        </div>
+        <Input
+          type="text"
+          value={title}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (error) setError(null);
+          }}
+          placeholder={placeholder}
+          disabled={loading}
+          className="h-auto flex-1 border-none bg-transparent px-0 py-0 text-sm shadow-none focus-visible:ring-0"
+        />
+      </form>
+      {error ? <p className="mt-2 text-xs text-destructive">{error}</p> : null}
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import { useSetAtom } from "jotai";
 import type { TaskDTO } from "@kairos/shared";
 import { selectedTaskIdAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
+import { getTaskErrorMessage } from "../lib/task-errors.js";
 import { tasksAtom } from "../atoms/tasks.js";
 import { Button } from "./ui/button.js";
 import { CheckIcon } from "./ui/icons.js";
@@ -37,8 +38,10 @@ export function TaskItem({ task, isSubtask = false }: TaskItemProps) {
       const updated = await api.tasks.complete(task.id);
       setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
     } catch (err) {
+      const message = getTaskErrorMessage(err, "Failed to update task");
       console.error("Failed to complete task", err);
       setTasks((prev) => prev.map((t) => (t.id === task.id ? previousTask : t)));
+      window.alert(message);
     }
   };
 

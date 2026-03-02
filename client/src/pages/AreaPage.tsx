@@ -14,7 +14,7 @@ import { tasksAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
 import { Button } from "../components/ui/button.js";
 import { ClipboardListIcon, TrashIcon } from "../components/ui/icons.js";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function AreaPage() {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +31,25 @@ export default function AreaPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [busyProjectId, setBusyProjectId] = useState<string | null>(null);
   const [actionState, setActionState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const actionResetTimeoutRef = useRef<number | null>(null);
+
+  const scheduleActionReset = () => {
+    if (actionResetTimeoutRef.current) {
+      window.clearTimeout(actionResetTimeoutRef.current);
+    }
+    actionResetTimeoutRef.current = window.setTimeout(() => {
+      setActionState("idle");
+      actionResetTimeoutRef.current = null;
+    }, 1500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (actionResetTimeoutRef.current) {
+        window.clearTimeout(actionResetTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const area = areas.find((a) => a.id === id);
   const projects = id ? (projectsByArea.get(id) ?? []) : [];
@@ -62,7 +81,7 @@ export default function AreaPage() {
       throw err instanceof Error ? err : new Error("Failed to rename area");
     } finally {
       setRenameLoading(false);
-      window.setTimeout(() => setActionState("idle"), 1500);
+      scheduleActionReset();
     }
   };
 

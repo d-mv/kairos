@@ -6,6 +6,7 @@
   "scripts": {
     "predev": "pnpm --filter @kairos/shared build",
     "dev": "vite",
+    "test": "../server/node_modules/.bin/tsx --test src/**/*.test.ts",
     "prebuild": "pnpm --filter @kairos/shared build",
     "build": "tsc && vite build",
     "preview": "vite preview",

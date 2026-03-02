@@ -1,9 +1,8 @@
 import { ProjectDTO } from "@kairos/shared";
 import clsx from "clsx";
 import { useSetAtom } from "jotai";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { renameEntityAtom } from "../atoms/renameEntity.atom";
-import { isActive } from "../lib/utils";
 import { ProjectIndent } from "./ProjectIndent";
 import { Button } from "./ui/button";
 
@@ -17,6 +16,17 @@ type Props = {
 export function ProjectItem({ project, isLast, busyProjectId, handleDeleteProject }: Props) {
   const setRenameEntityDialog = useSetAtom(renameEntityAtom);
 
+  const location = useLocation();
+
+  function handleRename() {
+    setRenameEntityDialog({
+      entityId: project.id,
+      entityLabel: "Project",
+      currentName: project.name,
+      type: "project",
+    });
+  }
+
   function renderHoverActions() {
     return (
       <div className="shrink-0 items-center gap-2 hidden group-hover:flex text-xs font-light group-hover:bg-accent">
@@ -27,14 +37,7 @@ export function ProjectItem({ project, isLast, busyProjectId, handleDeleteProjec
           disabled={busyProjectId === project.id}
           aria-label="Delete project"
           className="h-[3rem] w-[3rem] rounded-[1rem] text-xs font-light hover:underline underline-offset-[0.3rem] decoration-[0.1rem] cursor-pointer"
-          onClick={() => {
-            setRenameEntityDialog({
-              entityId: project.id,
-              entityLabel: "Project",
-              currentName: project.name,
-              type: "project",
-            });
-          }}
+          onClick={handleRename}
         >
           edit
         </Button>
@@ -56,7 +59,7 @@ export function ProjectItem({ project, isLast, busyProjectId, handleDeleteProjec
     );
   }
 
-  const isActiveProject = isActive(`/project/${project.id}`);
+  const isActiveProject = location.pathname === `/project/${project.id}`;
 
   const maybeActiveContainerClass = isActiveProject
     ? "text-accent-foreground font-medium"

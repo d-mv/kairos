@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
+import { cn } from "../lib/utils.js";
 import { Button, type ButtonProps } from "./ui/button.js";
 import {
   Dialog,
@@ -80,12 +81,17 @@ export function CreateAreaButton({
 
   return (
     <>
-      <button
+      <Button
+        type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-3 justify-start rounded-2xl pie-3 py-4 text-left text-sm hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
+        variant={variant}
+        size={size}
+        className={cn(
+          "justify-start rounded-2xl px-4 py-3 text-left text-sm font-light hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground",
+        )}
       >
-        + Area
-      </button>
+        + New area
+      </Button>
       <Dialog
         open={open}
         onOpenChange={(nextOpen) => {

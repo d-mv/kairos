@@ -1,9 +1,10 @@
-import { ApiKeyStatusDTO } from "@kairos/shared";
+import type { ApiKeyStatusDTO } from "@kairos/shared";
 import { useEffect, useRef, useState } from "react";
-import { api } from "../../lib/api";
-import { supabase } from "../../lib/supabase";
-import { useTheme } from "../ThemeProvider";
-import { Button } from "../ui/button";
+import { useLocation } from "react-router-dom";
+import { api } from "../../lib/api.js";
+import { supabase } from "../../lib/supabase.js";
+import { useTheme } from "../ThemeProvider.js";
+import { Button } from "../ui/button.js";
 import {
   Dialog,
   DialogContent,
@@ -11,12 +12,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { EllipsisVerticalIcon, KeyIcon } from "../ui/heroicons";
-// import { supabase } from "@supabase/auth-ui-shared";
+} from "../ui/dialog.js";
+import { EllipsisVerticalIcon, KeyIcon } from "../ui/heroicons.js";
 
 export function Menu() {
   const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
   const [apiKeyStatus, setApiKeyStatus] = useState<ApiKeyStatusDTO | null>(null);
@@ -114,7 +115,7 @@ export function Menu() {
             <EllipsisVerticalIcon className="h-5 w-5" />
           </Button>
           {menuOpen ? (
-            <div className="absolute right-0 top-[calc(100%+0.8rem)] z-20 w-[18rem] rounded-[1.2rem] border border-[var(--color-sidebar-border)] bg-background/95 p-2 text-foreground shadow-[var(--shadow-panel)] backdrop-blur-xl z-10">
+            <div className="absolute right-0 top-[calc(100%+0.8rem)] z-20 w-[18rem] rounded-[1.2rem] border border-[var(--color-sidebar-border)] bg-background/95 p-2 text-foreground shadow-[var(--shadow-panel)] backdrop-blur-xl">
               <button
                 type="button"
                 className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-3 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground"

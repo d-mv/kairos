@@ -1,6 +1,6 @@
 import type { EntityType, TaskDTO } from "@kairos/shared";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { projectsAtom, projectsByAreaAtom } from "../atoms/projects.js";
@@ -8,8 +8,7 @@ import { renameEntityAtom } from "../atoms/renameEntity.atom.js";
 import { tasksAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { api } from "../lib/api.js";
-import { CreateAreaButton } from "./CreateAreaButton.js";
-import { CreateProjectButton } from "./CreateProjectButton.js";
+import { AddNewButton } from "./AddNewButton.js";
 import { Menu } from "./Menu/Menu.js";
 import { ProjectItem } from "./ProjectItem.js";
 import { RenameEntityButton } from "./RenameEntityButton.js";
@@ -113,30 +112,38 @@ export function Sidebar() {
     }
   }
 
+  function handleAddNew() {}
+
+  function renderSkeleton() {
+    return (
+      <>
+        <div className="skeleton h-[4.6rem] rounded-2xl" />
+        <div className="space-y-2">
+          <div className="skeleton h-[1.2rem] w-[8rem] rounded-full" />
+          <div className="skeleton h-[4.4rem] rounded-2xl" />
+          <div className="skeleton h-[4.4rem] rounded-2xl" />
+        </div>
+        <div className="space-y-2">
+          <div className="skeleton h-[1.2rem] w-[6rem] rounded-full" />
+          <div className="soft-panel rounded-[1.35rem] p-2">
+            <div className="skeleton h-[4.4rem] rounded-2xl" />
+            <div className="mt-2 skeleton h-[4rem] rounded-2xl" />
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      <aside className="py-6 px-6 flex min-h-0 flex-col gap-6 text-[var(--color-sidebar-foreground)] relative">
+      <aside className="py-6 px-6 flex min-h-0 flex-col gap-6 text-[var(--color-sidebar-foreground)] relative w-[30rem]">
         <p className="text-[1.1rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
           Workspace
         </p>
         <Menu />
         <nav className={`overflow-y-auto flex flex-col gap-6`}>
           {isLoading ? (
-            <>
-              <div className="skeleton h-[4.6rem] rounded-2xl" />
-              <div className="space-y-2">
-                <div className="skeleton h-[1.2rem] w-[8rem] rounded-full" />
-                <div className="skeleton h-[4.4rem] rounded-2xl" />
-                <div className="skeleton h-[4.4rem] rounded-2xl" />
-              </div>
-              <div className="space-y-2">
-                <div className="skeleton h-[1.2rem] w-[6rem] rounded-full" />
-                <div className="soft-panel rounded-[1.35rem] p-2">
-                  <div className="skeleton h-[4.4rem] rounded-2xl" />
-                  <div className="mt-2 skeleton h-[4rem] rounded-2xl" />
-                </div>
-              </div>
-            </>
+            renderSkeleton()
           ) : (
             <>
               <Link
@@ -154,7 +161,9 @@ export function Sidebar() {
                 <div className="space-y-1">
                   <div className="flex items-center justify-between pie-3 pb-1">
                     <SectionLabel>Areas</SectionLabel>
-                    <CreateAreaButton label="Area" size="sm" className="h-7 px-2 text-[1.1rem]" />
+                    <AddNewButton type="area" label="Area">
+                      + New area
+                    </AddNewButton>
                   </div>
                   {!areas.length && (
                     <p className="mt-2 text-sm text-muted-foreground">
@@ -164,7 +173,7 @@ export function Sidebar() {
                   {areas.map((area) => {
                     const areaProjects = projectsByArea.get(area.id) ?? [];
                     return (
-                      <>
+                      <Fragment key={area.id}>
                         <Link
                           to={`/area/${area.id}`}
                           className={`flex items-center gap-3 px-3 py-2 text-sm font-semibold transition-colors ${
@@ -185,7 +194,7 @@ export function Sidebar() {
                             handleDeleteProject={handleDeleteProject}
                           />
                         ))}
-                      </>
+                      </Fragment>
                     );
                   })}
                 </div>
@@ -196,17 +205,19 @@ export function Sidebar() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     Create your first area to group related projects.
                   </p>
-                  <CreateAreaButton
-                    label="Create Area"
-                    navigateToArea
-                    className="mt-3 w-full justify-start rounded-2xl px-4 py-3 text-sm"
-                  />
+                  <AddNewButton type="project" label="Project">
+                    + New project
+                  </AddNewButton>
                 </div>
               )}
 
               <div className="space-y-1">
-                <SectionLabel>Projects</SectionLabel>
-                <CreateProjectButton navigateToProject />
+                <div className="flex items-center justify-between pie-3 pb-1">
+                  <SectionLabel>Projects</SectionLabel>
+                  <AddNewButton type="project" label="Project">
+                    + New project
+                  </AddNewButton>
+                </div>
                 {unassignedProjects.map((project) => (
                   <div
                     key={project.id}
