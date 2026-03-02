@@ -1,10 +1,11 @@
 import { ProjectDTO } from "@kairos/shared";
 import clsx from "clsx";
 import { useSetAtom } from "jotai";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { renameEntityAtom } from "../atoms/renameEntity.atom";
+import { InlineButton } from "./InlineButton";
 import { ProjectIndent } from "./ProjectIndent";
-import { Button } from "./ui/button";
+import { SidebarItem } from "./SidebarItem";
 
 type Props = {
   project: ProjectDTO;
@@ -30,55 +31,35 @@ export function ProjectItem({ project, isLast, busyProjectId, handleDeleteProjec
   function renderHoverActions() {
     return (
       <div className="shrink-0 items-center gap-2 hidden group-hover:flex text-xs font-light group-hover:bg-accent">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
+        <InlineButton
+          id={`rename-project-${project.id}`}
           disabled={busyProjectId === project.id}
-          aria-label="Delete project"
-          className="h-[3rem] w-[3rem] rounded-[1rem] text-xs font-light hover:underline underline-offset-[0.3rem] decoration-[0.1rem] cursor-pointer"
           onClick={handleRename}
         >
           edit
-        </Button>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
+        </InlineButton>
+        <InlineButton
+          id={`delete-project-${project.id}`}
           disabled={busyProjectId === project.id}
-          aria-label="Delete project"
-          className="h-[3rem] w-[3rem] rounded-[1rem] text-destructive hover:text-destructive text-xs font-light hover:underline underline-offset-[0.3rem] decoration-[0.1rem] cursor-pointer"
           onClick={() => {
             void handleDeleteProject(project.id);
           }}
+          className="text-destructive hover:text-destructive "
         >
           del
-        </Button>
+        </InlineButton>
       </div>
     );
   }
 
   const isActiveProject = location.pathname === `/project/${project.id}`;
 
-  const maybeActiveContainerClass = isActiveProject
-    ? "text-accent-foreground font-medium"
-    : "text-muted-foreground";
-
   return (
     <div
       className={clsx("group transition-colors grid grid-cols-[1rem_1fr_6rem] grid-rows-[3rem]")}
     >
       <ProjectIndent projectId={project.id} isLast={isLast} isActive={isActiveProject} />
-      <Link
-        to={`/project/${project.id}`}
-        className={clsx(
-          "flex min-w-0 flex-1 items-center gap-2 rounded-[1 rem] px-2 text-base transition-colors group-hover:bg-accent group-hover:underline underline-offset-[0.3rem] decoration-[0.1rem]",
-          maybeActiveContainerClass,
-        )}
-      >
-        <span className="truncate">{project.name}</span>
-      </Link>
+      <SidebarItem path={`/project/${project.id}`}>{project.name}</SidebarItem>
       {renderHoverActions()}
     </div>
   );

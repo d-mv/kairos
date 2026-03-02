@@ -44,7 +44,7 @@ export const eventBus = new EnrichedEventBus();
 // Use cases — Areas
 export const createArea = new CreateArea(areaRepo, eventBus);
 export const updateArea = new UpdateArea(areaRepo, eventBus);
-export const deleteArea = new DeleteArea(areaRepo, eventBus);
+export const deleteArea = new DeleteArea(areaRepo, projectRepo, taskRepo, eventBus);
 export const listAreas = new ListAreas(areaRepo);
 
 // Use cases — Projects

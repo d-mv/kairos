@@ -87,7 +87,13 @@ export default function AreaPage() {
 
   const handleDelete = async () => {
     if (!area) return;
-    if (!window.confirm(`Delete area "${area.name}"? Projects and tasks will become unassigned.`)) {
+    const hasContents = projects.length > 0 || tasks.length > 0;
+    if (
+      hasContents &&
+      !window.confirm(
+        `Delete area "${area.name}"? Projects will become unassigned and direct area tasks will move to inbox.`,
+      )
+    ) {
       return;
     }
 

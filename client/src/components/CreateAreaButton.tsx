@@ -88,9 +88,10 @@ export function CreateAreaButton({
         size={size}
         className={cn(
           "justify-start rounded-2xl px-4 py-3 text-left text-sm font-light hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground",
+          className,
         )}
       >
-        + New area
+        {label}
       </Button>
       <Dialog
         open={open}

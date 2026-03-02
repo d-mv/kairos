@@ -1,19 +1,22 @@
 import type { EntityType, TaskDTO } from "@kairos/shared";
 import { useAtomValue, useSetAtom } from "jotai";
-import { Fragment, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { projectsAtom, projectsByAreaAtom } from "../atoms/projects.js";
 import { renameEntityAtom } from "../atoms/renameEntity.atom.js";
 import { tasksAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { api } from "../lib/api.js";
+import { useIsActive } from "../lib/useIsActive.js";
 import { AddNewButton } from "./AddNewButton.js";
+import { AreaItem } from "./AreaItem.js";
 import { Menu } from "./Menu/Menu.js";
-import { ProjectItem } from "./ProjectItem.js";
 import { RenameEntityButton } from "./RenameEntityButton.js";
 import { RenameEntityDialog } from "./RenameEntityDialog.js";
 import { SectionLabel } from "./SectionLabel.js";
+import { SystemSidebarItem } from "./SystemSidebarItem.js";
+import { SYSTEM_SIDEBAR_ITEMS } from "./data.js";
 import { Button } from "./ui/button.js";
 import { ClipboardListIcon, TrashIcon } from "./ui/icons.js";
 
@@ -23,12 +26,11 @@ export function Sidebar() {
   const isLoading = useAtomValue(workspaceLoadingAtom);
   const setProjects = useSetAtom(projectsAtom);
   const setTasks = useSetAtom(tasksAtom);
-  const location = useLocation();
   const navigate = useNavigate();
   const [busyProjectId, setBusyProjectId] = useState<string | null>(null);
   const setRenameEntityState = useSetAtom(renameEntityAtom);
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = useIsActive();
 
   const unassignedProjects = projectsByArea.get(null) ?? [];
   const allProjects = [
@@ -112,8 +114,6 @@ export function Sidebar() {
     }
   }
 
-  function handleAddNew() {}
-
   function renderSkeleton() {
     return (
       <>
@@ -146,16 +146,13 @@ export function Sidebar() {
             renderSkeleton()
           ) : (
             <>
-              <Link
-                to="/inbox"
-                className={`flex items-center gap-3 rounded-2xl pie-3 text-sm font-medium transition-colors ${
-                  isActive("/inbox")
-                    ? "bg-[var(--color-sidebar-accent)] text-accent-foreground"
-                    : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
-                }`}
-              >
-                Inbox
-              </Link>
+              <div className="flex flex-col">
+                {SYSTEM_SIDEBAR_ITEMS.map((item) => (
+                  <SystemSidebarItem key={item.path} path={item.path}>
+                    {item.label}
+                  </SystemSidebarItem>
+                ))}
+              </div>
 
               {areas.length > 0 && (
                 <div className="space-y-1">
@@ -165,38 +162,14 @@ export function Sidebar() {
                       + New area
                     </AddNewButton>
                   </div>
-                  {!areas.length && (
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Create your first area to group related projects.
-                    </p>
-                  )}
-                  {areas.map((area) => {
-                    const areaProjects = projectsByArea.get(area.id) ?? [];
-                    return (
-                      <Fragment key={area.id}>
-                        <Link
-                          to={`/area/${area.id}`}
-                          className={`flex items-center gap-3 px-3 py-2 text-sm font-semibold transition-colors ${
-                            isActive(`/area/${area.id}`)
-                              ? "bg-[var(--color-sidebar-accent)] text-accent-foreground"
-                              : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
-                          }`}
-                        >
-                          <span className="truncate">{area.name}</span>
-                        </Link>
-                        <div className={"border-gray-300 border-b-[0.1rem]"} />
-                        {areaProjects.map((project, index) => (
-                          <ProjectItem
-                            key={project.id}
-                            project={project}
-                            isLast={index === areaProjects.length - 1}
-                            busyProjectId={busyProjectId}
-                            handleDeleteProject={handleDeleteProject}
-                          />
-                        ))}
-                      </Fragment>
-                    );
-                  })}
+                  {areas.map((area) => (
+                    <AreaItem
+                      key={area.id}
+                      area={area}
+                      busyProjectId={busyProjectId}
+                      handleDeleteProject={handleDeleteProject}
+                    />
+                  ))}
                 </div>
               )}
               {areas.length === 0 && (
