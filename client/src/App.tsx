@@ -1,15 +1,16 @@
-import { Suspense, lazy, useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAtom, useSetAtom } from "jotai";
-import { sessionAtom, isAuthenticatedAtom } from "./atoms/auth.js";
+import { Suspense, lazy, useEffect, useState } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { areasAtom } from "./atoms/areas.js";
+import { isAuthenticatedAtom, sessionAtom } from "./atoms/auth.js";
 import { projectsAtom } from "./atoms/projects.js";
 import { tasksAtom } from "./atoms/tasks.js";
 import { workspaceErrorAtom, workspaceLoadingAtom, workspaceReadyAtom } from "./atoms/workspace.js";
-import { supabase } from "./lib/supabase.js";
-import { wsClient } from "./lib/ws.js";
 import { lastWsEventAtom } from "./atoms/ws.js";
 import { AppLayout } from "./components/AppLayout.js";
+import { supabase } from "./lib/supabase.js";
+import { wsClient } from "./lib/ws.js";
+import { useAppState } from "./useAppState.js";
 
 const LoginPage = lazy(() => import("./pages/LoginPage.js"));
 const InboxPage = lazy(() => import("./pages/InboxPage.js"));
@@ -37,6 +38,8 @@ export default function App() {
   const setWorkspaceReady = useSetAtom(workspaceReadyAtom);
   const setWorkspaceError = useSetAtom(workspaceErrorAtom);
   const [authResolved, setAuthResolved] = useState(false);
+
+  useAppState();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {

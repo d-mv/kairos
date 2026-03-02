@@ -1,16 +1,12 @@
+import type { ProjectDTO } from "@kairos/shared";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { ProjectDTO } from "@kairos/shared";
 import { areasAtom } from "../atoms/areas.js";
 import { projectsAtom } from "../atoms/projects.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
-import { Button, type ButtonProps } from "./ui/button.js";
-import { PlusIcon } from "./ui/icons.js";
-import { Input } from "./ui/input.js";
-import { Label } from "./ui/label.js";
-import { Select } from "./ui/select.js";
+import { Button } from "./ui/button.js";
 import {
   Dialog,
   DialogContent,
@@ -19,23 +15,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog.js";
+import { Input } from "./ui/input.js";
+import { Label } from "./ui/label.js";
+import { Select } from "./ui/select.js";
 
 interface CreateProjectButtonProps {
-  label: string;
-  className?: string;
+  // label: string;
+  // className?: string;
   areaId?: string;
   navigateToProject?: boolean;
-  variant?: ButtonProps["variant"];
-  size?: ButtonProps["size"];
+  // variant?: ButtonProps["variant"];
+  // size?: ButtonProps["size"];
 }
 
 export function CreateProjectButton({
-  label,
-  className,
+  // label,
+  // className,
   areaId,
   navigateToProject = false,
-  variant = "ghost",
-  size = "default",
+  // variant = "ghost",
+  // size = "default",
 }: CreateProjectButtonProps) {
   const areas = useAtomValue(areasAtom);
   const setProjects = useSetAtom(projectsAtom);
@@ -90,10 +89,12 @@ export function CreateProjectButton({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className={className} variant={variant} size={size}>
-        <PlusIcon size={14} />
-        <span>{label}</span>
-      </Button>
+      <button
+        onClick={() => setOpen(true)}
+        className="w-full flex items-center gap-3 justify-start rounded-2xl pie-3 py-4 text-left text-sm"
+      >
+        <span>+ New project</span>
+      </button>
       <Dialog
         open={open}
         onOpenChange={(nextOpen) => {

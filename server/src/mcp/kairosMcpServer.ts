@@ -3,7 +3,11 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprot
 
 import * as container from "../api/container.js";
 
-export function createKairosMcpServer() {
+type KairosMcpServerOptions = {
+  getUserId: () => string | undefined;
+};
+
+export function createKairosMcpServer({ getUserId }: KairosMcpServerOptions) {
   const server = new Server({ name: "kairos", version: "0.1.0" }, { capabilities: { tools: {} } });
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -14,13 +18,11 @@ export function createKairosMcpServer() {
         inputSchema: {
           type: "object",
           properties: {
-            userId: { type: "string" },
             projectId: { type: "string" },
             areaId: { type: "string" },
             inbox: { type: "boolean" },
             parentTaskId: { type: "string" },
           },
-          required: ["userId"],
         },
       },
       {
@@ -30,7 +32,6 @@ export function createKairosMcpServer() {
           type: "object",
           properties: {
             title: { type: "string" },
-            userId: { type: "string" },
             description: { type: "string" },
             priority: { type: "number", enum: [1, 2, 3, 4] },
             projectId: { type: "string" },
@@ -40,7 +41,7 @@ export function createKairosMcpServer() {
             duration: { type: "number" },
             durationUnit: { type: "string", enum: ["h", "d", "w", "m"] },
           },
-          required: ["title", "userId"],
+          required: ["title"],
         },
       },
       {
@@ -50,7 +51,6 @@ export function createKairosMcpServer() {
           type: "object",
           properties: {
             id: { type: "string" },
-            userId: { type: "string" },
             title: { type: "string" },
             description: { type: "string" },
             priority: { type: "number" },
@@ -60,7 +60,7 @@ export function createKairosMcpServer() {
             duration: { type: "number" },
             durationUnit: { type: "string", enum: ["h", "d", "w", "m"] },
           },
-          required: ["id", "userId"],
+          required: ["id"],
         },
       },
       {
@@ -68,8 +68,8 @@ export function createKairosMcpServer() {
         description: "Delete a task.",
         inputSchema: {
           type: "object",
-          properties: { id: { type: "string" }, userId: { type: "string" } },
-          required: ["id", "userId"],
+          properties: { id: { type: "string" } },
+          required: ["id"],
         },
       },
       {
@@ -77,8 +77,8 @@ export function createKairosMcpServer() {
         description: "Mark a task as completed.",
         inputSchema: {
           type: "object",
-          properties: { id: { type: "string" }, userId: { type: "string" } },
-          required: ["id", "userId"],
+          properties: { id: { type: "string" } },
+          required: ["id"],
         },
       },
       {
@@ -86,18 +86,14 @@ export function createKairosMcpServer() {
         description: "Promote a task to a project. Subtasks become project tasks.",
         inputSchema: {
           type: "object",
-          properties: { id: { type: "string" }, userId: { type: "string" } },
-          required: ["id", "userId"],
+          properties: { id: { type: "string" } },
+          required: ["id"],
         },
       },
       {
         name: "list_projects",
         description: "List all projects.",
-        inputSchema: {
-          type: "object",
-          properties: { userId: { type: "string" } },
-          required: ["userId"],
-        },
+        inputSchema: { type: "object", properties: {} },
       },
       {
         name: "create_project",
@@ -106,10 +102,9 @@ export function createKairosMcpServer() {
           type: "object",
           properties: {
             name: { type: "string" },
-            userId: { type: "string" },
             areaId: { type: "string" },
           },
-          required: ["name", "userId"],
+          required: ["name"],
         },
       },
       {
@@ -117,8 +112,8 @@ export function createKairosMcpServer() {
         description: "Demote a project to a task. Fails if any task has subtasks.",
         inputSchema: {
           type: "object",
-          properties: { id: { type: "string" }, userId: { type: "string" } },
-          required: ["id", "userId"],
+          properties: { id: { type: "string" } },
+          required: ["id"],
         },
       },
       {
@@ -132,9 +127,8 @@ export function createKairosMcpServer() {
             targetId: { type: "string" },
             targetType: { type: "string", enum: ["task", "project"] },
             linkType: { type: "string", enum: ["blocks", "blocked_by", "related_to"] },
-            userId: { type: "string" },
           },
-          required: ["sourceId", "sourceType", "targetId", "targetType", "linkType", "userId"],
+          required: ["sourceId", "sourceType", "targetId", "targetType", "linkType"],
         },
       },
     ],
@@ -143,6 +137,14 @@ export function createKairosMcpServer() {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
     const a = args as Record<string, unknown>;
+    const userId = getUserId();
+
+    if (!userId) {
+      return {
+        content: [{ type: "text", text: "Missing authenticated user context for Kairos MCP" }],
+        isError: true,
+      };
+    }
 
     try {
       let result;
@@ -150,7 +152,7 @@ export function createKairosMcpServer() {
       switch (name) {
         case "list_tasks":
           result = await container.listTasks.execute({
-            userId: a["userId"] as string,
+            userId,
             projectId: a["projectId"] as string | undefined,
             areaId: a["areaId"] as string | undefined,
             inbox: a["inbox"] as boolean | undefined,
@@ -161,7 +163,7 @@ export function createKairosMcpServer() {
         case "create_task":
           result = await container.createTask.execute({
             title: a["title"] as string,
-            userId: a["userId"] as string,
+            userId,
             description: a["description"] as string | undefined,
             priority: a["priority"] as 1 | 2 | 3 | 4 | undefined,
             projectId: a["projectId"] as string | undefined,
@@ -176,7 +178,7 @@ export function createKairosMcpServer() {
         case "update_task":
           result = await container.updateTask.execute({
             id: a["id"] as string,
-            userId: a["userId"] as string,
+            userId,
             title: a["title"] as string | undefined,
             description: a["description"] as string | null | undefined,
             priority: a["priority"] as 1 | 2 | 3 | 4 | undefined,
@@ -189,31 +191,31 @@ export function createKairosMcpServer() {
           break;
 
         case "delete_task":
-          result = await container.deleteTask.execute(a["id"] as string, a["userId"] as string);
+          result = await container.deleteTask.execute(a["id"] as string, userId);
           break;
 
         case "complete_task":
-          result = await container.completeTask.execute(a["id"] as string, a["userId"] as string);
+          result = await container.completeTask.execute(a["id"] as string, userId);
           break;
 
         case "promote_task":
-          result = await container.promoteTask.execute(a["id"] as string, a["userId"] as string);
+          result = await container.promoteTask.execute(a["id"] as string, userId);
           break;
 
         case "list_projects":
-          result = await container.listProjects.execute(a["userId"] as string);
+          result = await container.listProjects.execute(userId);
           break;
 
         case "create_project":
           result = await container.createProject.execute({
             name: a["name"] as string,
-            userId: a["userId"] as string,
+            userId,
             areaId: a["areaId"] as string | undefined,
           });
           break;
 
         case "demote_project":
-          result = await container.demoteProject.execute(a["id"] as string, a["userId"] as string);
+          result = await container.demoteProject.execute(a["id"] as string, userId);
           break;
 
         case "create_link":
@@ -223,7 +225,7 @@ export function createKairosMcpServer() {
             targetId: a["targetId"] as string,
             targetType: a["targetType"] as "task" | "project",
             linkType: a["linkType"] as "blocks" | "blocked_by" | "related_to",
-            userId: a["userId"] as string,
+            userId,
           });
           break;
 

@@ -108,6 +108,17 @@ export function LogOutIcon(props: IconProps) {
   );
 }
 
+export function KeyIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <circle cx="8.5" cy="14.5" r="3.5" />
+      <path d="M12 14.5H21" />
+      <path d="M18 14.5v3" />
+      <path d="M15 14.5v2" />
+    </IconBase>
+  );
+}
+
 export function SunIcon(props: IconProps) {
   return (
     <IconBase {...props}>

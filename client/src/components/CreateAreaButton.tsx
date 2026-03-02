@@ -1,14 +1,11 @@
-import { useSetAtom } from "jotai";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import type { AreaDTO } from "@kairos/shared";
+import { useSetAtom } from "jotai";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
 import { Button, type ButtonProps } from "./ui/button.js";
-import { PlusIcon } from "./ui/icons.js";
-import { Input } from "./ui/input.js";
-import { Label } from "./ui/label.js";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog.js";
+import { Input } from "./ui/input.js";
+import { Label } from "./ui/label.js";
 
 interface CreateAreaButtonProps {
   label: string;
@@ -81,10 +80,12 @@ export function CreateAreaButton({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className={className} variant={variant} size={size}>
-        <PlusIcon size={14} />
-        <span>{label}</span>
-      </Button>
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-3 justify-start rounded-2xl pie-3 py-4 text-left text-sm hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
+      >
+        + Area
+      </button>
       <Dialog
         open={open}
         onOpenChange={(nextOpen) => {

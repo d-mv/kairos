@@ -2,6 +2,8 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import fp from "fastify-plugin";
 import Fastify from "fastify";
 import { createClient } from "@supabase/supabase-js";
+import { hashApiKey } from "../../auth/apiKeys.js";
+import * as container from "../container.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -30,10 +32,17 @@ async function authPlugin(fastify: ReturnType<typeof Fastify>) {
     }
     const token = auth.slice(7);
     const { data, error } = await client.auth.getUser(token);
-    if (error || !data.user) {
+    if (!error && data.user) {
+      request.userId = data.user.id;
+      return;
+    }
+
+    const userId = await container.apiKeyRepo.findUserIdByTokenHash(hashApiKey(token));
+    if (!userId) {
       return reply.status(401).send({ error: "Invalid token" });
     }
-    request.userId = data.user.id;
+
+    request.userId = userId;
   });
 }
 

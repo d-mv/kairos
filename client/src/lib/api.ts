@@ -1,5 +1,7 @@
 import { supabase } from "./supabase.js";
 import type {
+  ApiKeyRotationDTO,
+  ApiKeyStatusDTO,
   TaskDTO,
   ProjectDTO,
   AreaDTO,
@@ -53,6 +55,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
 // ── Areas ─────────────────────────────────────────────────────────────────
 export const api = {
+  auth: {
+    getApiKey: () => request<ApiKeyStatusDTO>("GET", "/auth/api-key"),
+    rotateApiKey: () => request<ApiKeyRotationDTO>("POST", "/auth/api-key"),
+  },
+
   areas: {
     list: () => request<AreaDTO[]>("GET", "/areas"),
     create: (name: string) => request<AreaDTO>("POST", "/areas", { name }),

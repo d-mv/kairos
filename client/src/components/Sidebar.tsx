@@ -1,38 +1,22 @@
-import type { TaskDTO } from "@kairos/shared";
+import type { EntityType, TaskDTO } from "@kairos/shared";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { projectsAtom, projectsByAreaAtom } from "../atoms/projects.js";
+import { renameEntityAtom } from "../atoms/renameEntity.atom.js";
 import { tasksAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { api } from "../lib/api.js";
-import { supabase } from "../lib/supabase.js";
 import { CreateAreaButton } from "./CreateAreaButton.js";
 import { CreateProjectButton } from "./CreateProjectButton.js";
+import { Menu } from "./Menu/Menu.js";
+import { ProjectItem } from "./ProjectItem.js";
 import { RenameEntityButton } from "./RenameEntityButton.js";
-import { ThemeToggle } from "./ThemeToggle.js";
+import { RenameEntityDialog } from "./RenameEntityDialog.js";
+import { SectionLabel } from "./SectionLabel.js";
 import { Button } from "./ui/button.js";
-import {
-  ClipboardListIcon,
-  FolderIcon,
-  InboxIcon,
-  LogOutIcon,
-  MenuIcon,
-  TrashIcon,
-  XIcon,
-} from "./ui/icons.js";
-
-function NavIcon({ alt, children }: { alt: string; children: React.ReactNode }) {
-  return (
-    <span
-      aria-label={alt}
-      className="flex h-[1.6rem] w-[1.6rem] shrink-0 items-center justify-center opacity-70"
-    >
-      {children}
-    </span>
-  );
-}
+import { ClipboardListIcon, TrashIcon } from "./ui/icons.js";
 
 export function Sidebar() {
   const areas = useAtomValue(areasAtom);
@@ -43,7 +27,7 @@ export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [busyProjectId, setBusyProjectId] = useState<string | null>(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const setRenameEntityState = useSetAtom(renameEntityAtom);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -53,10 +37,6 @@ export function Sidebar() {
     ...areas.map((area) => projectsByArea.get(area.id) ?? []),
   ].flat();
 
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
-
   const handleRenameProject = async (projectId: string, name: string) => {
     const currentProject = allProjects.find((project) => project.id === projectId);
     if (!currentProject) return;
@@ -64,13 +44,22 @@ export function Sidebar() {
     const previousProject = currentProject;
     const optimisticProject = { ...currentProject, name, updatedAt: new Date().toISOString() };
     setBusyProjectId(projectId);
+    setRenameEntityState((s) => ({ ...s!, loading: true }));
+
     setProjects((prev) => prev.map((item) => (item.id === projectId ? optimisticProject : item)));
 
     try {
       const updated = await api.projects.update(projectId, { name });
       setProjects((prev) => prev.map((item) => (item.id === projectId ? updated : item)));
+      setRenameEntityState(null);
     } catch (err) {
       setProjects((prev) => prev.map((item) => (item.id === projectId ? previousProject : item)));
+      setRenameEntityState((s) => ({
+        ...s!,
+        loading: false,
+        errorMessage: err instanceof Error ? err.message : "Failed to rename project",
+      }));
+      // TODO: remove?
       throw err instanceof Error ? err : new Error("Failed to rename project");
     } finally {
       setBusyProjectId((current) => (current === projectId ? null : current));
@@ -118,249 +107,160 @@ export function Sidebar() {
     }
   };
 
+  async function handleRename(name: string, entityId: string, type: EntityType) {
+    if (type === "project") {
+      return handleRenameProject(entityId, name);
+    }
+  }
+
   return (
-    <aside className="mx-3 mb-0 mt-3 flex min-h-0 flex-col overflow-hidden rounded-[1.6rem] border border-[var(--color-sidebar-border)] bg-[var(--color-sidebar)] text-[var(--color-sidebar-foreground)] shadow-[var(--shadow-panel)] backdrop-blur-xl lg:m-3 lg:h-[calc(100vh-1.5rem)] lg:max-h-[calc(100vh-1.5rem)] lg:w-[28rem]">
-      <div className="border-b border-[var(--color-sidebar-border)] px-6 py-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[1.1rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-              Workspace
-            </p>
-            <h1 className="mt-2 text-[2.4rem] font-semibold tracking-tight">Kairos</h1>
-            <p className="mt-1 max-w-[22rem] text-sm text-muted-foreground">
-              Tasks, projects, and timing in one place.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <ThemeToggle className="shrink-0" />
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="shrink-0 lg:hidden"
-              onClick={() => setMobileOpen((current) => !current)}
-              aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
-            >
-              {mobileOpen ? <XIcon size={16} /> : <MenuIcon size={16} />}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <nav
-        className={`${mobileOpen ? "block flex-1" : "hidden"} space-y-5 overflow-y-auto px-3 py-5 lg:block lg:flex-1`}
-      >
-        {isLoading ? (
-          <>
-            <div className="skeleton h-[4.6rem] rounded-2xl" />
-            <div className="space-y-2">
-              <div className="skeleton h-[1.2rem] w-[8rem] rounded-full" />
-              <div className="skeleton h-[4.4rem] rounded-2xl" />
-              <div className="skeleton h-[4.4rem] rounded-2xl" />
-            </div>
-            <div className="space-y-2">
-              <div className="skeleton h-[1.2rem] w-[6rem] rounded-full" />
-              <div className="soft-panel rounded-[1.35rem] p-2">
-                <div className="skeleton h-[4.4rem] rounded-2xl" />
-                <div className="mt-2 skeleton h-[4rem] rounded-2xl" />
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <Link
-              to="/inbox"
-              className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
-                isActive("/inbox")
-                  ? "bg-[var(--color-sidebar-accent)] text-accent-foreground"
-                  : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
-              }`}
-            >
-              <NavIcon alt="Inbox">
-                <InboxIcon size={16} />
-              </NavIcon>
-              <span>Inbox</span>
-            </Link>
-
-            <div className="space-y-1">
-              <div className="flex items-center justify-between px-3 pb-1">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-                  Projects
-                </p>
-              </div>
-              <CreateProjectButton
-                label="New project"
-                className="w-full justify-start rounded-2xl px-4 py-3 text-left text-sm"
-                navigateToProject
-                size="sm"
-              />
-
-              {unassignedProjects.map((project) => (
-                <div
-                  key={project.id}
-                  className={`rounded-2xl transition-colors ${
-                    isActive(`/project/${project.id}`)
-                      ? "bg-[var(--color-sidebar-accent)] text-accent-foreground"
-                      : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 px-2 py-2">
-                    <Link
-                      to={`/project/${project.id}`}
-                      className="flex min-w-0 flex-1 items-center gap-3 rounded-[1.2rem] px-2 py-2 text-sm transition-colors"
-                    >
-                      <NavIcon alt="Project">
-                        <ClipboardListIcon size={16} />
-                      </NavIcon>
-                      <span className="truncate">{project.name}</span>
-                    </Link>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <RenameEntityButton
-                        currentName={project.name}
-                        entityLabel="Project"
-                        loading={busyProjectId === project.id}
-                        onRename={(name) => handleRenameProject(project.id, name)}
-                        iconOnly
-                        size="sm"
-                        variant="ghost"
-                        className="h-[3rem] w-[3rem] rounded-[1rem] p-0"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        disabled={busyProjectId === project.id}
-                        aria-label="Delete project"
-                        className="h-[3rem] w-[3rem] rounded-[1rem] text-destructive hover:text-destructive"
-                        onClick={() => {
-                          void handleDeleteProject(project.id);
-                        }}
-                      >
-                        <TrashIcon
-                          size={14}
-                          className={busyProjectId === project.id ? "opacity-40" : ""}
-                        />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {areas.length > 0 && (
+    <>
+      <aside className="py-6 px-6 flex min-h-0 flex-col gap-6 text-[var(--color-sidebar-foreground)] relative">
+        <p className="text-[1.1rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+          Workspace
+        </p>
+        <Menu />
+        <nav className={`overflow-y-auto flex flex-col gap-6`}>
+          {isLoading ? (
+            <>
+              <div className="skeleton h-[4.6rem] rounded-2xl" />
               <div className="space-y-2">
-                <div className="flex items-center justify-between px-3 pb-1">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-                    Areas
-                  </p>
-                  <CreateAreaButton label="Area" size="sm" className="h-7 px-2 text-[1.1rem]" />
+                <div className="skeleton h-[1.2rem] w-[8rem] rounded-full" />
+                <div className="skeleton h-[4.4rem] rounded-2xl" />
+                <div className="skeleton h-[4.4rem] rounded-2xl" />
+              </div>
+              <div className="space-y-2">
+                <div className="skeleton h-[1.2rem] w-[6rem] rounded-full" />
+                <div className="soft-panel rounded-[1.35rem] p-2">
+                  <div className="skeleton h-[4.4rem] rounded-2xl" />
+                  <div className="mt-2 skeleton h-[4rem] rounded-2xl" />
                 </div>
-                {areas.map((area) => {
-                  const areaProjects = projectsByArea.get(area.id) ?? [];
-                  return (
-                    <div key={area.id} className="soft-panel rounded-[1.35rem] p-2">
-                      <Link
-                        to={`/area/${area.id}`}
-                        className={`flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition-colors ${
-                          isActive(`/area/${area.id}`)
-                            ? "bg-[var(--color-sidebar-accent)] text-accent-foreground"
-                            : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
-                        }`}
-                      >
-                        <NavIcon alt="Area">
-                          <FolderIcon size={16} />
-                        </NavIcon>
-                        <span className="truncate">{area.name}</span>
-                      </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/inbox"
+                className={`flex items-center gap-3 rounded-2xl pie-3 text-sm font-medium transition-colors ${
+                  isActive("/inbox")
+                    ? "bg-[var(--color-sidebar-accent)] text-accent-foreground"
+                    : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
+                }`}
+              >
+                Inbox
+              </Link>
 
-                      {areaProjects.map((project) => (
-                        <div
-                          key={project.id}
-                          className={`mt-1 rounded-2xl transition-colors ${
-                            isActive(`/project/${project.id}`)
+              {areas.length > 0 && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between pie-3 pb-1">
+                    <SectionLabel>Areas</SectionLabel>
+                    <CreateAreaButton label="Area" size="sm" className="h-7 px-2 text-[1.1rem]" />
+                  </div>
+                  {!areas.length && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Create your first area to group related projects.
+                    </p>
+                  )}
+                  {areas.map((area) => {
+                    const areaProjects = projectsByArea.get(area.id) ?? [];
+                    return (
+                      <>
+                        <Link
+                          to={`/area/${area.id}`}
+                          className={`flex items-center gap-3 px-3 py-2 text-sm font-semibold transition-colors ${
+                            isActive(`/area/${area.id}`)
                               ? "bg-[var(--color-sidebar-accent)] text-accent-foreground"
-                              : "text-muted-foreground hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
+                              : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
                           }`}
                         >
-                          <div className="flex items-center gap-2 px-2 py-2 pl-[2.4rem]">
-                            <Link
-                              to={`/project/${project.id}`}
-                              className="flex min-w-0 flex-1 items-center gap-3 rounded-[1.2rem] px-2 py-2 text-sm transition-colors"
-                            >
-                              <NavIcon alt="Project">
-                                <ClipboardListIcon size={16} />
-                              </NavIcon>
-                              <span className="truncate">{project.name}</span>
-                            </Link>
-                            <div className="flex shrink-0 items-center gap-2">
-                              <RenameEntityButton
-                                currentName={project.name}
-                                entityLabel="Project"
-                                loading={busyProjectId === project.id}
-                                onRename={(name) => handleRenameProject(project.id, name)}
-                                iconOnly
-                                size="sm"
-                                variant="ghost"
-                                className="h-[3rem] w-[3rem] rounded-[1rem] p-0"
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                disabled={busyProjectId === project.id}
-                                aria-label="Delete project"
-                                className="h-[3rem] w-[3rem] rounded-[1rem] text-destructive hover:text-destructive"
-                                onClick={() => {
-                                  void handleDeleteProject(project.id);
-                                }}
-                              >
-                                <TrashIcon
-                                  size={14}
-                                  className={busyProjectId === project.id ? "opacity-40" : ""}
-                                />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            {areas.length === 0 && (
-              <div className="soft-panel rounded-[1.35rem] p-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-                  Areas
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Create your first area to group related projects.
-                </p>
-                <CreateAreaButton
-                  label="Create Area"
-                  navigateToArea
-                  className="mt-3 w-full justify-start rounded-2xl px-4 py-3 text-sm"
-                />
-              </div>
-            )}
-          </>
-        )}
-      </nav>
+                          <span className="truncate">{area.name}</span>
+                        </Link>
+                        <div className={"border-gray-300 border-b-[0.1rem]"} />
+                        {areaProjects.map((project, index) => (
+                          <ProjectItem
+                            key={project.id}
+                            project={project}
+                            isLast={index === areaProjects.length - 1}
+                            busyProjectId={busyProjectId}
+                            handleDeleteProject={handleDeleteProject}
+                          />
+                        ))}
+                      </>
+                    );
+                  })}
+                </div>
+              )}
+              {areas.length === 0 && (
+                <div className="soft-panel rounded-[1.35rem] p-3">
+                  <SectionLabel>Areas</SectionLabel>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Create your first area to group related projects.
+                  </p>
+                  <CreateAreaButton
+                    label="Create Area"
+                    navigateToArea
+                    className="mt-3 w-full justify-start rounded-2xl px-4 py-3 text-sm"
+                  />
+                </div>
+              )}
 
-      <div
-        className={`${mobileOpen ? "block" : "hidden"} border-t border-[var(--color-sidebar-border)] p-4 lg:block`}
-      >
-        <Button
-          onClick={() => supabase.auth.signOut()}
-          variant="ghost"
-          className="w-full justify-start rounded-2xl px-4 py-3 text-sm"
-        >
-          <NavIcon alt="Sign out">
-            <LogOutIcon size={16} />
-          </NavIcon>
-          Sign out
-        </Button>
-      </div>
-    </aside>
+              <div className="space-y-1">
+                <SectionLabel>Projects</SectionLabel>
+                <CreateProjectButton navigateToProject />
+                {unassignedProjects.map((project) => (
+                  <div
+                    key={project.id}
+                    className={`rounded-2xl transition-colors ${
+                      isActive(`/project/${project.id}`)
+                        ? "bg-[var(--color-sidebar-accent)] text-accent-foreground"
+                        : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 px-2 py-2">
+                      <Link
+                        to={`/project/${project.id}`}
+                        className="flex min-w-0 flex-1 items-center gap-3 rounded-[1.2rem] px-2 py-2 text-sm transition-colors"
+                      >
+                        <ClipboardListIcon size={20} />
+                        <span className="truncate">{project.name}</span>
+                      </Link>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <RenameEntityButton
+                          currentName={project.name}
+                          entityLabel="Project"
+                          loading={busyProjectId === project.id}
+                          onRename={(name) => handleRenameProject(project.id, name)}
+                          iconOnly
+                          size="sm"
+                          variant="ghost"
+                          className="h-[3rem] w-[3rem] rounded-[1rem] p-0"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          disabled={busyProjectId === project.id}
+                          aria-label="Delete project"
+                          className="h-[3rem] w-[3rem] rounded-[1rem] text-destructive hover:text-destructive"
+                          onClick={() => {
+                            void handleDeleteProject(project.id);
+                          }}
+                        >
+                          <TrashIcon
+                            size={14}
+                            className={busyProjectId === project.id ? "opacity-40" : ""}
+                          />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </nav>
+      </aside>
+      <RenameEntityDialog onRename={handleRename} />
+    </>
   );
 }

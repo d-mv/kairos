@@ -4,7 +4,7 @@ export type TaskStatus = "todo" | "in_progress" | "done";
 export type TaskPriority = 1 | 2 | 3 | 4;
 export type TaskDurationUnit = "h" | "d" | "w" | "m";
 export type LinkType = "blocks" | "blocked_by" | "related_to";
-export type EntityType = "task" | "project";
+export type EntityType = "task" | "project" | "area";
 
 export interface TaskDTO {
   id: string;
@@ -49,6 +49,20 @@ export interface LinkDTO {
   linkType: LinkType;
   userId: string;
   createdAt: string;
+}
+
+export interface ApiKeyStatusDTO {
+  hasKey: boolean;
+  keyPreview: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface ApiKeyRotationDTO {
+  apiKey: string;
+  keyPreview: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // WebSocket event types

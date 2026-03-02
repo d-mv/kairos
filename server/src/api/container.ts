@@ -4,6 +4,7 @@
  */
 import { supabase } from "../infrastructure/supabase/supabase.js";
 import { SupabaseAreaRepository } from "../infrastructure/supabase/SupabaseAreaRepository.js";
+import { SupabaseApiKeyRepository } from "../infrastructure/supabase/SupabaseApiKeyRepository.js";
 import { SupabaseProjectRepository } from "../infrastructure/supabase/SupabaseProjectRepository.js";
 import { SupabaseTaskRepository } from "../infrastructure/supabase/SupabaseTaskRepository.js";
 import { SupabaseLinkRepository } from "../infrastructure/supabase/SupabaseLinkRepository.js";
@@ -32,6 +33,7 @@ import { DeleteLink } from "../application/link/DeleteLink.js";
 
 // Repositories
 export const areaRepo = new SupabaseAreaRepository(supabase);
+export const apiKeyRepo = new SupabaseApiKeyRepository(supabase);
 export const projectRepo = new SupabaseProjectRepository(supabase);
 export const taskRepo = new SupabaseTaskRepository(supabase);
 export const linkRepo = new SupabaseLinkRepository(supabase);
