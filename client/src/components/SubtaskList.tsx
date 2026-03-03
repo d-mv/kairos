@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
 import { subtasksByParentAtom } from "../atoms/tasks.js";
-import { TaskItem } from "./TaskItem.js";
 import { NewTaskInput } from "./NewTaskInput.js";
+import { TaskItem } from "./TaskItem2.js";
 
 interface SubtaskListProps {
   parentTaskId: string;

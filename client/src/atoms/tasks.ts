@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import type { TaskDTO } from "@kairos/shared";
-import { getTodayTasks, getUpcomingTasks } from "../lib/task-views.js";
+import { getCompletedTasks, getTodayTasks, getUpcomingTasks } from "../lib/task-views.js";
 
 export const tasksAtom = atom<TaskDTO[]>([]);
 
@@ -13,6 +13,8 @@ export const inboxTasksAtom = atom((get) =>
 export const todayTasksAtom = atom((get) => getTodayTasks(get(tasksAtom)));
 
 export const upcomingTasksAtom = atom((get) => getUpcomingTasks(get(tasksAtom)));
+
+export const completedTasksAtom = atom((get) => getCompletedTasks(get(tasksAtom)));
 
 export const tasksByProjectAtom = atom((get) => {
   const tasks = get(tasksAtom);

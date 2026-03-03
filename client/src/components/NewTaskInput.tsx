@@ -1,12 +1,11 @@
-import { useState } from "react";
-import { useSetAtom } from "jotai";
 import type { TaskDTO } from "@kairos/shared";
+import { useSetAtom } from "jotai";
+import { useState } from "react";
 import { tasksAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
 import { getTaskErrorMessage } from "../lib/task-errors.js";
 import { Input } from "./ui/input.js";
-import { PlusIcon } from "./ui/icons.js";
 
 interface NewTaskInputProps {
   projectId?: string;
@@ -83,11 +82,8 @@ export function NewTaskInput({
   };
 
   return (
-    <div className="border-t border-border/70 px-4 py-3">
-      <form onSubmit={handleSubmit} className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-foreground/60">
-          <PlusIcon size={16} />
-        </div>
+    <div className="flex flex-col">
+      <form onSubmit={handleSubmit} className="flex items-center gap-3 bg-gray-200 py-2 px-4">
         <Input
           type="text"
           value={title}
@@ -97,7 +93,7 @@ export function NewTaskInput({
           }}
           placeholder={placeholder}
           disabled={loading}
-          className="h-auto flex-1 border-none bg-transparent px-0 py-0 text-sm shadow-none focus-visible:ring-0"
+          className="h-auto flex-1 border-none bg-transparent  px-0 py-0 text-base shadow-none focus-visible:ring-0"
         />
       </form>
       {error ? <p className="mt-2 text-xs text-destructive">{error}</p> : null}

@@ -82,6 +82,15 @@ export function createKairosMcpServer({ getUserId }: KairosMcpServerOptions) {
         },
       },
       {
+        name: "reopen_task",
+        description: "Mark a task as not completed.",
+        inputSchema: {
+          type: "object",
+          properties: { id: { type: "string" } },
+          required: ["id"],
+        },
+      },
+      {
         name: "promote_task",
         description: "Promote a task to a project. Subtasks become project tasks.",
         inputSchema: {
@@ -196,6 +205,10 @@ export function createKairosMcpServer({ getUserId }: KairosMcpServerOptions) {
 
         case "complete_task":
           result = await container.completeTask.execute(a["id"] as string, userId);
+          break;
+
+        case "reopen_task":
+          result = await container.reopenTask.execute(a["id"] as string, userId);
           break;
 
         case "promote_task":

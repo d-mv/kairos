@@ -21,7 +21,7 @@ export function AreaItem({ area, busyProjectId, handleDeleteProject }: Props) {
     <div className="flex flex-col">
       <Link
         to={`/area/${area.id}`}
-        className={`flex items-center gap-3 px-3 py-2 text-sm font-semibold transition-colors ${
+        className={`flex items-center gap-3 px-3 py-[1rem] text-sm font-semibold transition-colors ${
           isActive(`/area/${area.id}`)
             ? "bg-(--color-sidebar-accent) text-accent-foreground"
             : "text-sidebar-foreground hover:bg-(--color-sidebar-accent) hover:text-accent-foreground"

@@ -1,20 +1,17 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useAtomValue } from "jotai";
-import { tasksByProjectAtom, selectedTaskIdAtom } from "../atoms/tasks.js";
-import { projectsAtom } from "../atoms/projects.js";
-import { areasAtom } from "../atoms/areas.js";
-import { workspaceLoadingAtom } from "../atoms/workspace.js";
-import { TaskList } from "../components/TaskList.js";
-import { TaskDetailPanel } from "../components/TaskDetailPanel.js";
-import { api } from "../lib/api.js";
-import { useSetAtom } from "jotai";
-import { projectsAtom as projAtom } from "../atoms/projects.js";
-import { tasksAtom } from "../atoms/tasks.js";
-import { Button } from "../components/ui/button.js";
-import { RenameEntityButton } from "../components/RenameEntityButton.js";
-import { Select } from "../components/ui/select.js";
-import { TrashIcon } from "../components/ui/icons.js";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { areasAtom } from "../atoms/areas.js";
+import { projectsAtom as projAtom, projectsAtom } from "../atoms/projects.js";
+import { selectedTaskIdAtom, tasksAtom, tasksByProjectAtom } from "../atoms/tasks.js";
+import { workspaceLoadingAtom } from "../atoms/workspace.js";
+import { RenameEntityButton } from "../components/RenameEntityButton.js";
+import { TaskDetailPanel } from "../components/TaskDetailPanel.js";
+import { TaskList } from "../components/TaskList.js";
+import { Button } from "../components/ui/button.js";
+import { TrashIcon } from "../components/ui/icons.js";
+import { Select } from "../components/ui/select.js";
+import { api } from "../lib/api.js";
 
 export default function ProjectPage() {
   const { id } = useParams<{ id: string }>();
@@ -244,7 +241,7 @@ export default function ProjectPage() {
               <div className="skeleton h-[5.6rem]" />
             </div>
           ) : (
-            <TaskList tasks={tasks} projectId={id} emptyMessage="No tasks yet" />
+            <TaskList isList tasks={tasks} projectId={id} emptyMessage="No tasks yet" />
           )}
         </div>
       </div>

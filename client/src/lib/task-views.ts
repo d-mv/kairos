@@ -9,6 +9,10 @@ function compareDueDates(left: TaskDTO, right: TaskDTO): number {
   return left.dueDate.localeCompare(right.dueDate);
 }
 
+function compareUpdatedAtDescending(left: TaskDTO, right: TaskDTO): number {
+  return right.updatedAt.localeCompare(left.updatedAt);
+}
+
 function isOpenDatedTask(task: TaskDTO): task is TaskDTO & { dueDate: string } {
   return task.status !== "done" && task.dueDate !== null;
 }
@@ -29,4 +33,8 @@ export function getUpcomingTasks(tasks: TaskDTO[], today = new Date().toISOStrin
     .filter(isOpenDatedTask)
     .filter((task) => task.dueDate >= todayKey)
     .sort(compareDueDates);
+}
+
+export function getCompletedTasks(tasks: TaskDTO[]): TaskDTO[] {
+  return tasks.filter((task) => task.status === "done").sort(compareUpdatedAtDescending);
 }

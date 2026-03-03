@@ -1,98 +1,97 @@
-import { useSetAtom } from "jotai";
-import type { TaskDTO } from "@kairos/shared";
-import { selectedTaskIdAtom } from "../atoms/tasks.js";
-import { api } from "../lib/api.js";
-import { getTaskErrorMessage } from "../lib/task-errors.js";
-import { tasksAtom } from "../atoms/tasks.js";
-import { Button } from "./ui/button.js";
-import { CheckIcon } from "./ui/icons.js";
+import { ProjectDTO, TaskDTO } from "@kairos/shared";
+import { type MouseEvent, useMemo } from "react";
+import { AtProject } from "./AtProject";
+import { Indent } from "./Indent";
 
-interface TaskItemProps {
-  task: TaskDTO;
-  isSubtask?: boolean;
-}
-
-const PRIORITY_COLORS: Record<number, string> = {
-  1: "text-muted-foreground",
-  2: "text-blue-500",
-  3: "text-orange-500",
-  4: "text-red-500",
+const MATCH_PRIORITY_TO_COLOR: Record<number, string> = {
+  1: "var(--color-muted-foreground)",
+  2: "var(--color-emerald-500)",
+  3: "var(--color-orange-500)",
+  4: "var(--color-red-500)",
 };
 
-export function TaskItem({ task, isSubtask = false }: TaskItemProps) {
-  const setSelectedTaskId = useSetAtom(selectedTaskIdAtom);
-  const setTasks = useSetAtom(tasksAtom);
+type Props = {
+  task: TaskDTO;
+  project?: ProjectDTO;
+  isLast: boolean;
+  isActive: boolean;
+  isListItem?: boolean;
+  isJoined?: boolean;
+  handleClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+  handleToggleComplete: (e: React.MouseEvent) => void;
+};
 
-  const handleComplete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const previousTask = task;
-    const optimisticTask: TaskDTO = {
-      ...task,
-      status: task.status === "done" ? "todo" : "done",
-      updatedAt: new Date().toISOString(),
-    };
+export function TaskItem({
+  task,
+  project,
+  isLast,
+  isListItem,
+  isActive = true,
+  handleClick,
+  handleToggleComplete,
+}: Props) {
+  const isCompleted = useMemo(() => task.status === "done", [task.status]);
 
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? optimisticTask : t)));
+  function renderIcon() {
+    const status = (
+      <svg height="1rem" width="1rem" xmlns="http://www.w3.org/2000/svg">
+        <circle
+          r="0.3rem"
+          cx="0.5rem"
+          cy="0.5rem"
+          stroke={MATCH_PRIORITY_TO_COLOR[task.priority]}
+          strokeWidth="0.1rem"
+          fill="none"
+        />
+      </svg>
+    );
 
-    try {
-      const updated = await api.tasks.complete(task.id);
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
-    } catch (err) {
-      const message = getTaskErrorMessage(err, "Failed to update task");
-      console.error("Failed to complete task", err);
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? previousTask : t)));
-      window.alert(message);
-    }
-  };
+    if (!isCompleted) return status;
 
-  const isDone = task.status === "done";
+    return (
+      <div className="grid place-items-center relative">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="var(--color-gray-400)"
+          className="size-8 absolute"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+        {status}
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={`group flex cursor-pointer items-center gap-3 border-b border-border/70 px-4 py-3 transition-colors hover:bg-accent/50 ${
-        isSubtask ? "pl-10" : ""
-      }`}
-      onClick={() => setSelectedTaskId(task.id)}
-    >
-      <Button
-        onClick={handleComplete}
-        variant="ghost"
-        size="icon"
-        className={`h-5 w-5 shrink-0 rounded-full border p-0 transition-colors ${
-          isDone
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/50 bg-background hover:border-primary"
-        }`}
-        title={isDone ? "Completed" : "Mark complete"}
-      >
-        {isDone && <CheckIcon size={12} />}
-      </Button>
+    <li className="group w-full flex items-center justify-start h-16 cursor-pointer">
+      <Indent
+        className="w-4"
+        isListItem={isListItem}
+        isLast={isLast}
+        isActive={isActive}
+        entityId={task.id}
+      />
+      <div className="flex items-center gap-4 group-hover:bg-accent transition-colors duration-150 pie-2 justify-between h-full w-full">
+        <div className="flex items-center h-full w-full">
+          <button
+            type="button"
+            className="cursor-pointer py-4 px-4 hover:bg-gray-200 rounded-md"
+            onClick={handleToggleComplete}
+          >
+            {renderIcon()}
+          </button>
+          <button type="button" onClick={handleClick} className="text-base cursor-pointer">
+            {task.title}
+          </button>
+        </div>
 
-      {/* Priority dot */}
-      <span
-        className={`text-xs ${PRIORITY_COLORS[task.priority] ?? "text-muted-foreground"}`}
-        title={`Priority ${task.priority}`}
-      >
-        ●
-      </span>
-
-      <span
-        className={`flex-1 text-sm font-medium ${isDone ? "text-muted-foreground line-through" : ""}`}
-      >
-        {task.title}
-      </span>
-
-      {task.dueDate && (
-        <span className="rounded-full bg-muted px-[1rem] py-[0.6rem] text-[1.1rem] leading-none text-muted-foreground">
-          {task.dueDate}
-        </span>
-      )}
-      {task.duration && task.durationUnit && (
-        <span className="rounded-full bg-muted px-[1rem] py-[0.6rem] text-[1.1rem] leading-none text-muted-foreground">
-          {task.duration}
-          {task.durationUnit}
-        </span>
-      )}
-    </div>
+        <div className="flex items-center gap-2 w-full justify-end h-full">
+          <AtProject project={project} />
+        </div>
+      </div>
+    </li>
   );
 }

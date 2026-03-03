@@ -16,6 +16,7 @@ const LoginPage = lazy(() => import("./pages/LoginPage.js"));
 const InboxPage = lazy(() => import("./pages/InboxPage.js"));
 const TodayPage = lazy(() => import("./pages/TodayPage.js"));
 const UpcomingPage = lazy(() => import("./pages/UpcomingPage.js"));
+const CompletedPage = lazy(() => import("./pages/CompletedPage.js"));
 const ProjectPage = lazy(() => import("./pages/ProjectPage.js"));
 const AreaPage = lazy(() => import("./pages/AreaPage.js"));
 
@@ -114,6 +115,7 @@ export default function App() {
               <Route path="/inbox" element={<InboxPage />} />
               <Route path="/today" element={<TodayPage />} />
               <Route path="/upcoming" element={<UpcomingPage />} />
+              <Route path="/completed" element={<CompletedPage />} />
               <Route path="/project/:id" element={<ProjectPage />} />
               <Route path="/area/:id" element={<AreaPage />} />
               <Route path="*" element={<Navigate to="/inbox" replace />} />

@@ -1,16 +1,16 @@
-import { supabase } from "./supabase.js";
 import type {
   ApiKeyRotationDTO,
   ApiKeyStatusDTO,
-  TaskDTO,
-  ProjectDTO,
   AreaDTO,
-  LinkDTO,
-  TaskPriority,
-  TaskDurationUnit,
-  LinkType,
   EntityType,
+  LinkDTO,
+  LinkType,
+  ProjectDTO,
+  TaskDTO,
+  TaskDurationUnit,
+  TaskPriority,
 } from "@kairos/shared";
+import { supabase } from "./supabase.js";
 
 const apiOrigin = (import.meta.env["VITE_API_URL"] as string | undefined)?.replace(/\/$/, "") ?? "";
 const BASE = `${apiOrigin}/api/v1`;
@@ -106,6 +106,7 @@ export const api = {
     update: (id: string, data: Partial<TaskDTO>) => request<TaskDTO>("PUT", `/tasks/${id}`, data),
     delete: (id: string) => request<void>("DELETE", `/tasks/${id}`),
     complete: (id: string) => request<TaskDTO>("POST", `/tasks/${id}/complete`),
+    reopen: (id: string) => request<TaskDTO>("POST", `/tasks/${id}/reopen`),
     promote: (id: string) => request<ProjectDTO>("POST", `/tasks/${id}/promote`),
   },
 

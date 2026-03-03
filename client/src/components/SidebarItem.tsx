@@ -10,7 +10,7 @@ export function SidebarItem({ path, className, children }: Props) {
     <Link
       to={path}
       className={cn(
-        "flex min-w-0 flex-1 items-center gap-2 rounded-[1 rem] px-2 text-base transition-colors group-hover:bg-accent group-hover:underline underline-offset-[0.3rem] decoration-[0.1rem]",
+        "flex min-w-0 flex-1 items-center gap-2 rounded-[1 rem] px-2  text-base transition-colors group-hover:bg-accent group-hover:underline underline-offset-[0.3rem] decoration-[0.1rem]",
         isActive(path) ? "text-accent-foreground font-medium" : "text-muted-foreground",
         className,
       )}

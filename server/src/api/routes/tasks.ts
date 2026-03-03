@@ -1,5 +1,5 @@
+import type { TaskDurationUnit, TaskPriority } from "@kairos/shared";
 import type { FastifyInstance } from "fastify";
-import type { TaskPriority, TaskDurationUnit } from "@kairos/shared";
 import * as container from "../container.js";
 
 export async function taskRoutes(fastify: FastifyInstance) {
@@ -92,6 +92,13 @@ export async function taskRoutes(fastify: FastifyInstance) {
   // POST /api/v1/tasks/:id/complete
   fastify.post<{ Params: { id: string } }>("/:id/complete", async (req, reply) => {
     const result = await container.completeTask.execute(req.params.id, req.userId);
+    if (result.isErr) return reply.status(400).send({ error: result.error });
+    return result.value;
+  });
+
+  // POST /api/v1/tasks/:id/reopen
+  fastify.post<{ Params: { id: string } }>("/:id/reopen", async (req, reply) => {
+    const result = await container.reopenTask.execute(req.params.id, req.userId);
     if (result.isErr) return reply.status(400).send({ error: result.error });
     return result.value;
   });
