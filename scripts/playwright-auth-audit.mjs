@@ -3,9 +3,7 @@ import { chromium } from "playwright";
 const [email, password, projectId] = process.argv.slice(2);
 
 if (!email || !password || !projectId) {
-  throw new Error(
-    "Usage: node scripts/playwright-auth-audit.mjs <email> <password> <projectId>",
-  );
+  throw new Error("Usage: node scripts/playwright-auth-audit.mjs <email> <password> <projectId>");
 }
 
 async function login(page) {
@@ -33,7 +31,10 @@ async function auditDesktop() {
   await page.goto(`http://127.0.0.1:5173/project/${projectId}`, { waitUntil: "networkidle" });
   await page.getByText("Polish authenticated shell").click();
   await page.getByRole("heading", { name: "Task Details" }).waitFor({ timeout: 10000 });
-  const inspector = page.locator("div.fixed").filter({ has: page.getByRole("heading", { name: "Task Details" }) }).first();
+  const inspector = page
+    .locator("div.fixed")
+    .filter({ has: page.getByRole("heading", { name: "Task Details" }) })
+    .first();
 
   const titleInput = inspector.locator('input[type="text"]').first();
   await titleInput.fill("Polish authenticated shell audit");

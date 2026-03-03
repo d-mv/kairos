@@ -88,12 +88,7 @@ async function main() {
 
     await execFileAsync(
       "node",
-      [
-        "scripts/playwright-auth-audit.mjs",
-        user.email,
-        user.password,
-        seed.projectId,
-      ],
+      ["scripts/playwright-auth-audit.mjs", user.email, user.password, seed.projectId],
       {
         cwd: process.cwd(),
         env: process.env,

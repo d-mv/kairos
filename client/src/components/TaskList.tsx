@@ -7,9 +7,16 @@ interface TaskListProps {
   projectId?: string;
   areaId?: string;
   emptyMessage?: string;
+  showNewTaskInput?: boolean;
 }
 
-export function TaskList({ tasks, projectId, areaId, emptyMessage }: TaskListProps) {
+export function TaskList({
+  tasks,
+  projectId,
+  areaId,
+  emptyMessage,
+  showNewTaskInput = true,
+}: TaskListProps) {
   const topLevelTasks = tasks.filter((t) => !t.parentTaskId);
 
   return (
@@ -20,7 +27,7 @@ export function TaskList({ tasks, projectId, areaId, emptyMessage }: TaskListPro
       {topLevelTasks.map((task) => (
         <TaskItem key={task.id} task={task} />
       ))}
-      <NewTaskInput projectId={projectId} areaId={areaId} />
+      {showNewTaskInput ? <NewTaskInput projectId={projectId} areaId={areaId} /> : null}
     </div>
   );
 }

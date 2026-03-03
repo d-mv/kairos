@@ -47,7 +47,11 @@ export class SupabaseApiKeyRepository {
     return toRecord(data as ApiKeyRow);
   }
 
-  async rotateForUser(userId: string, tokenHash: string, keyPreview: string): Promise<ApiKeyRecord> {
+  async rotateForUser(
+    userId: string,
+    tokenHash: string,
+    keyPreview: string,
+  ): Promise<ApiKeyRecord> {
     const payload = {
       user_id: userId,
       token_hash: tokenHash,

@@ -95,10 +95,7 @@ export function CreateProjectButton({
         onClick={() => setOpen(true)}
         variant={variant}
         size={size}
-        className={cn(
-          "w-full justify-start rounded-2xl px-4 py-3 text-left text-sm",
-          className,
-        )}
+        className={cn("w-full justify-start rounded-2xl px-4 py-3 text-left text-sm", className)}
       >
         {label}
       </Button>

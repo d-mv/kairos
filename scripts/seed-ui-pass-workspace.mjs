@@ -56,6 +56,7 @@ const api = async (path, method, body) => {
 
 const area = await api("/areas", "POST", { name: "Product" });
 const project = await api("/projects", "POST", { name: "Design system", areaId: area.id });
+const areaTask = await api("/tasks", "POST", { title: "Draft area onboarding", areaId: area.id });
 const inboxTask = await api("/tasks", "POST", { title: "Capture launch feedback" });
 const projectTask = await api("/tasks", "POST", {
   title: "Polish authenticated shell",
@@ -67,6 +68,7 @@ console.log(
   JSON.stringify({
     areaId: area.id,
     projectId: project.id,
+    areaTaskId: areaTask.id,
     inboxTaskId: inboxTask.id,
     projectTaskId: projectTask.id,
   }),

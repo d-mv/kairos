@@ -52,7 +52,11 @@ async function main() {
       document.documentElement.classList.contains("dark"),
     );
     await page.getByRole("button", { name: "Open workspace menu" }).click();
-    await page.locator("button").filter({ hasText: /Switch to (dark|light)/i }).first().click();
+    await page
+      .locator("button")
+      .filter({ hasText: /Switch to (dark|light)/i })
+      .first()
+      .click();
     await page.waitForFunction(
       (previous) => document.documentElement.classList.contains("dark") !== previous,
       beforeDarkMode,
@@ -80,7 +84,7 @@ async function main() {
     const titleInput = detailPanel.locator('input[type="text"]').first();
     await titleInput.fill(nextTitle);
     await detailPanel.getByText("Description").click();
-    await detailPanel.locator('textarea').fill("Smoke test updated description");
+    await detailPanel.locator("textarea").fill("Smoke test updated description");
     await detailPanel.getByText("Priority").click();
     await page.waitForTimeout(800);
     await detailPanel.getByText("Saved").waitFor({ timeout: 10000 });

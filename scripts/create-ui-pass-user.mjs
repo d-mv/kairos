@@ -32,6 +32,7 @@ if (!response.ok) {
 
 const data = await response.json();
 const user = data.user ?? data;
-if (!user?.id) throw new Error(`User creation returned unexpected payload: ${JSON.stringify(data)}`);
+if (!user?.id)
+  throw new Error(`User creation returned unexpected payload: ${JSON.stringify(data)}`);
 
 console.log(JSON.stringify({ email, password, userId: user.id }));

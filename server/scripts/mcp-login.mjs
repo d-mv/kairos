@@ -6,7 +6,8 @@ import { createInterface } from "node:readline/promises";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 
-const authFilePath = process.env.KAIROS_MCP_AUTH_FILE || join(homedir(), ".codex", "kairos-auth.json");
+const authFilePath =
+  process.env.KAIROS_MCP_AUTH_FILE || join(homedir(), ".codex", "kairos-auth.json");
 const clientEnvPath = resolve(process.cwd(), "../client/.env");
 const clientEnv = dotenv.config({ path: clientEnvPath }).parsed || {};
 

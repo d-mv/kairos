@@ -1,12 +1,14 @@
 import clsx from "clsx";
+import { cn } from "../lib/utils";
 
 type Props = {
   projectId: string;
   isLast: boolean;
   isActive: boolean;
+  className?: string;
 };
 
-export function ProjectIndent({ projectId, isLast, isActive }: Props) {
+export function ProjectIndent({ projectId, isLast, isActive, className }: Props) {
   function renderHorizontalIndent() {
     if (!isActive) return null;
 
@@ -27,7 +29,7 @@ export function ProjectIndent({ projectId, isLast, isActive }: Props) {
   }
 
   return (
-    <div className="flex items-start h-full w-full">
+    <div className={cn("flex items-start h-full w-full", className)}>
       {renderVerticalIndent()}
       {renderHorizontalIndent()}
     </div>
