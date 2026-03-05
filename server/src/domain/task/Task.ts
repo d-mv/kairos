@@ -70,7 +70,7 @@ export class Task extends Entity<TaskProps> {
         title: trimmed,
         description: opts.description ?? null,
         status: "todo",
-        priority: opts.priority ?? 1,
+        priority: opts.priority ?? 4,
         parentTaskId: opts.parentTaskId ?? null,
         projectId: opts.projectId ?? null,
         areaId: opts.areaId ?? null,

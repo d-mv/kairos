@@ -91,4 +91,20 @@ describe("CreateTask use case", () => {
     expect(result.isErr).toBe(true);
     expect(result.error).toMatch(/not found/);
   });
+
+  it("normalizes bare links in task title before saving", async () => {
+    const createTaskWithNormalizer = new CreateTask(
+      taskRepo,
+      eventBus,
+      async (title) => title.replace("https://kairos-web.fly.dev/inbox", "[Kairos](https://kairos-web.fly.dev/inbox)"),
+    );
+
+    const result = await createTaskWithNormalizer.execute({
+      title: "Open https://kairos-web.fly.dev/inbox",
+      userId: "u1",
+    });
+
+    expect(result.isOk).toBe(true);
+    expect(result.value.title).toBe("Open [Kairos](https://kairos-web.fly.dev/inbox)");
+  });
 });

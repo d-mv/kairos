@@ -17,20 +17,34 @@ function isOpenDatedTask(task: TaskDTO): task is TaskDTO & { dueDate: string } {
   return task.status !== "done" && task.dueDate !== null;
 }
 
-export function getTodayTasks(tasks: TaskDTO[], today = new Date().toISOString()): TaskDTO[] {
+function isDatedTask(task: TaskDTO): task is TaskDTO & { dueDate: string } {
+  return task.dueDate !== null;
+}
+
+export function getTodayTasks(
+  tasks: TaskDTO[],
+  today = new Date().toISOString(),
+  includeCompleted = false,
+): TaskDTO[] {
   const todayKey = toDateKey(today);
+  const baseFilter = includeCompleted ? isDatedTask : isOpenDatedTask;
 
   return tasks
-    .filter(isOpenDatedTask)
+    .filter(baseFilter)
     .filter((task) => task.dueDate <= todayKey)
     .sort(compareDueDates);
 }
 
-export function getUpcomingTasks(tasks: TaskDTO[], today = new Date().toISOString()): TaskDTO[] {
+export function getUpcomingTasks(
+  tasks: TaskDTO[],
+  today = new Date().toISOString(),
+  includeCompleted = false,
+): TaskDTO[] {
   const todayKey = toDateKey(today);
+  const baseFilter = includeCompleted ? isDatedTask : isOpenDatedTask;
 
   return tasks
-    .filter(isOpenDatedTask)
+    .filter(baseFilter)
     .filter((task) => task.dueDate >= todayKey)
     .sort(compareDueDates);
 }

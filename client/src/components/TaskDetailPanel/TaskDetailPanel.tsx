@@ -1,16 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import type { TaskDTO, TaskDurationUnit, TaskPriority } from "@kairos/shared";
+import checkIsMobile from "is-mobile";
 import { useAtomValue, useSetAtom } from "jotai";
-import type { TaskDurationUnit, TaskPriority } from "@kairos/shared";
-import { selectedTaskIdAtom, selectedTaskAtom, tasksAtom } from "../atoms/tasks.js";
-import { SubtaskList } from "./SubtaskList.js";
-import { api } from "../lib/api.js";
-import { getTaskErrorMessage } from "../lib/task-errors.js";
-import { Button } from "./ui/button.js";
-import { TrashIcon, XIcon } from "./ui/icons.js";
-import { Input } from "./ui/input.js";
-import { Label } from "./ui/label.js";
-import { Select } from "./ui/select.js";
-import { Textarea } from "./ui/textarea.js";
+import { MouseEvent, useEffect, useRef, useState } from "react";
+import { selectedTaskAtom, selectedTaskIdAtom, tasksAtom } from "../../atoms/tasks.js";
+import { api } from "../../lib/api.js";
+import { getTaskErrorMessage } from "../../lib/task-errors.js";
+import { SubtaskList } from "../SubtaskList.js";
+import { Button } from "../ui/button.js";
+import { TrashIcon, XIcon } from "../ui/icons.js";
+import { Input } from "../ui/input.js";
+import { Label } from "../ui/label.js";
+import { Select } from "../ui/select.js";
+import { Textarea } from "../ui/textarea.js";
+import { MobileTaskDetailPanel } from "./MobileTaskDetailPanel.js";
+import { SaveIndication } from "./SaveIndication.js";
+import type { TaskDetailPanelController } from "./context.js";
 
 export function TaskDetailPanel() {
   const setSelectedTaskId = useSetAtom(selectedTaskIdAtom);
@@ -18,7 +22,7 @@ export function TaskDetailPanel() {
   const setTasks = useSetAtom(tasksAtom);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<TaskPriority>(1);
+  const [priority, setPriority] = useState<TaskPriority>(4);
   const [dueDate, setDueDate] = useState("");
   const [duration, setDuration] = useState("");
   const [durationUnit, setDurationUnit] = useState<TaskDurationUnit | "">("");
@@ -236,6 +240,62 @@ export function TaskDetailPanel() {
     }
   };
 
+  const handleToggleComplete = (task: TaskDTO) => async (e: MouseEvent) => {
+    e.stopPropagation();
+    const previousTask = task;
+    const optimisticTask: TaskDTO = {
+      ...task,
+      status: task.status === "done" ? "todo" : "done",
+      updatedAt: new Date().toISOString(),
+    };
+
+    setTasks((prev) => prev.map((t) => (t.id === task.id ? optimisticTask : t)));
+
+    const fn = task.status === "done" ? api.tasks.reopen : api.tasks.complete;
+
+    try {
+      const updated = await fn(task.id);
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
+    } catch (err) {
+      const message = getTaskErrorMessage(err, "Failed to update task");
+      console.error("Failed to complete task", err);
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? previousTask : t)));
+      window.alert(message);
+    }
+  };
+
+  const handleClose = () => {
+    setSelectedTaskId(null);
+  };
+
+  const controller: TaskDetailPanelController = {
+    saveState,
+    saveError,
+    task,
+    title,
+    description,
+    priority,
+    dueDate,
+    duration,
+    durationUnit,
+    setTitle,
+    setDescription,
+    setPriority,
+    setDueDate,
+    setDuration,
+    setDurationUnit,
+    handleSave,
+    handleDelete,
+    handlePromote,
+    handleClose,
+    handleToggleComplete,
+    persistTaskChanges,
+  };
+
+  if (checkIsMobile()) {
+    return <MobileTaskDetailPanel controller={controller} />;
+  }
+
   return (
     <div className="panel fixed inset-x-3 bottom-3 top-[11rem] z-10 flex flex-col rounded-[1.8rem] lg:inset-x-auto lg:bottom-4 lg:right-4 lg:top-4 lg:h-[calc(100%-2rem)] lg:w-[42rem]">
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
@@ -245,23 +305,11 @@ export function TaskDetailPanel() {
           </p>
           <div className="mt-1 flex items-center gap-2">
             <h2 className="text-sm font-semibold">Task Details</h2>
-            {saveState !== "idle" && (
-              <span
-                className={`rounded-full px-[1rem] py-[0.5rem] text-[1.1rem] leading-none ${
-                  saveState === "saving"
-                    ? "bg-sky-500/15 text-sky-700 dark:text-sky-300"
-                    : saveState === "saved"
-                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-                      : "bg-destructive/15 text-destructive"
-                }`}
-              >
-                {saveState === "saving" ? "Saving" : saveState === "saved" ? "Saved" : "Not saved"}
-              </span>
-            )}
+            <SaveIndication saveState={saveState} />
           </div>
         </div>
         <Button
-          onClick={() => setSelectedTaskId(null)}
+          onClick={handleClose}
           variant="ghost"
           size="icon"
           className="h-[3.2rem] w-[3.2rem] rounded-full"

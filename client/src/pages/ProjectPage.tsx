@@ -5,12 +5,9 @@ import { areasAtom } from "../atoms/areas.js";
 import { projectsAtom as projAtom, projectsAtom } from "../atoms/projects.js";
 import { selectedTaskIdAtom, tasksAtom, tasksByProjectAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
-import { RenameEntityButton } from "../components/RenameEntityButton.js";
-import { TaskDetailPanel } from "../components/TaskDetailPanel.js";
+import { ProjectSettingsMenu } from "../components/ProjectSettingsMenu.js";
+import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.js";
 import { TaskList } from "../components/TaskList.js";
-import { Button } from "../components/ui/button.js";
-import { TrashIcon } from "../components/ui/icons.js";
-import { Select } from "../components/ui/select.js";
 import { api } from "../lib/api.js";
 
 export default function ProjectPage() {
@@ -159,7 +156,7 @@ export default function ProjectPage() {
     <div className="flex h-full flex-1">
       <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[45rem]" : ""}`}>
         <div className="mx-auto max-w-[72rem] px-[2.4rem] py-[4rem] sm:px-[3.2rem] sm:py-[4.8rem]">
-          <div className="mb-8 flex flex-col gap-4 sm:items-start sm:justify-between lg:flex-row">
+          <div className="mb-8 flex items-start justify-between gap-4">
             <div>
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
                 Project
@@ -188,50 +185,18 @@ export default function ProjectPage() {
                 Plan the work, group related tasks, and promote or demote structure when needed.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 self-start">
-              <Select
-                value={project?.areaId ?? ""}
-                onChange={(e) => {
-                  void handleMoveToArea(e.target.value);
-                }}
-                className="min-w-[16rem]"
-                disabled={deleteLoading || moveLoading}
-              >
-                <option value="">Unassigned</option>
-                {areas.map((area) => (
-                  <option key={area.id} value={area.id}>
-                    {area.name}
-                  </option>
-                ))}
-              </Select>
-              <RenameEntityButton
-                currentName={projectName}
-                entityLabel="Project"
-                loading={renameLoading}
-                onRename={handleRename}
-                iconOnly
-                className="h-[3.4rem] w-[3.4rem] p-0"
-              />
-              <Button
-                onClick={handleDemote}
-                variant="outline"
-                size="sm"
-                className="self-start"
-                disabled={deleteLoading}
-              >
-                Demote to Task
-              </Button>
-              <Button
-                onClick={handleDelete}
-                variant="destructive"
-                size="icon"
-                disabled={deleteLoading}
-                aria-label="Delete project"
-                className="h-[3.4rem] w-[3.4rem]"
-              >
-                <TrashIcon size={14} className={deleteLoading ? "opacity-40" : ""} />
-              </Button>
-            </div>
+            <ProjectSettingsMenu
+              projectName={projectName}
+              projectAreaId={project?.areaId ?? null}
+              areas={areas}
+              renameLoading={renameLoading}
+              deleteLoading={deleteLoading}
+              moveLoading={moveLoading}
+              onRename={handleRename}
+              onMoveToArea={handleMoveToArea}
+              onDemote={handleDemote}
+              onDelete={handleDelete}
+            />
           </div>
           {isLoading ? (
             <div className="panel overflow-hidden rounded-[1.6rem]">

@@ -12,6 +12,7 @@ export function AtProject({ project }: AtProjectProps) {
     <Link
       to={`/project/${project.id}`}
       className="text-sm font-light text-muted-foreground text-nowrap text-ellipsis overflow-hidden bg-accent px-2 py-1 rounded-md group-hover:bg-accent-foreground group-hover:text-accent"
+      onClick={(event) => event.stopPropagation()}
     >
       @ {project.name}
     </Link>

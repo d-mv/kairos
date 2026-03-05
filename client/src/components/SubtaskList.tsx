@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
 import { subtasksByParentAtom } from "../atoms/tasks.js";
 import { NewTaskInput } from "./NewTaskInput.js";
-import { TaskItem } from "./TaskItem2.js";
+import { TaskList } from "./TaskList.js";
 
 interface SubtaskListProps {
   parentTaskId: string;
@@ -13,9 +13,7 @@ export function SubtaskList({ parentTaskId }: SubtaskListProps) {
 
   return (
     <div className="mt-3 overflow-hidden rounded-[1.2rem] border border-border/70 bg-background/40">
-      {subtasks.map((subtask) => (
-        <TaskItem key={subtask.id} task={subtask} isSubtask />
-      ))}
+      <TaskList tasks={subtasks} showNewTaskInput={false} />
       <div className="pl-6">
         <NewTaskInput parentTaskId={parentTaskId} placeholder="Add a subtask..." />
       </div>

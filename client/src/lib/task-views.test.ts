@@ -53,6 +53,23 @@ test("getUpcomingTasks returns non-overdue dated tasks sorted by due date", () =
   );
 });
 
+test("today and upcoming include completed tasks when requested", () => {
+  const tasks = [
+    buildTask({ id: "done-overdue", dueDate: "2026-03-01", status: "done" }),
+    buildTask({ id: "done-today", dueDate: "2026-03-02", status: "done" }),
+    buildTask({ id: "done-future", dueDate: "2026-03-03", status: "done" }),
+  ];
+
+  assert.deepEqual(
+    getTodayTasks(tasks, "2026-03-02", true).map((task) => task.id),
+    ["done-overdue", "done-today"],
+  );
+  assert.deepEqual(
+    getUpcomingTasks(tasks, "2026-03-02", true).map((task) => task.id),
+    ["done-today", "done-future"],
+  );
+});
+
 test("getCompletedTasks returns only done tasks sorted by most recently updated", () => {
   const tasks = [
     buildTask({ id: "done-newest", status: "done", updatedAt: "2026-03-03T11:00:00.000Z" }),

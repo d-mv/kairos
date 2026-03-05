@@ -39,7 +39,7 @@ export function NewTaskInput({
       title: trimmed,
       description: null,
       status: "todo",
-      priority: 1,
+      priority: 4,
       parentTaskId: parentTaskId ?? null,
       projectId: projectId ?? null,
       areaId: areaId ?? null,
@@ -83,7 +83,10 @@ export function NewTaskInput({
 
   return (
     <div className="flex flex-col">
-      <form onSubmit={handleSubmit} className="flex items-center gap-3 bg-gray-200 py-2 px-4">
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-center gap-3 border-t border-border/70 bg-muted/35 px-4 py-2"
+      >
         <Input
           type="text"
           value={title}

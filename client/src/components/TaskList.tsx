@@ -14,6 +14,7 @@ interface TaskListProps {
   showNewTaskInput?: boolean;
   isList?: boolean;
   active?: boolean;
+  appearance?: "desktop" | "mobile";
 }
 
 export function TaskList({
@@ -21,9 +22,10 @@ export function TaskList({
   projectId,
   areaId,
   emptyMessage,
-  showNewTaskInput,
+  showNewTaskInput = true,
   isList,
   active,
+  appearance = "desktop",
 }: TaskListProps) {
   const setSelectedTaskId = useSetAtom(selectedTaskIdAtom);
   const setTasks = useSetAtom(tasksAtom);
@@ -53,12 +55,13 @@ export function TaskList({
   };
 
   return (
-    <ol className="">
+    <ol className={appearance === "mobile" ? "space-y-2 px-1" : ""}>
       {tasks.length === 0 && emptyMessage && (
         <p className="px-4 py-10 text-center text-sm text-muted-foreground">{emptyMessage}</p>
       )}
       {tasks.map((task, i) => (
         <TaskItem
+          appearance={appearance}
           key={task.id}
           isListItem={isList}
           task={task}

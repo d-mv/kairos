@@ -10,7 +10,7 @@ describe("Task", () => {
       const task = result.value;
       expect(task.title).toBe("Write tests");
       expect(task.status).toBe("todo");
-      expect(task.priority).toBe(1);
+      expect(task.priority).toBe(4);
       expect(task.isSubtask()).toBe(false);
       expect(task.isInInbox()).toBe(true);
     });

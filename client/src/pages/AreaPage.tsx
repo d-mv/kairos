@@ -1,20 +1,17 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
 import { useAtomValue, useSetAtom } from "jotai";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
-import { projectsByAreaAtom } from "../atoms/projects.js";
-import { tasksByAreaAtom, selectedTaskIdAtom } from "../atoms/tasks.js";
+import { projectsAtom, projectsByAreaAtom } from "../atoms/projects.js";
+import { selectedTaskIdAtom, tasksAtom, tasksByAreaAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
-import { TaskList } from "../components/TaskList.js";
-import { TaskDetailPanel } from "../components/TaskDetailPanel.js";
 import { CreateProjectButton } from "../components/CreateProjectButton.js";
 import { RenameEntityButton } from "../components/RenameEntityButton.js";
-import { projectsAtom } from "../atoms/projects.js";
-import { tasksAtom } from "../atoms/tasks.js";
-import { api } from "../lib/api.js";
+import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.js";
+import { TaskList } from "../components/TaskList.js";
 import { Button } from "../components/ui/button.js";
 import { ClipboardListIcon, TrashIcon } from "../components/ui/icons.js";
-import { useEffect, useRef, useState } from "react";
+import { api } from "../lib/api.js";
 
 export default function AreaPage() {
   const { id } = useParams<{ id: string }>();

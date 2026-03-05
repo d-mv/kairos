@@ -3,6 +3,7 @@ import type { TaskRepository } from "../../domain/task/index.js";
 import { Result } from "../../domain/shared/index.js";
 import type { EventBus } from "../EventBus.js";
 import { toTaskDTO } from "../mappers.js";
+import { normalizeTaskTitleLinks } from "./normalizeTaskTitleLinks.js";
 
 export interface UpdateTaskInput {
   id: string;
@@ -21,6 +22,7 @@ export class UpdateTask {
   constructor(
     private readonly taskRepo: TaskRepository,
     private readonly eventBus: EventBus,
+    private readonly normalizeTitle: (title: string) => Promise<string> = normalizeTaskTitleLinks,
   ) {}
 
   async execute(input: UpdateTaskInput): Promise<Result<TaskDTO, string>> {
@@ -28,7 +30,8 @@ export class UpdateTask {
     if (!task) return Result.fail("Task not found");
 
     if (input.title !== undefined) {
-      const r = task.updateTitle(input.title);
+      const normalizedTitle = await this.normalizeTitle(input.title);
+      const r = task.updateTitle(normalizedTitle);
       if (r.isErr) return Result.fail(r.error);
     }
 
