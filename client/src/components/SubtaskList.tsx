@@ -13,7 +13,7 @@ export function SubtaskList({ parentTaskId }: SubtaskListProps) {
 
   return (
     <div className="mt-3 overflow-hidden rounded-[1.2rem] border border-border/70 bg-background/40">
-      <TaskList tasks={subtasks} showNewTaskInput={false} />
+      <TaskList tasks={subtasks} showNewTaskInput={false} hideCompleted />
       <div className="pl-6">
         <NewTaskInput parentTaskId={parentTaskId} placeholder="Add a subtask..." />
       </div>

@@ -16,7 +16,7 @@ export function Indent({ entityId, isLast, isActive, className, isListItem }: Pr
     return (
       <span
         id={`indent-h-${entityId}`}
-        className="h-[50%] w-full border-gray-300 border-b-[0.1rem]"
+        className="h-[50%] w-full border-b border-border/50"
       />
     );
   }
@@ -26,7 +26,7 @@ export function Indent({ entityId, isLast, isActive, className, isListItem }: Pr
     return (
       <span
         id={`indent-v-${entityId}`}
-        className={clsx("border-gray-300 border-l-[0.1rem]", isLast ? "h-[50%]" : "h-full")}
+        className={clsx("border-l border-border/50", isLast ? "h-[50%]" : "h-full")}
       />
     );
   }

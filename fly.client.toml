@@ -4,6 +4,12 @@ primary_region = "fra"
 [build]
 dockerfile = "Dockerfile.client"
 
+[build.args]
+VITE_SUPABASE_URL = "https://mirzbygkulqrsknjhsfy.supabase.co"
+VITE_SUPABASE_ANON_KEY = "sb_publishable_MAmkvkJvTRs1fhepyYJoRg_eV5RhmGP"
+VITE_API_URL = "https://kairos-app.fly.dev"
+VITE_WS_URL = "wss://kairos-app.fly.dev/ws"
+
 [http_service]
 internal_port = 8080
 force_https = true

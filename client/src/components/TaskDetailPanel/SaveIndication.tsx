@@ -9,7 +9,7 @@ export function SaveIndication({ saveState }: Props) {
     <span
       className={`rounded-full px-4 py-2 text-xs leading-none font-sans font-normal uppercase tracking-wider ${
         saveState === "saving"
-          ? "bg-sky-500/15 text-sky-700 dark:text-sky-300"
+          ? "bg-muted text-foreground"
           : saveState === "saved"
             ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
             : "bg-destructive/15 text-destructive"

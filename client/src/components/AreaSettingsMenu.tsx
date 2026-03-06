@@ -1,56 +1,34 @@
-import type { AreaDTO } from "@kairos/shared";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button.js";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog.js";
 import { EllipsisVerticalIcon } from "./ui/heroicons.js";
 import { Input } from "./ui/input.js";
 import { Label } from "./ui/label.js";
-import { Select } from "./ui/select.js";
 
-type ProjectSettingsMenuProps = {
-  projectName: string;
-  projectAreaId: string | null;
-  showCompleted: boolean;
-  areas: AreaDTO[];
+type AreaSettingsMenuProps = {
+  areaName: string;
   renameLoading: boolean;
   deleteLoading: boolean;
-  moveLoading: boolean;
-  onToggleShowCompleted: () => void;
   onRename: (name: string) => Promise<void>;
-  onMoveToArea: (areaId: string) => Promise<void>;
-  onDemote: () => Promise<void>;
   onDelete: () => Promise<void>;
 };
 
-export function ProjectSettingsMenu({
-  projectName,
-  projectAreaId,
-  showCompleted,
-  areas,
+export function AreaSettingsMenu({
+  areaName,
   renameLoading,
   deleteLoading,
-  moveLoading,
-  onToggleShowCompleted,
   onRename,
-  onMoveToArea,
-  onDemote,
   onDelete,
-}: ProjectSettingsMenuProps) {
+}: AreaSettingsMenuProps) {
   const [open, setOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
-  const [areaOpen, setAreaOpen] = useState(false);
-  const [renameValue, setRenameValue] = useState(projectName);
-  const [areaValue, setAreaValue] = useState(projectAreaId ?? "");
+  const [renameValue, setRenameValue] = useState(areaName);
   const [renameError, setRenameError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    setRenameValue(projectName);
-  }, [projectName]);
-
-  useEffect(() => {
-    setAreaValue(projectAreaId ?? "");
-  }, [projectAreaId]);
+    setRenameValue(areaName);
+  }, [areaName]);
 
   useEffect(() => {
     if (!open) return;
@@ -83,7 +61,7 @@ export function ProjectSettingsMenu({
           type="button"
           variant={open ? "outline" : "ghost"}
           size="icon"
-          aria-label="Open project menu"
+          aria-label="Open area menu"
           aria-expanded={open}
           onClick={() => setOpen((current) => !current)}
         >
@@ -91,50 +69,18 @@ export function ProjectSettingsMenu({
         </Button>
 
         {open ? (
-          <div className="absolute right-0 top-[calc(100%+0.8rem)] z-20 w-[22rem] rounded-[1.2rem] border border-[var(--color-sidebar-border)] bg-background/95 p-2 text-foreground shadow-[var(--shadow-panel)] backdrop-blur-xl">
-            <button
-              type="button"
-              className="flex w-full rounded-[1rem] border-0 px-3 py-3 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-              onClick={() => {
-                setOpen(false);
-                onToggleShowCompleted();
-              }}
-            >
-              {showCompleted ? "Hide Completed" : "Show Completed"}
-            </button>
+          <div className="absolute right-0 top-[calc(100%+0.8rem)] z-20 w-[20rem] rounded-[1.2rem] border border-[var(--color-sidebar-border)] bg-background/95 p-2 text-foreground shadow-[var(--shadow-panel)] backdrop-blur-xl">
             <button
               type="button"
               className="flex w-full rounded-[1rem] border-0 px-3 py-3 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
               onClick={() => {
                 setOpen(false);
                 setRenameError(null);
-                setRenameValue(projectName);
+                setRenameValue(areaName);
                 setRenameOpen(true);
               }}
             >
               Rename
-            </button>
-            <button
-              type="button"
-              className="flex w-full rounded-[1rem] border-0 px-3 py-3 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-              onClick={() => {
-                setOpen(false);
-                setAreaValue(projectAreaId ?? "");
-                setAreaOpen(true);
-              }}
-            >
-              Area
-            </button>
-            <button
-              type="button"
-              className="flex w-full rounded-[1rem] border-0 px-3 py-3 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-              onClick={() => {
-                setOpen(false);
-                void onDemote();
-              }}
-              disabled={deleteLoading}
-            >
-              Demote To Task
             </button>
             <button
               type="button"
@@ -161,10 +107,10 @@ export function ProjectSettingsMenu({
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Rename Project</DialogTitle>
+            <DialogTitle>Rename Area</DialogTitle>
           </DialogHeader>
           <div className="grid gap-2 py-4">
-            <Label>Project</Label>
+            <Label>Area</Label>
             <Input
               type="text"
               value={renameValue}
@@ -174,13 +120,13 @@ export function ProjectSettingsMenu({
                 event.preventDefault();
                 const nextName = renameValue.trim();
                 if (!nextName) {
-                  setRenameError("Project name is required");
+                  setRenameError("Area name is required");
                   return;
                 }
                 void onRename(nextName).then(
                   () => setRenameOpen(false),
                   (err: unknown) =>
-                    setRenameError(err instanceof Error ? err.message : "Failed to rename project"),
+                    setRenameError(err instanceof Error ? err.message : "Failed to rename area"),
                 );
               }}
               disabled={renameLoading}
@@ -207,69 +153,17 @@ export function ProjectSettingsMenu({
               onClick={() => {
                 const nextName = renameValue.trim();
                 if (!nextName) {
-                  setRenameError("Project name is required");
+                  setRenameError("Area name is required");
                   return;
                 }
                 void onRename(nextName).then(
                   () => setRenameOpen(false),
                   (err: unknown) =>
-                    setRenameError(err instanceof Error ? err.message : "Failed to rename project"),
+                    setRenameError(err instanceof Error ? err.message : "Failed to rename area"),
                 );
               }}
             >
               {renameLoading ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={areaOpen}
-        onOpenChange={(nextOpen) => {
-          if (moveLoading) return;
-          setAreaOpen(nextOpen);
-        }}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Move To Area</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-2 py-4">
-            <Label>Area</Label>
-            <Select
-              value={areaValue}
-              onChange={(event) => setAreaValue(event.target.value)}
-              disabled={deleteLoading || moveLoading}
-              autoFocus
-            >
-              <option value="">Unassigned</option>
-              {areas.map((area) => (
-                <option key={area.id} value={area.id}>
-                  {area.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={moveLoading}
-              onClick={() => {
-                if (moveLoading) return;
-                setAreaOpen(false);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              disabled={moveLoading}
-              onClick={() => {
-                void onMoveToArea(areaValue).then(() => setAreaOpen(false));
-              }}
-            >
-              {moveLoading ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>

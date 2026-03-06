@@ -103,15 +103,15 @@ export function CreateAreaButton({
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Create Area</DialogTitle>
             <DialogDescription>
               Create a new area for grouping projects and direct work.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 px-4 py-4">
-            <Label>Area name</Label>
+          <div className="grid gap-2 py-4">
+            <Label>Area</Label>
             <Input
               type="text"
               value={name}
@@ -129,24 +129,21 @@ export function CreateAreaButton({
             {error && <p className="text-xs text-destructive">{error}</p>}
           </div>
           <DialogFooter>
-            <div className="flex items-center justify-end gap-2">
-              <Button
-                type="button"
-                onClick={() => {
-                  if (loading) return;
-                  setOpen(false);
-                  setError(null);
-                }}
-                variant="outline"
-                size="sm"
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button type="button" onClick={handleCreateArea} size="sm" disabled={loading}>
-                {loading ? "Creating..." : "Create"}
-              </Button>
-            </div>
+            <Button
+              type="button"
+              onClick={() => {
+                if (loading) return;
+                setOpen(false);
+                setError(null);
+              }}
+              variant="outline"
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleCreateArea} disabled={loading}>
+              {loading ? "Creating..." : "Create"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -18,6 +18,7 @@ export async function buildApp() {
   await fastify.register(cors, {
     origin: process.env["CLIENT_URL"] ?? "http://localhost:5173",
     credentials: true,
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   });
 
   await fastify.register(websocket);

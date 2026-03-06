@@ -23,6 +23,7 @@ export default function ProjectPage() {
   const [renameLoading, setRenameLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [moveLoading, setMoveLoading] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
   const [actionState, setActionState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const actionResetTimeoutRef = useRef<number | null>(null);
 
@@ -92,7 +93,15 @@ export default function ProjectPage() {
 
   const handleDelete = async () => {
     if (!project) return;
-    if (!window.confirm(`Delete project "${project.name}"? Tasks will become unassigned.`)) return;
+    const hasTasks = tasks.length > 0;
+    if (
+      hasTasks &&
+      !window.confirm(
+        `Delete project "${project.name}"? All tasks in this project, including completed, will become unassigned.`,
+      )
+    ) {
+      return;
+    }
 
     const previousProject = project;
     const previousTasks = tasks.filter((task) => task.projectId === project.id);
@@ -154,20 +163,22 @@ export default function ProjectPage() {
 
   return (
     <div className="flex h-full flex-1">
-      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[45rem]" : ""}`}>
-        <div className="mx-auto max-w-[72rem] px-[2.4rem] py-[4rem] sm:px-[3.2rem] sm:py-[4.8rem]">
+      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[46rem]" : ""}`}>
+        <div className="mx-auto max-w-[98rem] px-8 py-10 sm:px-12">
           <div className="mb-8 flex items-start justify-between gap-4">
             <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
+              <p className="text-[1rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Project
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{projectName}</h1>
+                <h1 className="text-[3.2rem] font-semibold tracking-tight sm:text-[4.2rem]">
+                  {projectName}
+                </h1>
                 {actionState !== "idle" && (
                   <span
-                    className={`rounded-full px-[1rem] py-[0.5rem] text-[1.1rem] leading-none ${
+                    className={`rounded-full px-3 py-1 text-[1rem] leading-none ${
                       actionState === "saving"
-                        ? "bg-sky-500/15 text-sky-700 dark:text-sky-300"
+                        ? "bg-muted text-foreground"
                         : actionState === "saved"
                           ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
                           : "bg-destructive/15 text-destructive"
@@ -181,17 +192,16 @@ export default function ProjectPage() {
                   </span>
                 )}
               </div>
-              <p className="mt-2 max-w-[42rem] text-sm text-muted-foreground">
-                Plan the work, group related tasks, and promote or demote structure when needed.
-              </p>
             </div>
             <ProjectSettingsMenu
               projectName={projectName}
               projectAreaId={project?.areaId ?? null}
+              showCompleted={showCompleted}
               areas={areas}
               renameLoading={renameLoading}
               deleteLoading={deleteLoading}
               moveLoading={moveLoading}
+              onToggleShowCompleted={() => setShowCompleted((current) => !current)}
               onRename={handleRename}
               onMoveToArea={handleMoveToArea}
               onDemote={handleDemote}
@@ -199,14 +209,20 @@ export default function ProjectPage() {
             />
           </div>
           {isLoading ? (
-            <div className="panel overflow-hidden rounded-[1.6rem]">
-              <div className="skeleton h-[5.6rem] border-b border-border/70" />
-              <div className="skeleton h-[5.6rem] border-b border-border/70" />
-              <div className="skeleton h-[5.6rem] border-b border-border/70" />
+            <div className="panel overflow-hidden rounded-2xl">
+              <div className="skeleton h-[5.6rem]" />
+              <div className="skeleton h-[5.6rem]" />
+              <div className="skeleton h-[5.6rem]" />
               <div className="skeleton h-[5.6rem]" />
             </div>
           ) : (
-            <TaskList isList tasks={tasks} projectId={id} emptyMessage="No tasks yet" />
+            <TaskList
+              isList
+              tasks={tasks}
+              projectId={id}
+              emptyMessage="No tasks yet"
+              hideCompleted={!showCompleted}
+            />
           )}
         </div>
       </div>

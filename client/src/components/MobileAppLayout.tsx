@@ -3,14 +3,20 @@ import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { projectsByAreaAtom } from "../atoms/projects.js";
-import { EllipsisVerticalIcon } from "./ui/heroicons.js";
+import {
+  CalendarDaysIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  EllipsisVerticalIcon,
+  InboxIcon,
+} from "./ui/heroicons.js";
 import { XIcon } from "./ui/icons.js";
 
 const SYSTEM_ITEMS = [
-  { path: "/inbox", label: "Inbox" },
-  { path: "/today", label: "Today" },
-  { path: "/upcoming", label: "Upcoming" },
-  { path: "/completed", label: "Completed" },
+  { path: "/inbox", label: "Inbox", icon: InboxIcon },
+  { path: "/today", label: "Today", icon: CalendarDaysIcon },
+  { path: "/upcoming", label: "Upcoming", icon: ClockIcon },
+  { path: "/completed", label: "Completed", icon: CheckCircleIcon },
 ] as const;
 
 export function MobileAppLayout({ children }: PropsWithChildren) {
@@ -33,15 +39,17 @@ export function MobileAppLayout({ children }: PropsWithChildren) {
     <div id="mobile-app-layout" className="flex h-screen flex-col overflow-hidden bg-background">
       <main className="min-h-0 flex-1 overflow-hidden">{children}</main>
 
-      <nav className="grid h-14 grid-cols-4 border-t border-border bg-background px-1">
+      <nav className="grid h-20 grid-cols-4 border-t border-border/80 bg-card/95 px-2 py-2 backdrop-blur">
         {SYSTEM_ITEMS.slice(0, 3).map((item) => {
           const active = location.pathname === item.path;
           return (
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center justify-center rounded-md text-xs font-medium ${
-                active ? "text-foreground bg-accent/70" : "text-muted-foreground"
+              className={`flex items-center justify-center rounded-xl px-2 py-2 text-[1.3rem] font-medium ${
+                active
+                  ? "bg-accent text-foreground shadow-[inset_0_1px_0_rgb(255_255_255_/_0.08)]"
+                  : "text-muted-foreground"
               }`}
             >
               {item.label}
@@ -50,18 +58,19 @@ export function MobileAppLayout({ children }: PropsWithChildren) {
         })}
         <button
           type="button"
-          className="flex items-center justify-center rounded-md text-muted-foreground"
+          className="flex flex-col items-center justify-center gap-1 rounded-xl text-[1.1rem] font-medium text-muted-foreground"
           onClick={() => setNavigationOpen(true)}
           aria-label="Open full navigation"
         >
-          <EllipsisVerticalIcon className="h-5 w-5 rotate-90" />
+          <EllipsisVerticalIcon className="h-6 w-6 rotate-90" />
+          More
         </button>
       </nav>
 
       {navigationOpen ? (
-        <div className="absolute inset-0 z-40 flex flex-col bg-background">
-          <div className="flex h-14 items-center justify-between border-b border-border px-3">
-            <p className="text-sm font-semibold tracking-wide">Navigation</p>
+        <div className="absolute inset-0 z-40 flex flex-col bg-background/95 backdrop-blur">
+          <div className="flex h-14 items-center justify-between border-b border-border/80 px-3">
+            <p className="text-sm font-semibold tracking-wide">Workspace</p>
             <button
               type="button"
               onClick={() => setNavigationOpen(false)}
@@ -72,17 +81,19 @@ export function MobileAppLayout({ children }: PropsWithChildren) {
             </button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
-            <nav className="space-y-1">
+            <nav className="space-y-1 rounded-2xl border border-border/70 bg-card/70 p-2">
               {SYSTEM_ITEMS.map((item) => {
                 const active = location.pathname === item.path;
+                const Icon = item.icon;
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`block rounded-md px-3 py-2 text-sm ${
+                    className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${
                       active ? "bg-accent text-accent-foreground" : "text-foreground"
                     }`}
                   >
+                    <Icon className="h-5 w-5" />
                     {item.label}
                   </Link>
                 );

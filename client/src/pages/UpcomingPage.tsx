@@ -1,8 +1,7 @@
 import type { TaskDTO } from "@kairos/shared";
 import checkIsMobile from "is-mobile";
-import { useAtom, useAtomValue } from "jotai";
-import { useMemo } from "react";
-import { showCompletedTasksAtom } from "../atoms/pagePrefs.js";
+import { useAtomValue } from "jotai";
+import { useMemo, useState } from "react";
 import { selectedTaskIdAtom, tasksAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { getUpcomingTasks } from "../lib/task-views.js";
@@ -13,7 +12,7 @@ export default function UpcomingPage() {
   const allTasks = useAtomValue(tasksAtom);
   const isLoading = useAtomValue(workspaceLoadingAtom);
   const selectedTaskId = useAtomValue(selectedTaskIdAtom);
-  const [showCompleted, setShowCompleted] = useAtom(showCompletedTasksAtom);
+  const [showCompleted, setShowCompleted] = useState(false);
   const isMobile = checkIsMobile();
   const tasks = getUpcomingTasks(allTasks, new Date().toISOString(), showCompleted);
 

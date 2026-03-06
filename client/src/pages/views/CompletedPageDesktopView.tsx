@@ -15,19 +15,21 @@ export function CompletedPageDesktopView({
 }: CompletedPageDesktopViewProps) {
   return (
     <div className="flex h-full flex-1">
-      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[45rem]" : ""}`}>
-        <div className="mx-auto max-w-[72rem] px-[2.4rem] py-[4rem] sm:px-[3.2rem] sm:py-[4.8rem]">
+      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[46rem]" : ""}`}>
+        <div className="mx-auto max-w-[98rem] px-8 py-10 sm:px-12">
           <div className="mb-8">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
+            <p className="text-[1rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               Archive
             </p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Completed</h1>
+            <h1 className="mt-2 text-[3.2rem] font-semibold tracking-tight sm:text-[4.2rem]">
+              Completed
+            </h1>
           </div>
           {isLoading ? (
-            <div className="panel overflow-hidden rounded-[1.6rem]">
-              <div className="skeleton h-[5.6rem] border-b border-border/70" />
-              <div className="skeleton h-[5.6rem] border-b border-border/70" />
-              <div className="skeleton h-[5.6rem] border-b border-border/70" />
+            <div className="panel overflow-hidden rounded-2xl">
+              <div className="skeleton h-[5.6rem]" />
+              <div className="skeleton h-[5.6rem]" />
+              <div className="skeleton h-[5.6rem]" />
               <div className="skeleton h-[5.6rem]" />
             </div>
           ) : (

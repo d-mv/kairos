@@ -1,6 +1,6 @@
 import checkIsMobile from "is-mobile";
-import { useAtomValue, useAtom } from "jotai";
-import { showCompletedTasksAtom } from "../atoms/pagePrefs.js";
+import { useAtomValue } from "jotai";
+import { useState } from "react";
 import { inboxTasksAtom, selectedTaskIdAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { InboxPageDesktopView } from "./views/InboxPageDesktopView.js";
@@ -10,7 +10,7 @@ export default function InboxPage() {
   const tasks = useAtomValue(inboxTasksAtom);
   const isLoading = useAtomValue(workspaceLoadingAtom);
   const selectedTaskId = useAtomValue(selectedTaskIdAtom);
-  const [showCompleted, setShowCompleted] = useAtom(showCompletedTasksAtom);
+  const [showCompleted, setShowCompleted] = useState(false);
   const isMobile = checkIsMobile();
 
   const topLevelTasks = tasks.filter(

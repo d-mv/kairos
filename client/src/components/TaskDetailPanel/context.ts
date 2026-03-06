@@ -1,5 +1,4 @@
 import type { TaskDTO, TaskDurationUnit, TaskPriority } from "@kairos/shared";
-import type { MouseEvent } from "react";
 
 export type TaskDetailPanelController = {
   task: TaskDTO;
@@ -21,7 +20,7 @@ export type TaskDetailPanelController = {
   handleDelete: () => Promise<void>;
   handlePromote: () => Promise<void>;
   handleClose: () => void;
-  handleToggleComplete: (task: TaskDTO) => (e: MouseEvent) => Promise<void>;
+  handleToggleComplete: (task: TaskDTO) => () => Promise<void>;
   persistTaskChanges: (overrides?: {
     title?: string;
     description?: string;

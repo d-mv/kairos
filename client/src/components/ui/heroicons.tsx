@@ -6,6 +6,102 @@ type HeroIconProps = SVGProps<SVGSVGElement> & {
 };
 
 // Copied from Heroicons v2.2.0 (MIT).
+export const InboxIcon = forwardRef<SVGSVGElement, HeroIconProps>(
+  ({ title, titleId, ...props }, ref) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+      data-slot="icon"
+      ref={ref}
+      aria-labelledby={titleId}
+      {...props}
+    >
+      {title ? <title id={titleId}>{title}</title> : null}
+      <path
+        fillRule="evenodd"
+        d="M1 3.5A1.5 1.5 0 0 1 2.5 2h15A1.5 1.5 0 0 1 19 3.5v.528a1.5 1.5 0 0 1-.464 1.082l-5.72 5.498a2.5 2.5 0 0 1-3.632 0l-5.72-5.498A1.5 1.5 0 0 1 3 4.028V3.5Zm0 3.293 5.027 4.83a4 4 0 0 0 5.946 0L17 6.793V15.5A2.5 2.5 0 0 1 14.5 18h-9A2.5 2.5 0 0 1 3 15.5V6.793Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  ),
+);
+InboxIcon.displayName = "InboxIcon";
+
+// Copied from Heroicons v2.2.0 (MIT).
+export const CalendarDaysIcon = forwardRef<SVGSVGElement, HeroIconProps>(
+  ({ title, titleId, ...props }, ref) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+      data-slot="icon"
+      ref={ref}
+      aria-labelledby={titleId}
+      {...props}
+    >
+      {title ? <title id={titleId}>{title}</title> : null}
+      <path
+        fillRule="evenodd"
+        d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.75A2.25 2.25 0 0 1 18 6.25v9.5A2.25 2.25 0 0 1 15.75 18h-11.5A2.25 2.25 0 0 1 2 15.75v-9.5A2.25 2.25 0 0 1 4.25 4H5V2.75A.75.75 0 0 1 5.75 2Zm10.75 6H3.5v7.75c0 .414.336.75.75.75h11.5a.75.75 0 0 0 .75-.75V8Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  ),
+);
+CalendarDaysIcon.displayName = "CalendarDaysIcon";
+
+// Copied from Heroicons v2.2.0 (MIT).
+export const ClockIcon = forwardRef<SVGSVGElement, HeroIconProps>(
+  ({ title, titleId, ...props }, ref) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+      data-slot="icon"
+      ref={ref}
+      aria-labelledby={titleId}
+      {...props}
+    >
+      {title ? <title id={titleId}>{title}</title> : null}
+      <path
+        fillRule="evenodd"
+        d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-11a.75.75 0 0 0-1.5 0v3.5c0 .2.08.39.22.53l2.25 2.25a.75.75 0 1 0 1.06-1.06l-2.03-2.03V7Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  ),
+);
+ClockIcon.displayName = "ClockIcon";
+
+// Copied from Heroicons v2.2.0 (MIT).
+export const CheckCircleIcon = forwardRef<SVGSVGElement, HeroIconProps>(
+  ({ title, titleId, ...props }, ref) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+      data-slot="icon"
+      ref={ref}
+      aria-labelledby={titleId}
+      {...props}
+    >
+      {title ? <title id={titleId}>{title}</title> : null}
+      <path
+        fillRule="evenodd"
+        d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.78-9.97a.75.75 0 0 0-1.06-1.06L9.25 10.44 7.78 8.97a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l4-4Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  ),
+);
+CheckCircleIcon.displayName = "CheckCircleIcon";
+
+// Copied from Heroicons v2.2.0 (MIT).
 export const EllipsisVerticalIcon = forwardRef<SVGSVGElement, HeroIconProps>(
   ({ title, titleId, ...props }, ref) => (
     <svg

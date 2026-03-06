@@ -52,8 +52,8 @@ export function AppLayout() {
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground lg:flex-row">
       <Sidebar />
-      <main className="relative flex-1 overflow-y-auto">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[18rem] bg-gradient-to-b from-accent/50 to-transparent" />
+      <main className="relative flex-1 overflow-y-auto px-2 py-2 lg:px-3 lg:py-3">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[16rem] bg-gradient-to-b from-muted/60 to-transparent" />
         {error && errorPanel}
         {!error && <Outlet />}
       </main>

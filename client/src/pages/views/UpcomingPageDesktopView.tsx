@@ -21,14 +21,16 @@ export function UpcomingPageDesktopView({
 }: UpcomingPageDesktopViewProps) {
   return (
     <div className="flex h-full flex-1">
-      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-180" : ""}`}>
-        <div className="mx-auto max-w-6xl px-[2.4rem] py-16 sm:px-[3.2rem] sm:py-[4.8rem]">
+      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[46rem]" : ""}`}>
+        <div className="mx-auto max-w-[98rem] px-8 py-10 sm:px-12">
           <div className="mb-8 flex items-start justify-between gap-4">
             <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
+              <p className="text-[1rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Planning
               </p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Upcoming</h1>
+              <h1 className="mt-2 text-[3.2rem] font-semibold tracking-tight sm:text-[4.2rem]">
+                Upcoming
+              </h1>
             </div>
             <PageTaskMenu
               showCompleted={showCompleted}
@@ -36,25 +38,26 @@ export function UpcomingPageDesktopView({
             />
           </div>
           {isLoading ? (
-            <div className="panel overflow-hidden rounded-[1.6rem]">
-              <div className="skeleton h-[5.6rem] border-b border-border/70" />
-              <div className="skeleton h-[5.6rem] border-b border-border/70" />
-              <div className="skeleton h-[5.6rem] border-b border-border/70" />
+            <div className="panel overflow-hidden rounded-2xl">
+              <div className="skeleton h-[5.6rem]" />
+              <div className="skeleton h-[5.6rem]" />
+              <div className="skeleton h-[5.6rem]" />
               <div className="skeleton h-[5.6rem]" />
             </div>
           ) : (
-            <ul className="mt-8">
-              {groupedTasks.map(([date, tasks]) => (
-                <li key={date} className="my-4 text-sm text-muted-foreground">
-                  <div style={{ width: "fit-content" }}>
-                    <div className="flex items-center gap-4 py-2">
-                      <span className="font-light">{toDistance(date)}</span>
-                      <span className="text-xs">({toFormat(date)})</span>
-                    </div>
-                    <div className="border-b-[0.1rem] border-gray-300" />
+            <ul className="mt-6 space-y-5">
+              {groupedTasks.map(([date, groupTasks]) => (
+                <li key={date} className="rounded-xl bg-card/70 p-3 text-[1.3rem] text-muted-foreground shadow-sm">
+                  <div className="mb-2 flex items-center gap-2 px-1">
+                    <span className="font-medium text-foreground">{toDistance(date)}</span>
+                    <span className="text-[1.1rem]">({toFormat(date)})</span>
                   </div>
-                  <div className="h-[.5rem] border-l-[0.1rem] border-gray-300" />
-                  <TaskList active tasks={tasks} showNewTaskInput={false} />
+                  <TaskList
+                    active
+                    tasks={groupTasks}
+                    showNewTaskInput={false}
+                    hideCompleted={!showCompleted}
+                  />
                 </li>
               ))}
             </ul>

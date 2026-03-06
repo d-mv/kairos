@@ -28,7 +28,7 @@ export function AddNewButton({ children, type, label, className }: PropsWithChil
       size="sm"
       onClick={handleClick}
       className={cn(
-        "justify-start rounded-2xl px-4 py-3 text-left text-sm font-light hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground",
+        "justify-start rounded-2xl px-4 py-3 text-left text-[1.5rem] font-light hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground",
         className,
       )}
     >

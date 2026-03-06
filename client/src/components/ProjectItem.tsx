@@ -12,9 +12,16 @@ type Props = {
   isLast: boolean;
   busyProjectId: string | null;
   handleDeleteProject: (projectId: string) => Promise<void>;
+  showIndent?: boolean;
 };
 
-export function ProjectItem({ project, isLast, busyProjectId, handleDeleteProject }: Props) {
+export function ProjectItem({
+  project,
+  isLast,
+  busyProjectId,
+  handleDeleteProject,
+  showIndent = true,
+}: Props) {
   const setRenameEntityDialog = useSetAtom(renameEntityAtom);
 
   const location = useLocation();
@@ -30,7 +37,7 @@ export function ProjectItem({ project, isLast, busyProjectId, handleDeleteProjec
 
   function renderHoverActions() {
     return (
-      <div className="shrink-0 items-center gap-2 hidden group-hover:flex text-xs font-light group-hover:bg-accent">
+      <div className="flex shrink-0 items-center gap-1 pr-2 opacity-0 pointer-events-none transition-opacity duration-200 ease-out [transition-delay:0ms] group-hover:opacity-100 group-hover:pointer-events-auto group-hover:[transition-delay:1000ms]">
         <InlineButton
           id={`rename-project-${project.id}`}
           disabled={busyProjectId === project.id}
@@ -56,10 +63,23 @@ export function ProjectItem({ project, isLast, busyProjectId, handleDeleteProjec
 
   return (
     <div
-      className={clsx("group transition-colors grid grid-cols-[1rem_1fr_6rem] grid-rows-[3rem]")}
+      className={clsx(
+        "group grid h-[3rem] rounded-lg transition-colors",
+        showIndent ? "grid-cols-[1rem_1fr_auto]" : "grid-cols-[1fr_auto]",
+        isActiveProject
+          ? "bg-accent text-accent-foreground"
+          : "text-sidebar-foreground hover:bg-accent/70 hover:text-accent-foreground",
+      )}
     >
-      <ProjectIndent projectId={project.id} isLast={isLast} isActive={isActiveProject} />
-      <SidebarItem path={`/project/${project.id}`}>{project.name}</SidebarItem>
+      {showIndent ? (
+        <ProjectIndent projectId={project.id} isLast={isLast} isActive={isActiveProject} />
+      ) : null}
+      <SidebarItem
+        path={`/project/${project.id}`}
+        className="bg-transparent px-3 py-1.5 hover:bg-transparent"
+      >
+        {project.name}
+      </SidebarItem>
       {renderHoverActions()}
     </div>
   );

@@ -18,18 +18,17 @@ export function AreaItem({ area, busyProjectId, handleDeleteProject }: Props) {
 
   const areaProjects = projectsByArea.get(area.id) ?? [];
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-1">
       <Link
         to={`/area/${area.id}`}
-        className={`flex items-center gap-3 px-3 py-[1rem] text-sm font-semibold transition-colors ${
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-[1.5rem] font-medium transition-colors ${
           isActive(`/area/${area.id}`)
-            ? "bg-(--color-sidebar-accent) text-accent-foreground"
-            : "text-sidebar-foreground hover:bg-(--color-sidebar-accent) hover:text-accent-foreground"
+            ? "bg-accent text-accent-foreground"
+            : "text-sidebar-foreground hover:bg-accent/70 hover:text-accent-foreground"
         }`}
       >
         <span className="truncate">{area.name}</span>
       </Link>
-      <div className={"border-gray-300 border-b-[0.1rem]"} />
       {areaProjects.map((project, index) => (
         <ProjectItem
           key={project.id}

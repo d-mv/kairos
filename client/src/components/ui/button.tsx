@@ -3,23 +3,23 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../lib/utils.js";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-[0.8rem] whitespace-nowrap rounded-xl text-[1.4rem] font-medium transition-all disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "inline-flex items-center justify-center gap-[0.8rem] whitespace-nowrap rounded-lg text-[1.3rem] font-medium transition-all disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255_/_0.18)] hover:-translate-y-0.5 hover:opacity-95",
+          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/92",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-[inset_0_1px_0_rgb(255_255_255_/_0.12)] hover:-translate-y-0.5 hover:opacity-95",
+          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
-          "border border-border bg-card/80 text-foreground hover:bg-accent hover:text-accent-foreground",
-        ghost: "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+          "border border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
+        ghost: "text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground",
       },
       size: {
-        default: "h-[4rem] px-[1.6rem] py-[0.8rem]",
-        sm: "h-[3.4rem] px-[1.2rem] text-[1.2rem]",
-        lg: "h-[4.4rem] px-[2rem]",
-        icon: "h-[3.6rem] w-[3.6rem]",
+        default: "h-[3.8rem] px-[1.4rem] py-[0.8rem]",
+        sm: "h-[3.2rem] px-[1.1rem] text-[1.2rem]",
+        lg: "h-[4.2rem] px-[1.8rem]",
+        icon: "h-[3.4rem] w-[3.4rem]",
       },
     },
     defaultVariants: {

@@ -1,7 +1,7 @@
 import type { TaskDTO, TaskDurationUnit, TaskPriority } from "@kairos/shared";
 import checkIsMobile from "is-mobile";
 import { useAtomValue, useSetAtom } from "jotai";
-import { MouseEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { selectedTaskAtom, selectedTaskIdAtom, tasksAtom } from "../../atoms/tasks.js";
 import { api } from "../../lib/api.js";
 import { getTaskErrorMessage } from "../../lib/task-errors.js";
@@ -240,8 +240,7 @@ export function TaskDetailPanel() {
     }
   };
 
-  const handleToggleComplete = (task: TaskDTO) => async (e: MouseEvent) => {
-    e.stopPropagation();
+  const handleToggleComplete = (task: TaskDTO) => async () => {
     const previousTask = task;
     const optimisticTask: TaskDTO = {
       ...task,
@@ -352,7 +351,7 @@ export function TaskDetailPanel() {
               task.status === "done"
                 ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300"
                 : task.status === "in_progress"
-                  ? "bg-sky-500/15 text-sky-700 dark:text-sky-300"
+                  ? "bg-muted text-foreground"
                   : "bg-muted text-muted-foreground"
             }`}
           >
@@ -443,7 +442,10 @@ export function TaskDetailPanel() {
             Promote to Project
           </Button>
         )}
-        <Button onClick={handleDelete} className="w-full" variant="destructive">
+        <Button
+          onClick={handleDelete}
+          className="w-full bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:text-white dark:hover:bg-red-500"
+        >
           <TrashIcon size={16} />
           <span>Delete task</span>
         </Button>

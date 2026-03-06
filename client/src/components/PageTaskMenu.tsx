@@ -45,18 +45,18 @@ export function PageTaskMenu({ showCompleted, onToggleShowCompleted }: PageTaskM
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
       >
-        <EllipsisVerticalIcon className="h-5 w-5" />
+        <EllipsisVerticalIcon className="h-6 w-6" />
       </Button>
       {open ? (
-        <div className="absolute right-0 top-[calc(100%+0.8rem)] z-20 w-[19rem] rounded-[1.2rem] border border-[var(--color-sidebar-border)] bg-background/95 p-2 text-foreground shadow-[var(--shadow-panel)] backdrop-blur-xl">
-          <div className="flex items-center justify-between rounded-[1rem] px-3 py-3">
+        <div className="absolute right-0 top-[calc(100%+0.6rem)] z-20 w-[19rem] rounded-xl border border-border/80 bg-card/95 p-2 text-foreground shadow-[var(--shadow-panel)] backdrop-blur-xl">
+          <div className="flex items-center justify-between rounded-lg px-3 py-3">
             <span className="text-sm">Show completed</span>
             <button
               type="button"
               role="switch"
               aria-checked={showCompleted}
               onClick={onToggleShowCompleted}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full border transition-colors ${
                 showCompleted ? "bg-primary" : "bg-muted"
               }`}
             >

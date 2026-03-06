@@ -1,6 +1,6 @@
 import checkIsMobile from "is-mobile";
-import { useAtom, useAtomValue } from "jotai";
-import { showCompletedTasksAtom } from "../atoms/pagePrefs.js";
+import { useAtomValue } from "jotai";
+import { useState } from "react";
 import { selectedTaskIdAtom, tasksAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { getTodayTasks } from "../lib/task-views.js";
@@ -11,7 +11,7 @@ export default function TodayPage() {
   const allTasks = useAtomValue(tasksAtom);
   const isLoading = useAtomValue(workspaceLoadingAtom);
   const selectedTaskId = useAtomValue(selectedTaskIdAtom);
-  const [showCompleted, setShowCompleted] = useAtom(showCompletedTasksAtom);
+  const [showCompleted, setShowCompleted] = useState(false);
   const isMobile = checkIsMobile();
   const tasks = getTodayTasks(allTasks, new Date().toISOString(), showCompleted);
 

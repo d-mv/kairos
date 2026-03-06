@@ -10,15 +10,14 @@ import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { api } from "../lib/api.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { AddNewButton } from "./AddNewButton.js";
+import { AddNewEntityDialog } from "./AddEntityDialog.js";
 import { AreaItem } from "./AreaItem.js";
 import { Menu } from "./Menu/Menu.js";
-import { RenameEntityButton } from "./RenameEntityButton.js";
 import { RenameEntityDialog } from "./RenameEntityDialog.js";
+import { ProjectItem } from "./ProjectItem.js";
 import { SectionLabel } from "./SectionLabel.js";
 import { SystemSidebarItem } from "./SystemSidebarItem.js";
 import { SYSTEM_SIDEBAR_ITEMS } from "./data.js";
-import { Button } from "./ui/button.js";
-import { ClipboardListIcon, TrashIcon } from "./ui/icons.js";
 
 export function Sidebar() {
   const areas = useAtomValue(areasAtom);
@@ -136,10 +135,7 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="py-6 px-6 flex min-h-0 flex-col gap-6 text-[var(--color-sidebar-foreground)] relative w-[30rem]">
-        <p className="text-[1.1rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-          Workspace
-        </p>
+      <aside className="relative flex min-h-0 w-[31rem] flex-col gap-5 border-r border-sidebar-border/80 bg-sidebar/90 px-5 py-5 text-[var(--color-sidebar-foreground)] backdrop-blur">
         <Menu />
         <nav className={`overflow-y-auto flex flex-col gap-6`}>
           {isLoading ? (
@@ -156,7 +152,7 @@ export function Sidebar() {
 
               {areas.length > 0 && (
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between pie-3 pb-1">
+                  <div className="flex items-center justify-between pb-1 pe-3">
                     <SectionLabel>Areas</SectionLabel>
                     <AddNewButton type="area" label="Area">
                       + New area
@@ -173,7 +169,7 @@ export function Sidebar() {
                 </div>
               )}
               {areas.length === 0 && (
-                <div className="soft-panel rounded-[1.35rem] p-3">
+                <div className="soft-panel rounded-xl p-3">
                   <SectionLabel>Areas</SectionLabel>
                   <p className="mt-2 text-sm text-muted-foreground">
                     Create your first area to group related projects.
@@ -185,65 +181,28 @@ export function Sidebar() {
               )}
 
               <div className="space-y-1">
-                <div className="flex items-center justify-between pie-3 pb-1">
+                <div className="flex items-center justify-between pb-1 pe-3">
                   <SectionLabel>Projects</SectionLabel>
                   <AddNewButton type="project" label="Project">
                     + New project
                   </AddNewButton>
                 </div>
-                {unassignedProjects.map((project) => (
-                  <div
+                {unassignedProjects.map((project, index) => (
+                  <ProjectItem
                     key={project.id}
-                    className={`rounded-2xl transition-colors ${
-                      isActive(`/project/${project.id}`)
-                        ? "bg-[var(--color-sidebar-accent)] text-accent-foreground"
-                        : "text-[var(--color-sidebar-foreground)] hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 px-2 py-2">
-                      <Link
-                        to={`/project/${project.id}`}
-                        className="flex min-w-0 flex-1 items-center gap-3 rounded-[1.2rem] px-2 py-2 text-sm transition-colors"
-                      >
-                        <ClipboardListIcon size={20} />
-                        <span className="truncate">{project.name}</span>
-                      </Link>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <RenameEntityButton
-                          currentName={project.name}
-                          entityLabel="Project"
-                          loading={busyProjectId === project.id}
-                          onRename={(name) => handleRenameProject(project.id, name)}
-                          iconOnly
-                          size="sm"
-                          variant="ghost"
-                          className="h-[3rem] w-[3rem] rounded-[1rem] p-0"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          disabled={busyProjectId === project.id}
-                          aria-label="Delete project"
-                          className="h-[3rem] w-[3rem] rounded-[1rem] text-destructive hover:text-destructive"
-                          onClick={() => {
-                            void handleDeleteProject(project.id);
-                          }}
-                        >
-                          <TrashIcon
-                            size={14}
-                            className={busyProjectId === project.id ? "opacity-40" : ""}
-                          />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                    project={project}
+                    isLast={index === unassignedProjects.length - 1}
+                    busyProjectId={busyProjectId}
+                    handleDeleteProject={handleDeleteProject}
+                    showIndent={false}
+                  />
                 ))}
               </div>
             </>
           )}
         </nav>
       </aside>
+      <AddNewEntityDialog />
       <RenameEntityDialog onRename={handleRename} />
     </>
   );

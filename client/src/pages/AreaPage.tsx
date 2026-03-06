@@ -5,12 +5,11 @@ import { areasAtom } from "../atoms/areas.js";
 import { projectsAtom, projectsByAreaAtom } from "../atoms/projects.js";
 import { selectedTaskIdAtom, tasksAtom, tasksByAreaAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
-import { CreateProjectButton } from "../components/CreateProjectButton.js";
-import { RenameEntityButton } from "../components/RenameEntityButton.js";
+import { AreaSettingsMenu } from "../components/AreaSettingsMenu.js";
+import { NewProjectInput } from "../components/NewProjectInput.js";
 import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.js";
 import { TaskList } from "../components/TaskList.js";
-import { Button } from "../components/ui/button.js";
-import { ClipboardListIcon, TrashIcon } from "../components/ui/icons.js";
+import { ClipboardListIcon } from "../components/ui/icons.js";
 import { api } from "../lib/api.js";
 
 export default function AreaPage() {
@@ -26,7 +25,6 @@ export default function AreaPage() {
   const setTasks = useSetAtom(tasksAtom);
   const [renameLoading, setRenameLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [busyProjectId, setBusyProjectId] = useState<string | null>(null);
   const [actionState, setActionState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const actionResetTimeoutRef = useRef<number | null>(null);
 
@@ -129,71 +127,22 @@ export default function AreaPage() {
     }
   };
 
-  const handleRenameProject = async (projectId: string, name: string) => {
-    const project = projects.find((item) => item.id === projectId);
-    if (!project) return;
-
-    const previousProject = project;
-    const optimisticProject = { ...project, name, updatedAt: new Date().toISOString() };
-    setBusyProjectId(projectId);
-    setProjects((prev) => prev.map((item) => (item.id === projectId ? optimisticProject : item)));
-
-    try {
-      const updated = await api.projects.update(projectId, { name });
-      setProjects((prev) => prev.map((item) => (item.id === projectId ? updated : item)));
-    } catch (err) {
-      setProjects((prev) => prev.map((item) => (item.id === projectId ? previousProject : item)));
-      throw err instanceof Error ? err : new Error("Failed to rename project");
-    } finally {
-      setBusyProjectId((current) => (current === projectId ? null : current));
-    }
-  };
-
-  const handleDeleteProject = async (projectId: string) => {
-    const project = projects.find((item) => item.id === projectId);
-    if (!project) return;
-    if (!window.confirm(`Delete project "${project.name}"? Tasks will become unassigned.`)) return;
-
-    const previousProject = project;
-    const previousTasks = tasks.filter((task) => task.projectId === projectId);
-    setBusyProjectId(projectId);
-    setProjects((prev) => prev.filter((item) => item.id !== projectId));
-    setTasks((prev) =>
-      prev.map((item) => (item.projectId === projectId ? { ...item, projectId: null } : item)),
-    );
-
-    try {
-      await api.projects.delete(projectId);
-    } catch (err) {
-      setProjects((prev) => {
-        if (prev.some((item) => item.id === previousProject.id)) return prev;
-        return [...prev, previousProject];
-      });
-      setTasks((prev) =>
-        prev.map((item) => previousTasks.find((task) => task.id === item.id) ?? item),
-      );
-      window.alert(err instanceof Error ? err.message : "Failed to delete project");
-    } finally {
-      setBusyProjectId((current) => (current === projectId ? null : current));
-    }
-  };
-
   return (
     <div className="flex h-full flex-1">
-      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[45rem]" : ""}`}>
-        <div className="mx-auto max-w-[72rem] px-[2.4rem] py-[4rem] sm:px-[3.2rem] sm:py-[4.8rem]">
-          <div className="mb-8 flex flex-col gap-4 sm:items-start sm:justify-between lg:flex-row">
+      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[46rem]" : ""}`}>
+        <div className="mx-auto max-w-[98rem] px-8 py-10 sm:px-12">
+          <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
-                Area
-              </p>
+              <p className="text-[1rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">Area</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{areaName}</h1>
+                <h1 className="text-[3.2rem] font-semibold tracking-tight sm:text-[4.2rem]">
+                  {areaName}
+                </h1>
                 {actionState !== "idle" && (
                   <span
-                    className={`rounded-full px-[1rem] py-[0.5rem] text-[1.1rem] leading-none ${
+                    className={`rounded-full px-3 py-1 text-[1rem] leading-none ${
                       actionState === "saving"
-                        ? "bg-sky-500/15 text-sky-700 dark:text-sky-300"
+                        ? "bg-muted text-foreground"
                         : actionState === "saved"
                           ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
                           : "bg-destructive/15 text-destructive"
@@ -207,105 +156,63 @@ export default function AreaPage() {
                   </span>
                 )}
               </div>
-              <p className="mt-2 max-w-[42rem] text-sm text-muted-foreground">
-                Organize related projects and direct area-level work without losing visibility.
-              </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 self-start">
-              <RenameEntityButton
-                currentName={areaName}
-                entityLabel="Area"
-                loading={renameLoading}
-                onRename={handleRename}
-                iconOnly
-                className="h-[3.4rem] w-[3.4rem] p-0"
-              />
-              <CreateProjectButton label="New Project" areaId={id} variant="outline" size="sm" />
-              <Button
-                onClick={handleDelete}
-                variant="destructive"
-                size="icon"
-                disabled={deleteLoading}
-                aria-label="Delete area"
-                className="h-[3.4rem] w-[3.4rem]"
-              >
-                <TrashIcon size={14} className={deleteLoading ? "opacity-40" : ""} />
-              </Button>
-            </div>
+            <AreaSettingsMenu
+              areaName={areaName}
+              renameLoading={renameLoading}
+              deleteLoading={deleteLoading}
+              onRename={handleRename}
+              onDelete={handleDelete}
+            />
           </div>
 
-          {isLoading ? (
-            <div className="mb-8">
-              <h2 className="mb-3 text-lg font-semibold">Projects</h2>
-              <div className="grid gap-3 lg:grid-cols-2">
-                <div className="skeleton h-[8.8rem] rounded-[1.4rem]" />
-                <div className="skeleton h-[8.8rem] rounded-[1.4rem]" />
-              </div>
-            </div>
-          ) : (
-            projects.length > 0 && (
-              <div className="mb-8">
-                <h2 className="mb-3 text-lg font-semibold">Projects</h2>
-                <div className="grid gap-3 lg:grid-cols-2">
-                  {projects.map((project) => (
-                    <div key={project.id} className="soft-panel rounded-[1.4rem] p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <Link
-                          to={`/project/${project.id}`}
-                          className="flex min-w-0 flex-1 items-center gap-3 transition-colors hover:text-accent-foreground"
-                        >
-                          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-foreground/70">
-                            <ClipboardListIcon size={16} />
-                          </span>
-                          <span className="truncate font-medium">{project.name}</span>
-                        </Link>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <RenameEntityButton
-                            currentName={project.name}
-                            entityLabel="Project"
-                            loading={busyProjectId === project.id}
-                            onRename={(name) => handleRenameProject(project.id, name)}
-                            iconOnly
-                            size="sm"
-                            variant="outline"
-                            className="h-[3.4rem] w-[3.4rem] p-0"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            disabled={busyProjectId === project.id}
-                            aria-label="Delete project"
-                            className="h-[3.4rem] w-[3.4rem]"
-                            onClick={() => {
-                              void handleDeleteProject(project.id);
-                            }}
-                          >
-                            <TrashIcon
-                              size={14}
-                              className={busyProjectId === project.id ? "opacity-40" : ""}
-                            />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          )}
-
-          <div>
-            <h2 className="mb-3 text-lg font-semibold">Tasks</h2>
+          <div className="mb-8">
+            <h2 className="mb-3 text-[2rem] font-semibold tracking-tight">Projects</h2>
             {isLoading ? (
-              <div className="panel overflow-hidden rounded-[1.6rem]">
-                <div className="skeleton h-[5.6rem] border-b border-border/70" />
-                <div className="skeleton h-[5.6rem] border-b border-border/70" />
-                <div className="skeleton h-[5.6rem] border-b border-border/70" />
+              <div className="panel overflow-hidden rounded-2xl">
+                <div className="skeleton h-[5.6rem]" />
+                <div className="skeleton h-[5.6rem]" />
                 <div className="skeleton h-[5.6rem]" />
               </div>
             ) : (
-              <TaskList tasks={tasks} areaId={id} emptyMessage="No tasks in this area" />
+              <>
+                <div className="space-y-1">
+                  {projects.map((project) => (
+                    <Link
+                      key={project.id}
+                      to={`/project/${project.id}`}
+                      className="soft-panel flex min-h-[4.8rem] items-center gap-3 rounded-xl px-4 py-3 transition-colors hover:bg-accent/40"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-foreground/70">
+                        <ClipboardListIcon size={16} />
+                      </span>
+                      <span className="truncate text-[1.55rem]">{project.name}</span>
+                    </Link>
+                  ))}
+                </div>
+                {projects.length === 0 ? (
+                  <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+                    No projects in this area
+                  </p>
+                ) : null}
+                <div className="mt-3">
+                  <NewProjectInput areaId={id} />
+                </div>
+              </>
+            )}
+          </div>
+
+          <div>
+            <h2 className="mb-3 text-[2rem] font-semibold tracking-tight">Tasks</h2>
+            {isLoading ? (
+              <div className="panel overflow-hidden rounded-2xl">
+                <div className="skeleton h-[5.6rem]" />
+                <div className="skeleton h-[5.6rem]" />
+                <div className="skeleton h-[5.6rem]" />
+                <div className="skeleton h-[5.6rem]" />
+              </div>
+            ) : (
+              <TaskList tasks={tasks} areaId={id} emptyMessage="No tasks in this area" hideCompleted />
             )}
           </div>
         </div>

@@ -21,11 +21,11 @@ export function InlineButton({
       id={id}
       type="button"
       variant="ghost"
-      size="icon"
+      size="sm"
       disabled={disabled}
       aria-label="Delete project"
       className={cn(
-        "h-12 w-12 rounded-2xl text-xs font-light hover:underline underline-offset-[0.3rem] decoration-[0.1rem] cursor-pointer",
+        "h-7 rounded-md px-2 text-[1.1rem] font-medium hover:bg-accent/80 hover:no-underline",
         className,
       )}
       onClick={onClick}

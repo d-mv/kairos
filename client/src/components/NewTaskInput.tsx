@@ -83,10 +83,7 @@ export function NewTaskInput({
 
   return (
     <div className="flex flex-col">
-      <form
-        onSubmit={handleSubmit}
-        className="flex items-center gap-3 border-t border-border/70 bg-muted/35 px-4 py-2"
-      >
+      <form onSubmit={handleSubmit} className="flex items-center">
         <Input
           type="text"
           value={title}
@@ -96,10 +93,10 @@ export function NewTaskInput({
           }}
           placeholder={placeholder}
           disabled={loading}
-          className="h-auto flex-1 border-none bg-transparent  px-0 py-0 text-base shadow-none focus-visible:ring-0"
+          className="h-[5.6rem] flex-1 rounded-[1.8rem] px-[1.8rem] py-[1.1rem] text-[1.55rem] leading-tight"
         />
       </form>
-      {error ? <p className="mt-2 text-xs text-destructive">{error}</p> : null}
+      {error ? <p className="mt-2 px-1 text-xs text-destructive">{error}</p> : null}
     </div>
   );
 }

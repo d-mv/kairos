@@ -10,7 +10,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, ...pr
     <input
       ref={ref}
       className={cn(
-        "flex h-16 w-full rounded-xl border border-border bg-card/75 px-[1.2rem] py-[0.8rem] text-[1.4rem] shadow-sm transition-colors outline-none placeholder:text-muted-foreground/80 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50",
+        "block h-[32px] w-full min-w-0 rounded-[10px] border border-input bg-transparent px-[10px] py-[4px] text-[14px] leading-[20px] transition-[color,background-color,border-color,outline-color,text-decoration-color,fill,stroke] duration-150 outline-none placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
         className,
       )}
       {...props}
@@ -25,7 +25,7 @@ const TextArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
       <textarea
         ref={ref}
         className={cn(
-          "flex field-sizing-content h-16 w-full rounded-xl border border-border bg-card/75 px-[1.2rem] py-[0.8rem] text-[1.4rem] shadow-sm transition-colors outline-none placeholder:text-muted-foreground/80 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex min-h-[80px] w-full rounded-[10px] border border-input bg-transparent px-[10px] py-[8px] text-[14px] leading-[20px] transition-[color,background-color,border-color,outline-color,text-decoration-color,fill,stroke] duration-150 outline-none placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
           className,
         )}
         {...props}

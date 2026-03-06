@@ -112,7 +112,7 @@ export function Menu() {
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((current) => !current)}
           >
-            <EllipsisVerticalIcon className="h-5 w-5" />
+            <EllipsisVerticalIcon className="h-6 w-6" />
           </Button>
           {menuOpen ? (
             <div className="absolute right-0 top-[calc(100%+0.8rem)] z-20 w-[18rem] rounded-[1.2rem] border border-[var(--color-sidebar-border)] bg-background/95 p-2 text-foreground shadow-[var(--shadow-panel)] backdrop-blur-xl">
@@ -157,7 +157,7 @@ export function Menu() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>MCP API key</DialogTitle>
             <DialogDescription>
@@ -165,12 +165,12 @@ export function Menu() {
               set.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 px-4 py-4">
-            <div className="rounded-[1.2rem] border border-[var(--color-sidebar-border)] bg-[var(--color-sidebar-accent)]/40 p-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="space-y-4 py-2">
+            <div className="rounded-lg border bg-muted/30 p-4">
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
                 Current key
               </p>
-              <p className="mt-2 text-sm font-semibold">
+              <p className="mt-2 text-sm font-medium">
                 {apiKeyStatus?.hasKey ? "set" : "not set"}
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
@@ -180,8 +180,8 @@ export function Menu() {
               </p>
             </div>
             {generatedApiKey ? (
-              <div className="rounded-[1.2rem] border border-[var(--color-sidebar-border)] bg-background/70 p-4">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              <div className="rounded-lg border bg-background p-4">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
                   New key
                 </p>
                 <code className="mt-2 block break-all text-xs">{generatedApiKey}</code>
@@ -191,12 +191,12 @@ export function Menu() {
               </div>
             ) : null}
           </div>
-          <DialogFooter className="flex gap-3">
+          <DialogFooter>
             {generatedApiKey ? (
               <Button
                 type="button"
                 variant="outline"
-                className="w-full"
+                className="w-full sm:w-auto"
                 onClick={() => {
                   void handleCopyApiKey();
                 }}
@@ -206,7 +206,7 @@ export function Menu() {
             ) : null}
             <Button
               type="button"
-              className="w-full"
+              className="w-full sm:w-auto"
               disabled={apiKeyBusy}
               onClick={() => {
                 void handleRotateApiKey();

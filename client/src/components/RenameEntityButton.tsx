@@ -62,13 +62,13 @@ export function RenameEntityButton({
           if (!nextOpen) setError(null);
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Rename {entityLabel}</DialogTitle>
             <DialogDescription>Update the name shown across the workspace.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 px-4 py-4">
-            <Label>{entityLabel} name</Label>
+          <div className="grid gap-2 py-4">
+            <Label>{entityLabel}</Label>
             <Input
               type="text"
               value={name}
@@ -98,44 +98,40 @@ export function RenameEntityButton({
             {error && <p className="text-xs text-destructive">{error}</p>}
           </div>
           <DialogFooter>
-            <div className="flex items-center justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={loading}
-                onClick={() => {
-                  if (loading) return;
-                  setOpen(false);
-                  setError(null);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                disabled={loading}
-                onClick={() => {
-                  const trimmed = name.trim();
-                  if (!trimmed) {
-                    setError(`${entityLabel} name is required`);
-                    return;
-                  }
-                  void onRename(trimmed).then(
-                    () => setOpen(false),
-                    (err: unknown) =>
-                      setError(
-                        err instanceof Error
-                          ? err.message
-                          : `Failed to rename ${entityLabel.toLowerCase()}`,
-                      ),
-                  );
-                }}
-              >
-                {loading ? "Saving..." : "Save"}
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={loading}
+              onClick={() => {
+                if (loading) return;
+                setOpen(false);
+                setError(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={loading}
+              onClick={() => {
+                const trimmed = name.trim();
+                if (!trimmed) {
+                  setError(`${entityLabel} name is required`);
+                  return;
+                }
+                void onRename(trimmed).then(
+                  () => setOpen(false),
+                  (err: unknown) =>
+                    setError(
+                      err instanceof Error
+                        ? err.message
+                        : `Failed to rename ${entityLabel.toLowerCase()}`,
+                    ),
+                );
+              }}
+            >
+              {loading ? "Saving..." : "Save"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
