@@ -1,29 +1,35 @@
-import { useAtomValue } from "jotai";
-import { PropsWithChildren, useEffect, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Box, Drawer, NavLink, Stack, Text } from "@mantine/core";
+import { useAtomValue, useSetAtom } from "jotai";
+import { type PropsWithChildren, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { addEntityAtom } from "../atoms/addEntity.atom.js";
 import { areasAtom } from "../atoms/areas.js";
+import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { projectsByAreaAtom } from "../atoms/projects.js";
-import {
-  CalendarDaysIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  EllipsisVerticalIcon,
-  InboxIcon,
-} from "./ui/heroicons.js";
-import { XIcon } from "./ui/icons.js";
+import { useIsActive } from "../lib/useIsActive.js";
+import { Menu } from "../shared/ui/Menu.js";
+import { AddNewEntityDialog } from "./AddEntityDialog.js";
+import { CalendarIcon, CheckCircleIcon, EllipsisHorizontalIcon, InboxIcon, SunSmallIcon } from "./ui/icons.js";
 
 const SYSTEM_ITEMS = [
-  { path: "/inbox", label: "Inbox", icon: InboxIcon },
-  { path: "/today", label: "Today", icon: CalendarDaysIcon },
-  { path: "/upcoming", label: "Upcoming", icon: ClockIcon },
-  { path: "/completed", label: "Completed", icon: CheckCircleIcon },
+  { path: "/inbox", label: "Inbox", Icon: InboxIcon },
+  { path: "/today", label: "Today", Icon: SunSmallIcon },
+  { path: "/upcoming", label: "Upcoming", Icon: CalendarIcon },
+  { path: "/completed", label: "Completed", Icon: CheckCircleIcon },
 ] as const;
+
+const NAV_HEIGHT = 56;
 
 export function MobileAppLayout({ children }: PropsWithChildren) {
   const location = useLocation();
+  const navigate = useNavigate();
   const areas = useAtomValue(areasAtom);
   const projectsByArea = useAtomValue(projectsByAreaAtom);
-  const [navigationOpen, setNavigationOpen] = useState(false);
+  const pageMenuItems = useAtomValue(pageMenuAtom);
+  const setAddEntity = useSetAtom(addEntityAtom);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [openAreas, setOpenAreas] = useState<Record<string, boolean>>({});
+  const isActive = useIsActive();
 
   const unassignedProjects = projectsByArea.get(null) ?? [];
   const projectsByAreaEntries = useMemo(
@@ -32,121 +38,210 @@ export function MobileAppLayout({ children }: PropsWithChildren) {
   );
 
   useEffect(() => {
-    setNavigationOpen(false);
+    setDrawerOpen(false);
   }, [location.pathname]);
 
-  return (
-    <div id="mobile-app-layout" className="flex h-screen flex-col overflow-hidden bg-background">
-      <main className="min-h-0 flex-1 overflow-hidden">{children}</main>
+  useEffect(() => {
+    if (!drawerOpen) setOpenAreas({});
+  }, [drawerOpen]);
 
-      <nav className="grid h-20 grid-cols-4 border-t border-border/80 bg-card/95 px-2 py-2 backdrop-blur">
-        {SYSTEM_ITEMS.slice(0, 3).map((item) => {
-          const active = location.pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex items-center justify-center rounded-xl px-2 py-2 text-[1.3rem] font-medium ${
-                active
-                  ? "bg-accent text-foreground shadow-[inset_0_1px_0_rgb(255_255_255_/_0.08)]"
-                  : "text-muted-foreground"
-              }`}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-        <button
-          type="button"
-          className="flex flex-col items-center justify-center gap-1 rounded-xl text-[1.1rem] font-medium text-muted-foreground"
-          onClick={() => setNavigationOpen(true)}
+  return (
+    <Box style={{ height: "100dvh", display: "flex", flexDirection: "column" }}>
+      <Box style={{ flex: 1, overflow: "auto", paddingBottom: NAV_HEIGHT }}>
+        {children}
+      </Box>
+      {pageMenuItems.length > 0 && (
+        <Box style={{ position: "fixed", top: 8, right: 8, zIndex: 200 }}>
+          <Menu items={[]} topSection={pageMenuItems} />
+        </Box>
+      )}
+
+      <Box
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: NAV_HEIGHT,
+          display: "flex",
+          alignItems: "stretch",
+          borderTop: "1px solid var(--mantine-color-default-border)",
+          background: "var(--mantine-color-body)",
+          zIndex: 100,
+        }}
+      >
+        {SYSTEM_ITEMS.slice(0, 3).map((item) => (
+          <Box
+            key={item.path}
+            component="button"
+            onClick={() => navigate(item.path)}
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 2,
+              border: "none",
+              background: "none",
+              cursor: "pointer",
+              color: isActive(item.path)
+                ? "var(--mantine-color-blue-filled)"
+                : "var(--mantine-color-dimmed)",
+              fontSize: "var(--mantine-font-size-xs)",
+              fontWeight: isActive(item.path) ? 600 : 400,
+            }}
+          >
+            <item.Icon size={20} />
+            {item.label}
+          </Box>
+        ))}
+        <Box
+          component="button"
+          onClick={() => setDrawerOpen(true)}
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 2,
+            border: "none",
+            background: "none",
+            cursor: "pointer",
+            color: "var(--mantine-color-dimmed)",
+            fontSize: "var(--mantine-font-size-xs)",
+          }}
           aria-label="Open full navigation"
         >
-          <EllipsisVerticalIcon className="h-6 w-6 rotate-90" />
+          <EllipsisHorizontalIcon size={20} />
           More
-        </button>
-      </nav>
+        </Box>
+      </Box>
 
-      {navigationOpen ? (
-        <div className="absolute inset-0 z-40 flex flex-col bg-background/95 backdrop-blur">
-          <div className="flex h-14 items-center justify-between border-b border-border/80 px-3">
-            <p className="text-sm font-semibold tracking-wide">Workspace</p>
-            <button
-              type="button"
-              onClick={() => setNavigationOpen(false)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-foreground"
-              aria-label="Close full navigation"
+      <Drawer
+        opened={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        title="Workspace"
+        position="left"
+        size="xs"
+      >
+        <Stack gap={2}>
+          {SYSTEM_ITEMS.map((item) => (
+            <NavLink
+              key={item.path}
+              label={item.label}
+              active={isActive(item.path)}
+              onClick={() => navigate(item.path)}
+              style={{ borderRadius: 6 }}
+            />
+          ))}
+
+          <Box
+            px={8}
+            pt={12}
+            pb={2}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+          >
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>Areas</Text>
+            <Box
+              component="button"
+              onClick={() => setAddEntity({ type: "area", entityLabel: "Area" })}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "2px 4px",
+                borderRadius: 4,
+                color: "var(--mantine-color-dimmed)",
+                fontSize: "var(--mantine-font-size-xs)",
+              }}
             >
-              <XIcon size={16} />
-            </button>
-          </div>
-          <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
-            <nav className="space-y-1 rounded-2xl border border-border/70 bg-card/70 p-2">
-              {SYSTEM_ITEMS.map((item) => {
-                const active = location.pathname === item.path;
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${
-                      active ? "bg-accent text-accent-foreground" : "text-foreground"
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
+              + New Area
+            </Box>
+          </Box>
 
-            {projectsByAreaEntries.length > 0 ? (
-              <div className="mt-3 space-y-2">
-                <p className="px-2 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                  Areas
-                </p>
-                {projectsByAreaEntries.map(({ area, projects }) => (
-                  <div key={area.id} className="rounded-md border border-border/60 p-2">
-                    <Link to={`/area/${area.id}`} className="block px-1 py-1 text-sm font-medium">
-                      {area.name}
-                    </Link>
-                    <div className="mt-1 space-y-1">
-                      {projects.map((project) => (
-                        <Link
-                          key={project.id}
-                          to={`/project/${project.id}`}
-                          className="block rounded-md px-2 py-1 text-sm text-muted-foreground"
-                        >
-                          {project.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
+          {projectsByAreaEntries.map(({ area, projects }) => {
+            if (projects.length === 0) {
+              return (
+                <NavLink
+                  key={area.id}
+                  label={area.name}
+                  active={isActive(`/area/${area.id}`)}
+                  onClick={() => { setDrawerOpen(false); navigate(`/area/${area.id}`); }}
+                  style={{ borderRadius: 6 }}
+                />
+              );
+            }
+            const expanded = openAreas[area.id] ?? false;
+            return (
+              <NavLink
+                key={area.id}
+                label={area.name}
+                active={isActive(`/area/${area.id}`)}
+                opened={expanded}
+                onClick={() => {
+                  if (expanded) {
+                    setDrawerOpen(false);
+                    navigate(`/area/${area.id}`);
+                  } else {
+                    setOpenAreas((prev) => ({ ...prev, [area.id]: true }));
+                  }
+                }}
+                onChange={(open) => setOpenAreas((prev) => ({ ...prev, [area.id]: open }))}
+                style={{ borderRadius: 6 }}
+                childrenOffset={12}
+              >
+                {projects.map((project) => (
+                  <NavLink
+                    key={project.id}
+                    label={project.name}
+                    active={isActive(`/project/${project.id}`)}
+                    onClick={() => navigate(`/project/${project.id}`)}
+                    style={{ borderRadius: 6 }}
+                  />
                 ))}
-              </div>
-            ) : null}
+              </NavLink>
+            );
+          })}
 
-            {unassignedProjects.length > 0 ? (
-              <div className="mt-3 space-y-2">
-                <p className="px-2 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                  Projects
-                </p>
-                <div className="space-y-1">
-                  {unassignedProjects.map((project) => (
-                    <Link
-                      key={project.id}
-                      to={`/project/${project.id}`}
-                      className="block rounded-md px-3 py-2 text-sm text-foreground"
-                    >
-                      {project.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-    </div>
+          <Box
+            px={8}
+            pt={12}
+            pb={2}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+          >
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>Projects</Text>
+            <Box
+              component="button"
+              onClick={() => setAddEntity({ type: "project", entityLabel: "Project" })}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "2px 4px",
+                borderRadius: 4,
+                color: "var(--mantine-color-dimmed)",
+                fontSize: "var(--mantine-font-size-xs)",
+              }}
+            >
+              + New Project
+            </Box>
+          </Box>
+
+          {unassignedProjects.map((project) => (
+            <NavLink
+              key={project.id}
+              label={project.name}
+              active={isActive(`/project/${project.id}`)}
+              onClick={() => navigate(`/project/${project.id}`)}
+              style={{ borderRadius: 6 }}
+            />
+          ))}
+        </Stack>
+      </Drawer>
+
+      <AddNewEntityDialog />
+    </Box>
   );
 }

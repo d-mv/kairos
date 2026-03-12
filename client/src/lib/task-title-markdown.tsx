@@ -70,7 +70,7 @@ export function renderTaskTitleMarkdown(title: string): ReactNode[] {
     const key = `${index}-${token.type}`;
     if (token.type === "bold") {
       return (
-        <strong key={key} className="font-semibold">
+        <strong key={key}>
           {token.value}
         </strong>
       );
@@ -78,7 +78,7 @@ export function renderTaskTitleMarkdown(title: string): ReactNode[] {
 
     if (token.type === "italic") {
       return (
-        <em key={key} className="italic">
+        <em key={key}>
           {token.value}
         </em>
       );
@@ -91,8 +91,8 @@ export function renderTaskTitleMarkdown(title: string): ReactNode[] {
           href={token.href}
           target="_blank"
           rel="noreferrer noopener"
-          className="underline decoration-primary/60 underline-offset-2 hover:text-primary"
           onClick={(event) => event.stopPropagation()}
+          style={{ color: "inherit", textDecoration: "underline", textDecorationStyle: "dotted" }}
         >
           {token.value}
         </a>

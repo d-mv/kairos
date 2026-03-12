@@ -16,6 +16,7 @@ interface TaskRow {
   due_date: string | null;
   duration: number | null;
   duration_unit: TaskDurationUnit | null;
+  position: number;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +34,7 @@ function toTask(row: TaskRow): Task {
     dueDate: row.due_date ? new Date(row.due_date) : null,
     duration: row.duration,
     durationUnit: row.duration_unit,
+    position: row.position ?? 0,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   });
@@ -57,7 +59,7 @@ export class SupabaseTaskRepository implements TaskRepository {
       .from("tasks")
       .select("*")
       .eq("user_id", userId)
-      .order("created_at", { ascending: true });
+      .order("position", { ascending: true });
     if (error || !data) return [];
     return (data as TaskRow[]).map(toTask);
   }
@@ -69,7 +71,7 @@ export class SupabaseTaskRepository implements TaskRepository {
       .eq("project_id", projectId)
       .eq("user_id", userId)
       .is("parent_task_id", null)
-      .order("created_at", { ascending: true });
+      .order("position", { ascending: true });
     if (error || !data) return [];
     return (data as TaskRow[]).map(toTask);
   }
@@ -80,7 +82,7 @@ export class SupabaseTaskRepository implements TaskRepository {
       .select("*")
       .eq("area_id", areaId)
       .eq("user_id", userId)
-      .order("created_at", { ascending: true });
+      .order("position", { ascending: true });
     if (error || !data) return [];
     return (data as TaskRow[]).map(toTask);
   }
@@ -93,7 +95,7 @@ export class SupabaseTaskRepository implements TaskRepository {
       .is("parent_task_id", null)
       .is("project_id", null)
       .is("area_id", null)
-      .order("created_at", { ascending: true });
+      .order("position", { ascending: true });
     if (error || !data) return [];
     return (data as TaskRow[]).map(toTask);
   }
@@ -104,9 +106,16 @@ export class SupabaseTaskRepository implements TaskRepository {
       .select("*")
       .eq("parent_task_id", parentTaskId)
       .eq("user_id", userId)
-      .order("created_at", { ascending: true });
+      .order("position", { ascending: true });
     if (error || !data) return [];
     return (data as TaskRow[]).map(toTask);
+  }
+
+  async findSiblings(task: Task, userId: string): Promise<Task[]> {
+    if (task.parentTaskId) return this.findSubtasks(task.parentTaskId, userId);
+    if (task.projectId) return this.findByProjectId(task.projectId, userId);
+    if (task.areaId) return this.findByAreaId(task.areaId, userId);
+    return this.findInbox(userId);
   }
 
   async save(task: Task): Promise<void> {
@@ -123,6 +132,7 @@ export class SupabaseTaskRepository implements TaskRepository {
       due_date: task.dueDate?.toISOString().split("T")[0] ?? null,
       duration: task.duration,
       duration_unit: task.durationUnit,
+      position: task.position,
       created_at: task.createdAt.toISOString(),
       updated_at: task.updatedAt.toISOString(),
     });

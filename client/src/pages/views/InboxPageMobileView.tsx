@@ -1,52 +1,44 @@
 import type { TaskDTO } from "@kairos/shared";
-import { PageTaskMenu } from "../../components/PageTaskMenu.js";
+import { Box, Skeleton, Stack, Text, Title } from "@mantine/core";
 import { TaskDetailPanel } from "../../components/TaskDetailPanel/TaskDetailPanel.js";
 import { TaskList } from "../../components/TaskList.js";
 
 type InboxPageMobileViewProps = {
   tasks: TaskDTO[];
   isLoading: boolean;
-  selectedTaskId: string | null;
-  showCompleted: boolean;
-  onToggleShowCompleted: () => void;
+  hideCompleted: boolean;
 };
 
 export function InboxPageMobileView({
   tasks,
   isLoading,
-  selectedTaskId,
-  showCompleted,
-  onToggleShowCompleted,
+  hideCompleted,
 }: InboxPageMobileViewProps) {
   return (
-    <div className="flex h-full flex-1 flex-col overflow-hidden">
-      <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-5">
-        <div>
-          <p className="text-[0.95rem] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Overview
-          </p>
-          <h1 className="mt-1 text-[3rem] font-semibold tracking-tight">Inbox</h1>
-        </div>
-        <PageTaskMenu showCompleted={showCompleted} onToggleShowCompleted={onToggleShowCompleted} />
-      </div>
-      <div className="flex-1 overflow-y-auto px-3 pb-6">
-        {isLoading ? (
-          <div className="panel overflow-hidden rounded-2xl">
-            <div className="skeleton h-[4.8rem]" />
-            <div className="skeleton h-[4.8rem]" />
-            <div className="skeleton h-[4.8rem]" />
-            <div className="skeleton h-[4.8rem]" />
-          </div>
-        ) : (
-          <TaskList
-            isList
-            tasks={tasks}
-            emptyMessage="Your inbox is empty"
-            hideCompleted={!showCompleted}
-          />
-        )}
-      </div>
-      {selectedTaskId && <TaskDetailPanel />}
-    </div>
+    <Box p="md">
+      <Box mb="lg">
+        <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
+          Overview
+        </Text>
+        <Title order={2}>Inbox</Title>
+      </Box>
+      {isLoading ? (
+        <Stack gap="sm">
+          <Skeleton h={40} radius="sm" />
+          <Skeleton h={40} radius="sm" />
+          <Skeleton h={40} radius="sm" />
+          <Skeleton h={40} radius="sm" />
+        </Stack>
+      ) : (
+        <TaskList
+          isList
+          tasks={tasks}
+          emptyMessage="Your inbox is empty"
+          hideCompleted={hideCompleted}
+          appearance="mobile"
+        />
+      )}
+      <TaskDetailPanel />
+    </Box>
   );
 }

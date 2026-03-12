@@ -1,5 +1,6 @@
 .PHONY: install dev-server dev-client db-init db-migrate-duration db-fix-permissions build test test-watch \
-        lint format format-check typecheck hooks clean help
+        lint format format-check typecheck hooks clean help \
+        deploy deploy-server deploy-client
 
 PNPM := pnpm
 
@@ -20,8 +21,22 @@ db-init: ## Initialize database using DATABASE_URL and migration SQL
 db-migrate-duration: ## Add duration columns/constraints to existing tasks table
 	node scripts/db-migrate-duration.mjs
 
+db-migrate-position: ## Add position column for manual task ordering
+	node scripts/db-migrate-position.mjs
+
 db-fix-permissions: ## Grant table permissions to Supabase roles
 	node scripts/db-fix-permissions.mjs
+
+# ── Deploy ────────────────────────────────────────────────────────────────────
+
+deploy: ## Deploy both server and client to Fly.io
+	fly deploy --config fly.toml & fly deploy --config fly.client.toml & wait
+
+deploy-server: ## Deploy server to Fly.io
+	fly deploy --config fly.toml
+
+deploy-client: ## Deploy client to Fly.io
+	fly deploy --config fly.client.toml
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 

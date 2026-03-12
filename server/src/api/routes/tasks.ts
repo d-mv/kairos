@@ -103,6 +103,20 @@ export async function taskRoutes(fastify: FastifyInstance) {
     return result.value;
   });
 
+  // PUT /api/v1/tasks/:id/move
+  fastify.put<{ Params: { id: string }; Body: { afterId: string | null } }>(
+    "/:id/move",
+    async (req, reply) => {
+      const result = await container.reorderTask.execute({
+        taskId: req.params.id,
+        afterId: req.body.afterId,
+        userId: req.userId,
+      });
+      if (result.isErr) return reply.status(400).send({ error: result.error });
+      return result.value;
+    },
+  );
+
   // POST /api/v1/tasks/:id/promote
   fastify.post<{ Params: { id: string } }>("/:id/promote", async (req, reply) => {
     try {

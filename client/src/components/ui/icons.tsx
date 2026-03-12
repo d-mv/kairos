@@ -6,7 +6,6 @@ interface IconProps extends SVGProps<SVGSVGElement> {
 
 function IconBase({
   children,
-  className,
   size = 16,
   viewBox = "0 0 24 24",
   ...props
@@ -21,68 +20,11 @@ function IconBase({
       strokeLinejoin="round"
       width={size}
       height={size}
-      className={className}
       aria-hidden="true"
       {...props}
     >
       {children}
     </svg>
-  );
-}
-
-export function PlusIcon(props: IconProps) {
-  return (
-    <IconBase {...props}>
-      <path d="M12 5v14" />
-      <path d="M5 12h14" />
-    </IconBase>
-  );
-}
-
-export function InboxIcon(props: IconProps) {
-  return (
-    <IconBase {...props}>
-      <path d="M4 5h16l1 10H15l-3 3-3-3H3Z" />
-      <path d="M9 10h6" />
-    </IconBase>
-  );
-}
-
-export function FolderIcon(props: IconProps) {
-  return (
-    <IconBase {...props}>
-      <path d="M3 7h6l2 2h10v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
-      <path d="M3 7a2 2 0 0 1 2-2h4l2 2" />
-    </IconBase>
-  );
-}
-
-export function ClipboardListIcon(props: IconProps) {
-  return (
-    <IconBase {...props}>
-      <path d="M9 4h6" />
-      <path d="M10 2h4a2 2 0 0 1 2 2v2H8V4a2 2 0 0 1 2-2Z" />
-      <path d="M8 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2" />
-      <path d="M8 11h8" />
-      <path d="M8 15h5" />
-    </IconBase>
-  );
-}
-
-export function PencilIcon(props: IconProps) {
-  return (
-    <IconBase {...props}>
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z" />
-    </IconBase>
-  );
-}
-
-export function CheckIcon(props: IconProps) {
-  return (
-    <IconBase {...props}>
-      <path d="m5 12 4 4 10-10" />
-    </IconBase>
   );
 }
 
@@ -94,27 +36,6 @@ export function TrashIcon(props: IconProps) {
       <path d="M19 6l-1 14H6L5 6" />
       <path d="M10 11v6" />
       <path d="M14 11v6" />
-    </IconBase>
-  );
-}
-
-export function LogOutIcon(props: IconProps) {
-  return (
-    <IconBase {...props}>
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <path d="M16 17l5-5-5-5" />
-      <path d="M21 12H9" />
-    </IconBase>
-  );
-}
-
-export function KeyIcon(props: IconProps) {
-  return (
-    <IconBase {...props}>
-      <circle cx="8.5" cy="14.5" r="3.5" />
-      <path d="M12 14.5H21" />
-      <path d="M18 14.5v3" />
-      <path d="M15 14.5v2" />
     </IconBase>
   );
 }
@@ -143,21 +64,66 @@ export function MoonIcon(props: IconProps) {
   );
 }
 
-export function MenuIcon(props: IconProps) {
-  return (
-    <IconBase {...props}>
-      <path d="M4 7h16" />
-      <path d="M4 12h16" />
-      <path d="M4 17h16" />
-    </IconBase>
-  );
-}
-
 export function XIcon(props: IconProps) {
   return (
     <IconBase {...props}>
       <path d="m18 6-12 12" />
       <path d="m6 6 12 12" />
+    </IconBase>
+  );
+}
+
+export function EllipsisHorizontalIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" />
+    </IconBase>
+  );
+}
+
+export function InboxIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M22 12h-6l-2 3H10l-2-3H2" />
+      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+    </IconBase>
+  );
+}
+
+export function SunSmallIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="m4.93 4.93 1.41 1.41" />
+      <path d="m17.66 17.66 1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="m6.34 17.66-1.41 1.41" />
+      <path d="m19.07 4.93-1.41 1.41" />
+    </IconBase>
+  );
+}
+
+export function CalendarIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+      <line x1="16" x2="16" y1="2" y2="6" />
+      <line x1="8" x2="8" y1="2" y2="6" />
+      <line x1="3" x2="21" y1="10" y2="10" />
+    </IconBase>
+  );
+}
+
+export function CheckCircleIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
     </IconBase>
   );
 }

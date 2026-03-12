@@ -1,17 +1,7 @@
 import { EntityType } from "@kairos/shared";
+import { Button, Group, Modal, Stack, TextInput } from "@mantine/core";
 import { useAtom } from "jotai";
 import { renameEntityAtom } from "../atoms/renameEntity.atom.js";
-import { Button } from "./ui/button.js";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog.js";
-import { Input } from "./ui/input.js";
-import { Label } from "./ui/label.js";
 
 type Props = {
   onRename: (name: string, entityId: string, type: EntityType) => Promise<void>;
@@ -30,48 +20,44 @@ export function RenameEntityDialog({ onRename }: Props) {
 
   function handleRename() {
     const trimmed = currentName.trim();
-
     if (!trimmed) {
       setError(`${entityLabel} name is required`);
       return;
     }
-
     onRename(trimmed, entityId, type).then(cancelDialog, (err: unknown) =>
-      setError(
-        err instanceof Error ? err.message : `Failed to rename ${entityLabel.toLowerCase()}`,
-      ),
+      setError(err instanceof Error ? err.message : `Failed to rename ${entityLabel.toLowerCase()}`),
     );
   }
 
   return (
-    <Dialog open={true}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Rename {entityLabel}</DialogTitle>
-          <DialogDescription>Update the name shown across the workspace.</DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-2 py-4">
-          <Label>{entityLabel}</Label>
-          <Input
-            type="text"
-            value={currentName}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleRename();
-              }
-            }}
-            disabled={Boolean(loading)}
-            autoFocus
-          />
-          {errorMessage && <p className="text-xs text-destructive">{errorMessage}</p>}
-        </div>
-        <DialogFooter>
+    <Modal
+      opened={true}
+      onClose={() => {
+        if (loading) return;
+        cancelDialog();
+      }}
+      title={`Rename ${entityLabel}`}
+      size="sm"
+    >
+      <Stack gap="sm">
+        <TextInput
+          label={entityLabel}
+          placeholder="Type here"
+          value={currentName}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleRename();
+            }
+          }}
+          disabled={Boolean(loading)}
+          error={errorMessage}
+          autoFocus
+        />
+        <Group justify="flex-end" mt="xs">
           <Button
-            type="button"
-            variant="outline"
-            disabled={Boolean(loading)}
+            variant="subtle"
             onClick={() => {
               if (loading) return;
               cancelDialog();
@@ -79,11 +65,11 @@ export function RenameEntityDialog({ onRename }: Props) {
           >
             Cancel
           </Button>
-          <Button type="button" disabled={Boolean(loading)} onClick={handleRename}>
+          <Button disabled={Boolean(loading)} onClick={handleRename}>
             {loading ? "Saving..." : "Save"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </Group>
+      </Stack>
+    </Modal>
   );
 }

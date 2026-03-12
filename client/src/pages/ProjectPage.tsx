@@ -1,14 +1,29 @@
 import { useAtomValue, useSetAtom } from "jotai";
+import checkIsMobile from "is-mobile";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
+import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { projectsAtom as projAtom, projectsAtom } from "../atoms/projects.js";
-import { selectedTaskIdAtom, tasksAtom, tasksByProjectAtom } from "../atoms/tasks.js";
+import { tasksAtom, tasksByProjectAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
-import { ProjectSettingsMenu } from "../components/ProjectSettingsMenu.js";
 import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.js";
 import { TaskList } from "../components/TaskList.js";
 import { api } from "../lib/api.js";
+import {
+  Box,
+  Button,
+  Flex,
+  Group,
+  Modal,
+  NativeSelect,
+  Skeleton,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+  Badge,
+} from "@mantine/core";
 
 export default function ProjectPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,9 +32,9 @@ export default function ProjectPage() {
   const areas = useAtomValue(areasAtom);
   const tasksByProject = useAtomValue(tasksByProjectAtom);
   const isLoading = useAtomValue(workspaceLoadingAtom);
-  const selectedTaskId = useAtomValue(selectedTaskIdAtom);
   const setProjects = useSetAtom(projAtom);
   const setTasks = useSetAtom(tasksAtom);
+  const setPageMenu = useSetAtom(pageMenuAtom);
   const [renameLoading, setRenameLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [moveLoading, setMoveLoading] = useState(false);
@@ -27,10 +42,14 @@ export default function ProjectPage() {
   const [actionState, setActionState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const actionResetTimeoutRef = useRef<number | null>(null);
 
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [renameError, setRenameError] = useState<string | null>(null);
+  const [areaOpen, setAreaOpen] = useState(false);
+  const [areaValue, setAreaValue] = useState("");
+
   const scheduleActionReset = () => {
-    if (actionResetTimeoutRef.current) {
-      window.clearTimeout(actionResetTimeoutRef.current);
-    }
+    if (actionResetTimeoutRef.current) window.clearTimeout(actionResetTimeoutRef.current);
     actionResetTimeoutRef.current = window.setTimeout(() => {
       setActionState("idle");
       actionResetTimeoutRef.current = null;
@@ -39,9 +58,7 @@ export default function ProjectPage() {
 
   useEffect(() => {
     return () => {
-      if (actionResetTimeoutRef.current) {
-        window.clearTimeout(actionResetTimeoutRef.current);
-      }
+      if (actionResetTimeoutRef.current) window.clearTimeout(actionResetTimeoutRef.current);
     };
   }, []);
 
@@ -49,11 +66,42 @@ export default function ProjectPage() {
   const tasks = id ? (tasksByProject.get(id) ?? []) : [];
   const projectName = project?.name ?? "Project";
 
+  // Refs to always call latest handlers from stable menu closures
+  const handleDeleteRef = useRef<() => void>(() => {});
+  const handleDemoteRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    setPageMenu([
+      {
+        label: showCompleted ? "Hide Completed" : "Show Completed",
+        onClick: () => setShowCompleted((c) => !c),
+      },
+      {
+        label: "Rename",
+        onClick: () => {
+          setRenameError(null);
+          setRenameValue(project?.name ?? "");
+          setRenameOpen(true);
+        },
+      },
+      {
+        label: "Move to Area",
+        onClick: () => {
+          setAreaValue(project?.areaId ?? "");
+          setAreaOpen(true);
+        },
+      },
+      { label: "Demote to Task", disabled: deleteLoading, onClick: () => handleDemoteRef.current() },
+      { label: "Delete", color: "red", disabled: deleteLoading, onClick: () => handleDeleteRef.current() },
+    ]);
+    return () => setPageMenu([]);
+  }, [setPageMenu, showCompleted, deleteLoading, project?.name, project?.areaId]);
+
   if (!project && !isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">Project not found</p>
-      </div>
+      <Flex h="100%" align="center" justify="center">
+        <Text c="dimmed">Project not found</Text>
+      </Flex>
     );
   }
 
@@ -136,13 +184,11 @@ export default function ProjectPage() {
 
   const handleMoveToArea = async (nextAreaId: string) => {
     if (!project) return;
-
     const areaId = nextAreaId || null;
     if (project.areaId === areaId) return;
 
     const previousProject = project;
     const optimisticProject = { ...project, areaId, updatedAt: new Date().toISOString() };
-
     setMoveLoading(true);
     setActionState("saving");
     setProjects((prev) => prev.map((item) => (item.id === project.id ? optimisticProject : item)));
@@ -161,60 +207,35 @@ export default function ProjectPage() {
     }
   };
 
+  handleDeleteRef.current = handleDelete;
+  handleDemoteRef.current = handleDemote;
+
+  const isMobile = checkIsMobile();
+
   return (
-    <div className="flex h-full flex-1">
-      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[46rem]" : ""}`}>
-        <div className="mx-auto max-w-[98rem] px-8 py-10 sm:px-12">
-          <div className="mb-8 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[1rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Project
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <h1 className="text-[3.2rem] font-semibold tracking-tight sm:text-[4.2rem]">
-                  {projectName}
-                </h1>
-                {actionState !== "idle" && (
-                  <span
-                    className={`rounded-full px-3 py-1 text-[1rem] leading-none ${
-                      actionState === "saving"
-                        ? "bg-muted text-foreground"
-                        : actionState === "saved"
-                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-                          : "bg-destructive/15 text-destructive"
-                    }`}
-                  >
-                    {actionState === "saving"
-                      ? "Updating"
-                      : actionState === "saved"
-                        ? "Updated"
-                        : "Not saved"}
-                  </span>
-                )}
-              </div>
-            </div>
-            <ProjectSettingsMenu
-              projectName={projectName}
-              projectAreaId={project?.areaId ?? null}
-              showCompleted={showCompleted}
-              areas={areas}
-              renameLoading={renameLoading}
-              deleteLoading={deleteLoading}
-              moveLoading={moveLoading}
-              onToggleShowCompleted={() => setShowCompleted((current) => !current)}
-              onRename={handleRename}
-              onMoveToArea={handleMoveToArea}
-              onDemote={handleDemote}
-              onDelete={handleDelete}
-            />
-          </div>
+    <Box flex={1} style={{ overflowY: "auto" }} p={isMobile ? "md" : "xl"}>
+      <Box maw={760}>
+          <Box mb="lg">
+            <Group gap="xs" align="center">
+              <Title order={2}>{projectName}</Title>
+              {actionState !== "idle" && (
+                <Badge
+                  size="sm"
+                  variant="light"
+                  color={actionState === "saved" ? "green" : actionState === "error" ? "red" : "gray"}
+                >
+                  {actionState === "saving" ? "Updating" : actionState === "saved" ? "Updated" : "Not saved"}
+                </Badge>
+              )}
+            </Group>
+          </Box>
           {isLoading ? (
-            <div className="panel overflow-hidden rounded-2xl">
-              <div className="skeleton h-[5.6rem]" />
-              <div className="skeleton h-[5.6rem]" />
-              <div className="skeleton h-[5.6rem]" />
-              <div className="skeleton h-[5.6rem]" />
-            </div>
+            <Stack gap="sm">
+              <Skeleton h={40} radius="sm" />
+              <Skeleton h={40} radius="sm" />
+              <Skeleton h={40} radius="sm" />
+              <Skeleton h={40} radius="sm" />
+            </Stack>
           ) : (
             <TaskList
               isList
@@ -222,11 +243,86 @@ export default function ProjectPage() {
               projectId={id}
               emptyMessage="No tasks yet"
               hideCompleted={!showCompleted}
+              appearance={isMobile ? "mobile" : "desktop"}
             />
           )}
-        </div>
-      </div>
-      {selectedTaskId && <TaskDetailPanel />}
-    </div>
+      </Box>
+      <TaskDetailPanel />
+
+      <Modal
+        opened={renameOpen}
+        onClose={() => {
+          if (renameLoading) return;
+          setRenameOpen(false);
+          setRenameError(null);
+        }}
+        title="Rename Project"
+      >
+        <TextInput
+          value={renameValue}
+          onChange={(e) => setRenameValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return;
+            e.preventDefault();
+            const nextName = renameValue.trim();
+            if (!nextName) { setRenameError("Project name is required"); return; }
+            void handleRename(nextName).then(
+              () => setRenameOpen(false),
+              (err: unknown) => setRenameError(err instanceof Error ? err.message : "Failed to rename project"),
+            );
+          }}
+          placeholder="Project name..."
+          disabled={renameLoading}
+          error={renameError}
+          autoFocus
+        />
+        <Group justify="flex-end" mt="md">
+          <Button variant="subtle" disabled={renameLoading} onClick={() => { setRenameOpen(false); setRenameError(null); }}>
+            Cancel
+          </Button>
+          <Button
+            disabled={renameLoading}
+            onClick={() => {
+              const nextName = renameValue.trim();
+              if (!nextName) { setRenameError("Project name is required"); return; }
+              void handleRename(nextName).then(
+                () => setRenameOpen(false),
+                (err: unknown) => setRenameError(err instanceof Error ? err.message : "Failed to rename project"),
+              );
+            }}
+          >
+            {renameLoading ? "Saving..." : "Save"}
+          </Button>
+        </Group>
+      </Modal>
+
+      <Modal
+        opened={areaOpen}
+        onClose={() => { if (moveLoading) return; setAreaOpen(false); }}
+        title="Move to Area"
+      >
+        <NativeSelect
+          value={areaValue}
+          onChange={(e) => setAreaValue(e.target.value)}
+          disabled={moveLoading}
+          data={[
+            { value: "", label: "Unassigned" },
+            ...areas.map((area) => ({ value: area.id, label: area.name })),
+          ]}
+          autoFocus
+        />
+        <Group justify="flex-end" mt="md">
+          <Button variant="subtle" disabled={moveLoading} onClick={() => setAreaOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            disabled={moveLoading}
+            onClick={() => void handleMoveToArea(areaValue).then(() => setAreaOpen(false))}
+          >
+            {moveLoading ? "Saving..." : "Save"}
+          </Button>
+        </Group>
+      </Modal>
+    </Box>
   );
 }

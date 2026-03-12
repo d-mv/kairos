@@ -1,4 +1,16 @@
 import type { TaskDTO, TaskDurationUnit, TaskPriority } from "@kairos/shared";
+import {
+  Box,
+  Button,
+  Divider,
+  Group,
+  Modal,
+  NativeSelect,
+  Stack,
+  Text,
+  TextInput,
+  Textarea,
+} from "@mantine/core";
 import checkIsMobile from "is-mobile";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
@@ -6,12 +18,8 @@ import { selectedTaskAtom, selectedTaskIdAtom, tasksAtom } from "../../atoms/tas
 import { api } from "../../lib/api.js";
 import { getTaskErrorMessage } from "../../lib/task-errors.js";
 import { SubtaskList } from "../SubtaskList.js";
-import { Button } from "../ui/button.js";
-import { TrashIcon, XIcon } from "../ui/icons.js";
-import { Input } from "../ui/input.js";
-import { Label } from "../ui/label.js";
-import { Select } from "../ui/select.js";
-import { Textarea } from "../ui/textarea.js";
+import { TrashIcon } from "../ui/icons.js";
+import { DurationInput } from "./DurationInput.js";
 import { MobileTaskDetailPanel } from "./MobileTaskDetailPanel.js";
 import { SaveIndication } from "./SaveIndication.js";
 import type { TaskDetailPanelController } from "./context.js";
@@ -76,8 +84,6 @@ export function TaskDetailPanel() {
     }
   }, [task]);
 
-  if (!task) return null;
-
   const persistTaskChanges = async (overrides?: {
     title?: string;
     description?: string;
@@ -87,6 +93,7 @@ export function TaskDetailPanel() {
     durationUnit?: TaskDurationUnit | "";
     silentValidation?: boolean;
   }) => {
+    if (!task) return;
     const nextTitle = overrides?.title ?? title;
     const nextDescription = overrides?.description ?? description;
     const nextPriority = overrides?.priority ?? priority;
@@ -103,7 +110,6 @@ export function TaskDetailPanel() {
     });
 
     if (nextSnapshot === lastSyncedRef.current) return;
-
     if (!nextTitle.trim()) return;
 
     let parsedDuration: number | null = null;
@@ -111,19 +117,14 @@ export function TaskDetailPanel() {
     if (nextDuration !== "") {
       parsedDuration = Number(nextDuration);
       if (!Number.isInteger(parsedDuration) || parsedDuration <= 0) {
-        if (!overrides?.silentValidation) {
-          window.alert("Duration must be a positive whole number");
-        }
+        if (!overrides?.silentValidation) window.alert("Duration must be a positive whole number");
         return;
       }
     }
-    if (nextDurationUnit !== "") {
-      parsedDurationUnit = nextDurationUnit;
-    }
+    if (nextDurationUnit !== "") parsedDurationUnit = nextDurationUnit;
     if ((parsedDuration === null) !== (parsedDurationUnit === null)) {
-      if (!overrides?.silentValidation) {
+      if (!overrides?.silentValidation)
         window.alert("Set both duration and duration unit, or leave both empty");
-      }
       setSaveState("error");
       setSaveError("Set both duration and duration unit, or leave both empty");
       return;
@@ -159,12 +160,8 @@ export function TaskDetailPanel() {
       setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
       setSaveState("saved");
       setSaveError(null);
-      if (savedIndicatorTimeoutRef.current) {
-        window.clearTimeout(savedIndicatorTimeoutRef.current);
-      }
-      savedIndicatorTimeoutRef.current = window.setTimeout(() => {
-        setSaveState("idle");
-      }, 1500);
+      if (savedIndicatorTimeoutRef.current) window.clearTimeout(savedIndicatorTimeoutRef.current);
+      savedIndicatorTimeoutRef.current = window.setTimeout(() => setSaveState("idle"), 1500);
     } catch (err) {
       const message = getTaskErrorMessage(err, "Failed to update task");
       console.error("Failed to update task", err);
@@ -175,30 +172,22 @@ export function TaskDetailPanel() {
     }
   };
 
-  const handleSave = async () => {
-    await persistTaskChanges();
-  };
+  const handleSave = async () => persistTaskChanges();
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      void persistTaskChanges({
-        title,
-        description,
-        duration,
-        silentValidation: true,
-      });
+      void persistTaskChanges({ title, description, duration, silentValidation: true });
     }, 500);
-
     return () => window.clearTimeout(timeoutId);
   }, [description, duration, title]);
 
   useEffect(() => {
     return () => {
-      if (savedIndicatorTimeoutRef.current) {
-        window.clearTimeout(savedIndicatorTimeoutRef.current);
-      }
+      if (savedIndicatorTimeoutRef.current) window.clearTimeout(savedIndicatorTimeoutRef.current);
     };
   }, []);
+
+  if (!task) return null;
 
   const handleDelete = async () => {
     const previousTasks = (() => {
@@ -231,12 +220,10 @@ export function TaskDetailPanel() {
       const project = await api.tasks.promote(task.id);
       setTasks((prev) => prev.filter((t) => t.id !== task.id && t.parentTaskId !== task.id));
       setSelectedTaskId(null);
-      // Projects atom will be updated via WebSocket or re-fetch
       window.location.href = `/project/${project.id}`;
     } catch (err) {
       console.error("Failed to promote task", err);
-      const message = err instanceof Error ? err.message : "Failed to promote task";
-      window.alert(message);
+      window.alert(err instanceof Error ? err.message : "Failed to promote task");
     }
   };
 
@@ -263,9 +250,7 @@ export function TaskDetailPanel() {
     }
   };
 
-  const handleClose = () => {
-    setSelectedTaskId(null);
-  };
+  const handleClose = () => setSelectedTaskId(null);
 
   const controller: TaskDetailPanelController = {
     saveState,
@@ -291,95 +276,68 @@ export function TaskDetailPanel() {
     persistTaskChanges,
   };
 
-  if (checkIsMobile()) {
-    return <MobileTaskDetailPanel controller={controller} />;
-  }
+  if (checkIsMobile()) return <MobileTaskDetailPanel controller={controller} />;
 
   return (
-    <div className="panel fixed inset-x-3 bottom-3 top-[11rem] z-10 flex flex-col rounded-[1.8rem] lg:inset-x-auto lg:bottom-4 lg:right-4 lg:top-4 lg:h-[calc(100%-2rem)] lg:w-[42rem]">
-      <div className="flex items-center justify-between border-b border-border px-5 py-4">
-        <div>
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-            Inspector
-          </p>
-          <div className="mt-1 flex items-center gap-2">
-            <h2 className="text-sm font-semibold">Task Details</h2>
-            <SaveIndication saveState={saveState} />
-          </div>
-        </div>
-        <Button
-          onClick={handleClose}
-          variant="ghost"
-          size="icon"
-          className="h-[3.2rem] w-[3.2rem] rounded-full"
-          aria-label="Close task details"
-        >
-          <XIcon size={14} />
-        </Button>
-      </div>
-
-      <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
-        <div className="soft-panel rounded-[1.4rem] p-4">
-          <Input
-            type="text"
+    <Modal
+      opened={true}
+      onClose={handleClose}
+      title={
+        <Group gap="xs" align="center">
+          <span>Task</span>
+          <SaveIndication saveState={saveState} />
+        </Group>
+      }
+      size="lg"
+      styles={{
+        body: { display: "flex", flexDirection: "column", overflow: "hidden", maxHeight: "70vh" },
+      }}
+    >
+      <Stack gap="md" style={{ overflow: "hidden", flex: 1 }}>
+        <Box>
+          <TextInput
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={handleSave}
-            className="h-auto border-none bg-transparent px-0 py-1 text-lg font-semibold shadow-none focus-visible:ring-0"
+            autoFocus
           />
-          {saveError ? <p className="mt-2 text-xs text-destructive">{saveError}</p> : null}
-        </div>
+          {saveError ? (
+            <Text size="xs" c="red" mt={4}>
+              {saveError}
+            </Text>
+          ) : null}
+        </Box>
 
-        <div className="soft-panel rounded-[1.4rem] p-4">
-          <Label>Description</Label>
-          <Textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            onBlur={handleSave}
-            placeholder="Add a description..."
-            rows={4}
-            className="mt-2 resize-none border-none bg-transparent px-0 shadow-none focus-visible:ring-0"
+        <Textarea
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          onBlur={handleSave}
+          placeholder="Add a description..."
+          autosize
+          minRows={3}
+        />
+
+        <Group gap="sm" align="flex-end" style={{ flexWrap: "nowrap" }}>
+          <NativeSelect
+            label="Priority"
+            value={priority}
+            w={68}
+            onChange={(e) => {
+              const nextPriority = Number(e.target.value) as TaskPriority;
+              setPriority(nextPriority);
+              void persistTaskChanges({ priority: nextPriority });
+            }}
+            data={[
+              { value: "1", label: "1" },
+              { value: "2", label: "2" },
+              { value: "3", label: "3" },
+              { value: "4", label: "4" },
+            ]}
           />
-        </div>
-
-        <div className="soft-panel flex items-center gap-2 rounded-[1.4rem] p-4">
-          <span className="text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">
-            Status
-          </span>
-          <span
-            className={`rounded-full px-2.5 py-1 text-xs ${
-              task.status === "done"
-                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300"
-                : task.status === "in_progress"
-                  ? "bg-muted text-foreground"
-                  : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {task.status}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="soft-panel rounded-[1.4rem] p-4">
-            <Label>Priority</Label>
-            <Select
-              value={priority}
-              onChange={(e) => {
-                const nextPriority = Number(e.target.value) as TaskPriority;
-                setPriority(nextPriority);
-                void persistTaskChanges({ priority: nextPriority });
-              }}
-              className="mt-2"
-            >
-              <option value={1}>P1</option>
-              <option value={2}>P2</option>
-              <option value={3}>P3</option>
-              <option value={4}>P4</option>
-            </Select>
-          </div>
-          <div className="soft-panel rounded-[1.4rem] p-4">
-            <Label>Due date</Label>
-            <Input
+          <Box style={{ flex: 1 }}>
+            <TextInput
+              label="Due date"
               type="date"
               value={dueDate}
               onChange={(e) => {
@@ -387,69 +345,54 @@ export function TaskDetailPanel() {
                 setDueDate(nextDueDate);
                 void persistTaskChanges({ dueDate: nextDueDate });
               }}
-              className="mt-2"
             />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="soft-panel rounded-[1.4rem] p-4">
-            <Label>Duration</Label>
-            <Input
-              type="number"
-              min={1}
-              step={1}
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              onBlur={handleSave}
-              placeholder="e.g. 2"
-              className="mt-2"
-            />
-          </div>
-          <div className="soft-panel rounded-[1.4rem] p-4">
-            <Label>Unit</Label>
-            <Select
-              value={durationUnit}
-              onChange={(e) => {
-                const nextDurationUnit = e.target.value as TaskDurationUnit | "";
-                setDurationUnit(nextDurationUnit);
-                void persistTaskChanges({ durationUnit: nextDurationUnit });
+          </Box>
+          <Box w={120}>
+            <DurationInput
+              duration={duration}
+              durationUnit={durationUnit}
+              onQtyChange={(qty, resolvedUnit) => {
+                setDuration(qty);
+                setDurationUnit(resolvedUnit);
               }}
-              className="mt-2"
-            >
-              <option value="">None</option>
-              <option value="h">Hours</option>
-              <option value="d">Days</option>
-              <option value="w">Weeks</option>
-              <option value="m">Months</option>
-            </Select>
-          </div>
-        </div>
+              onUnitChange={(unit) => {
+                setDurationUnit(unit);
+                void persistTaskChanges({ durationUnit: unit });
+              }}
+              onBlur={handleSave}
+            />
+          </Box>
+        </Group>
 
         {!task.parentTaskId && (
-          <div className="soft-panel rounded-[1.4rem] p-4">
-            <label className="text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">
+          <Box style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <Text size="sm" fw={500} mb={8}>
               Subtasks
-            </label>
-            <SubtaskList parentTaskId={task.id} />
-          </div>
+            </Text>
+            <Box style={{ overflow: "auto", flex: 1 }}>
+              <SubtaskList parentTaskId={task.id} />
+            </Box>
+          </Box>
         )}
-      </div>
 
-      <div className="space-y-2 border-t border-border p-5">
-        {!task.parentTaskId && (
-          <Button onClick={handlePromote} className="w-full" variant="outline">
-            Promote to Project
+        <Divider />
+        <Group gap="sm">
+          {!task.parentTaskId && (
+            <Button variant="outline" size="sm" onClick={handlePromote}>
+              Promote to Project
+            </Button>
+          )}
+          <Button
+            variant="subtle"
+            color="red"
+            size="sm"
+            leftSection={<TrashIcon size={14} />}
+            onClick={handleDelete}
+          >
+            Delete
           </Button>
-        )}
-        <Button
-          onClick={handleDelete}
-          className="w-full bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:text-white dark:hover:bg-red-500"
-        >
-          <TrashIcon size={16} />
-          <span>Delete task</span>
-        </Button>
-      </div>
-    </div>
+        </Group>
+      </Stack>
+    </Modal>
   );
 }

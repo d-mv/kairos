@@ -1,90 +1,89 @@
-import { ProjectDTO, TaskDTO } from "@kairos/shared";
+import type { TaskDTO } from "@kairos/shared";
+import { Box, Group, Text } from "@mantine/core";
 import { type MouseEvent } from "react";
+import type React from "react";
+import { formatDueDate } from "../lib/utils.js";
 import { renderTaskTitleMarkdown } from "../lib/task-title-markdown.js";
-import { AtProject } from "./AtProject";
-import { Indent } from "./Indent";
-import { Priority } from "./Priority";
+import { Priority } from "./Priority.js";
 
-const MATCH_PRIORITY_TO_COLOR: Record<number, string> = {
-  1: "var(--color-red-500)",
-  2: "var(--color-orange-500)",
-  3: "var(--color-emerald-500)",
-  4: "var(--color-muted-foreground)",
+const PRIORITY_COLOR: Record<number, string> = {
+  1: "var(--mantine-color-red-6)",
+  2: "var(--mantine-color-orange-6)",
+  3: "var(--mantine-color-teal-6)",
 };
 
 type Props = {
   task: TaskDTO;
-  project?: ProjectDTO;
   isLast: boolean;
   isActive: boolean;
   appearance?: "desktop" | "mobile";
   isListItem?: boolean;
+  isDragging?: boolean;
   handleClick?: (e: MouseEvent<HTMLElement>) => void;
   handleToggleComplete: () => void;
+  onPointerDown?: (e: React.PointerEvent<HTMLElement>) => void;
 };
 
 export function TaskItem({
   task,
-  project,
-  isLast,
-  isListItem,
-  isActive = true,
-  appearance = "desktop",
   handleClick,
   handleToggleComplete,
+  appearance = "desktop",
+  isDragging = false,
+  onPointerDown,
 }: Props) {
-  const titleClassName = `block truncate whitespace-nowrap text-[1.55rem] leading-tight underline decoration-2 underline-offset-[0.22em] ${
-    task.status === "done"
-      ? "text-muted-foreground line-through [&_*]:text-inherit [&_*]:line-through [&_a]:decoration-current [&_a:hover]:text-inherit"
-      : ""
-  }`;
-  const titleStyle = { textDecorationColor: MATCH_PRIORITY_TO_COLOR[task.priority] };
-
-  if (appearance === "mobile") {
-    return (
-      <li
-        className="group w-full cursor-pointer rounded-xl border border-border/70 bg-card/80 shadow-[0_1px_0_rgb(255_255_255_/_0.07)_inset]"
-        onClick={handleClick}
-      >
-        <div className="flex min-h-[5rem] items-center gap-3 px-3 py-2">
-          <Priority task={task} handleToggleComplete={handleToggleComplete} />
-          <div className="min-w-0 flex-1">
-            <span className={titleClassName} style={titleStyle}>
-              {renderTaskTitleMarkdown(task.title)}
-            </span>
-          </div>
-          <div className="min-w-0 shrink-0">
-            <AtProject project={project} />
-          </div>
-        </div>
-      </li>
-    );
-  }
+  const isDone = task.status === "done";
+  const priorityColor = PRIORITY_COLOR[task.priority];
+  const due = task.dueDate ? formatDueDate(task.dueDate) : null;
+  const isMobile = appearance === "mobile";
 
   return (
-    <li
-      className="group flex h-[5.2rem] w-full cursor-pointer items-center justify-start rounded-lg px-1"
+    <Group
+      gap="sm"
+      px={isMobile ? 8 : 4}
+      py={isMobile ? 12 : 6}
       onClick={handleClick}
+      onPointerDown={onPointerDown}
+      style={{
+        cursor: "grab",
+        borderRadius: 6,
+        opacity: isDragging ? 0.35 : isDone ? 0.5 : 1,
+        userSelect: "none",
+      }}
     >
-      <Indent
-        className="w-4"
-        isListItem={isListItem}
-        isLast={isLast}
-        isActive={isActive}
-        entityId={task.id}
-      />
-      <div className="flex h-full w-full items-center justify-between gap-4 rounded-lg px-2 transition-colors duration-150 group-hover:bg-accent/60">
-        <div className="flex h-full w-full items-center gap-2">
-          <Priority task={task} handleToggleComplete={handleToggleComplete} />
-          <span className={titleClassName} style={titleStyle}>
-            {renderTaskTitleMarkdown(task.title)}
-          </span>
-        </div>
-
-        <div className="flex h-full w-full items-center justify-end gap-2">
-          <AtProject project={project} />
-        </div>
-      </div>
-    </li>
+      <Priority task={task} handleToggleComplete={handleToggleComplete} />
+      {priorityColor && (
+        <Box
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: priorityColor,
+            flexShrink: 0,
+          }}
+        />
+      )}
+      <Text
+        size="sm"
+        style={{
+          flex: 1,
+          textDecoration: isDone ? "line-through" : "none",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {renderTaskTitleMarkdown(task.title)}
+      </Text>
+      {due && (
+        <Text
+          size="xs"
+          c={due.overdue ? "red" : "dimmed"}
+          style={{ flexShrink: 0, whiteSpace: "nowrap" }}
+        >
+          {due.label} · {due.relative}
+        </Text>
+      )}
+    </Group>
   );
 }

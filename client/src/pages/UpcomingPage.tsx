@@ -1,8 +1,9 @@
 import type { TaskDTO } from "@kairos/shared";
 import checkIsMobile from "is-mobile";
-import { useAtomValue } from "jotai";
-import { useMemo, useState } from "react";
-import { selectedTaskIdAtom, tasksAtom } from "../atoms/tasks.js";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useEffect, useMemo, useState } from "react";
+import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
+import { tasksAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { getUpcomingTasks } from "../lib/task-views.js";
 import { UpcomingPageDesktopView } from "./views/UpcomingPageDesktopView.js";
@@ -11,9 +12,20 @@ import { UpcomingPageMobileView } from "./views/UpcomingPageMobileView.js";
 export default function UpcomingPage() {
   const allTasks = useAtomValue(tasksAtom);
   const isLoading = useAtomValue(workspaceLoadingAtom);
-  const selectedTaskId = useAtomValue(selectedTaskIdAtom);
+  const setPageMenu = useSetAtom(pageMenuAtom);
   const [showCompleted, setShowCompleted] = useState(false);
   const isMobile = checkIsMobile();
+
+  useEffect(() => {
+    setPageMenu([
+      {
+        label: showCompleted ? "Hide Completed" : "Show Completed",
+        onClick: () => setShowCompleted((c) => !c),
+      },
+    ]);
+    return () => setPageMenu([]);
+  }, [setPageMenu, showCompleted]);
+
   const tasks = getUpcomingTasks(allTasks, new Date().toISOString(), showCompleted);
 
   const groupedTasks = useMemo(
@@ -35,9 +47,7 @@ export default function UpcomingPage() {
   const viewProps = {
     groupedTasks: Object.entries(groupedTasks),
     isLoading,
-    selectedTaskId,
-    showCompleted,
-    onToggleShowCompleted: () => setShowCompleted((current) => !current),
+    hideCompleted: !showCompleted,
   };
 
   if (isMobile) {

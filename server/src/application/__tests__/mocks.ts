@@ -83,6 +83,13 @@ export class InMemoryTaskRepository implements TaskRepository {
     );
   }
 
+  async findSiblings(task: Task, userId: string): Promise<Task[]> {
+    if (task.parentTaskId) return this.findSubtasks(task.parentTaskId, userId);
+    if (task.projectId) return this.findByProjectId(task.projectId, userId);
+    if (task.areaId) return this.findByAreaId(task.areaId, userId);
+    return this.findInbox(userId);
+  }
+
   async save(task: Task): Promise<void> {
     this.store.set(task.id, task);
   }

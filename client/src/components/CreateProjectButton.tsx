@@ -1,4 +1,5 @@
 import type { ProjectDTO } from "@kairos/shared";
+import { Button, Group, Modal, NativeSelect, Stack, TextInput } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,23 +7,10 @@ import { areasAtom } from "../atoms/areas.js";
 import { projectsAtom } from "../atoms/projects.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
-import { cn } from "../lib/utils.js";
-import { Button, type ButtonProps } from "./ui/button.js";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog.js";
-import { Input } from "./ui/input.js";
-import { Label } from "./ui/label.js";
-import { Select } from "./ui/select.js";
+import { Button as Btn, type ButtonProps } from "./ui/button.js";
 
 interface CreateProjectButtonProps {
   label?: string;
-  className?: string;
   areaId?: string;
   navigateToProject?: boolean;
   variant?: ButtonProps["variant"];
@@ -31,7 +19,6 @@ interface CreateProjectButtonProps {
 
 export function CreateProjectButton({
   label = "New project",
-  className,
   areaId,
   navigateToProject = false,
   variant = "ghost",
@@ -77,9 +64,7 @@ export function CreateProjectButton({
       setOpen(false);
       setName("");
       setSelectedAreaId(areaId ?? "");
-      if (navigateToProject) {
-        navigate(`/project/${project.id}`);
-      }
+      if (navigateToProject) navigate(`/project/${project.id}`);
     } catch (err) {
       setProjects((prev) => prev.filter((item) => item.id !== optimisticProject.id));
       setError(err instanceof Error ? err.message : "Failed to create project");
@@ -90,85 +75,65 @@ export function CreateProjectButton({
 
   return (
     <>
-      <Button
-        type="button"
-        onClick={() => setOpen(true)}
-        variant={variant}
-        size={size}
-        className={cn("w-full justify-start rounded-2xl px-4 py-3 text-left text-sm", className)}
-      >
+      <Btn type="button" onClick={() => setOpen(true)} variant={variant} size={size}>
         {label}
-      </Button>
-      <Dialog
-        open={open}
-        onOpenChange={(nextOpen) => {
+      </Btn>
+      <Modal
+        opened={open}
+        onClose={() => {
           if (loading) return;
-          setOpen(nextOpen);
-          if (!nextOpen) {
-            setError(null);
-            setSelectedAreaId(areaId ?? "");
-          }
+          setOpen(false);
+          setError(null);
+          setSelectedAreaId(areaId ?? "");
         }}
+        title="Create Project"
       >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Create Project</DialogTitle>
-            <DialogDescription>Create a new project in your workspace.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-2 py-4">
-            <Label>Project</Label>
-            <Input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  void handleCreateProject();
-                }
-              }}
-              placeholder="e.g. Website Redesign"
+        <Stack gap="sm">
+          <TextInput
+            label="Project"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void handleCreateProject();
+              }
+            }}
+            placeholder="e.g. Website Redesign"
+            disabled={loading}
+            error={error}
+            autoFocus
+          />
+          {!areaId && (
+            <NativeSelect
+              label="Area"
+              value={selectedAreaId}
+              onChange={(e) => setSelectedAreaId(e.target.value)}
               disabled={loading}
-              autoFocus
+              data={[
+                { value: "", label: "Unassigned" },
+                ...areas.map((area) => ({ value: area.id, label: area.name })),
+              ]}
             />
-            {!areaId && (
-              <>
-                <Label>Area</Label>
-                <Select
-                  value={selectedAreaId}
-                  onChange={(e) => setSelectedAreaId(e.target.value)}
-                  disabled={loading}
-                >
-                  <option value="">Unassigned</option>
-                  {areas.map((area) => (
-                    <option key={area.id} value={area.id}>
-                      {area.name}
-                    </option>
-                  ))}
-                </Select>
-              </>
-            )}
-            {error && <p className="text-xs text-destructive">{error}</p>}
-          </div>
-          <DialogFooter>
+          )}
+          <Group justify="flex-end" mt="xs">
             <Button
-              type="button"
+              variant="subtle"
               onClick={() => {
                 if (loading) return;
                 setOpen(false);
                 setError(null);
               }}
-              variant="outline"
               disabled={loading}
             >
               Cancel
             </Button>
-            <Button type="button" onClick={handleCreateProject} disabled={loading}>
+            <Button onClick={handleCreateProject} disabled={loading}>
               {loading ? "Creating..." : "Create"}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </Group>
+        </Stack>
+      </Modal>
     </>
   );
 }

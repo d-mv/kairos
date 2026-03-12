@@ -108,6 +108,8 @@ export const api = {
     complete: (id: string) => request<TaskDTO>("POST", `/tasks/${id}/complete`),
     reopen: (id: string) => request<TaskDTO>("POST", `/tasks/${id}/reopen`),
     promote: (id: string) => request<ProjectDTO>("POST", `/tasks/${id}/promote`),
+    move: (id: string, afterId: string | null) =>
+      request<TaskDTO>("PUT", `/tasks/${id}/move`, { afterId }),
   },
 
   links: {

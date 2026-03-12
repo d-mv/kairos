@@ -1,10 +1,10 @@
 import type { ProjectDTO } from "@kairos/shared";
+import { Text, TextInput } from "@mantine/core";
 import { useSetAtom } from "jotai";
 import { useState } from "react";
 import { projectsAtom } from "../atoms/projects.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
-import { Input } from "./ui/input.js";
 
 interface NewProjectInputProps {
   areaId?: string;
@@ -57,10 +57,9 @@ export function NewProjectInput({
   };
 
   return (
-    <div className="flex flex-col">
-      <form onSubmit={handleSubmit} className="flex items-center">
-        <Input
-          type="text"
+    <div>
+      <form onSubmit={handleSubmit}>
+        <TextInput
           value={name}
           onChange={(event) => {
             setName(event.target.value);
@@ -68,10 +67,15 @@ export function NewProjectInput({
           }}
           placeholder={placeholder}
           disabled={loading}
-          className="h-[5.6rem] flex-1 rounded-[1.8rem] px-[1.8rem] py-[1.1rem] text-[1.55rem] leading-tight"
+          size="sm"
+          variant="filled"
         />
       </form>
-      {error ? <p className="mt-2 px-1 text-xs text-destructive">{error}</p> : null}
+      {error ? (
+        <Text size="xs" c="red" mt={4}>
+          {error}
+        </Text>
+      ) : null}
     </div>
   );
 }

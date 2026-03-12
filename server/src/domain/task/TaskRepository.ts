@@ -9,4 +9,5 @@ export interface TaskRepository {
   findSubtasks(parentTaskId: string, userId: string): Promise<Task[]>;
   save(task: Task): Promise<void>;
   delete(id: string, userId: string): Promise<void>;
+  findSiblings(task: Task, userId: string): Promise<Task[]>;
 }

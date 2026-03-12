@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
+import { createContext, useContext, type ReactNode } from "react";
 
 type Theme = "light" | "dark";
 
@@ -8,37 +9,19 @@ interface ThemeContextValue {
   toggleTheme: () => void;
 }
 
-const STORAGE_KEY = "kairos-theme";
-
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "light";
-
-  const savedTheme = window.localStorage.getItem(STORAGE_KEY);
-  if (savedTheme === "light" || savedTheme === "dark") {
-    return savedTheme;
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    root.style.colorScheme = theme;
-    window.localStorage.setItem(STORAGE_KEY, theme);
-  }, [theme]);
+  const { setColorScheme } = useMantineColorScheme();
+  const computed = useComputedColorScheme("light");
+  const theme: Theme = computed === "dark" ? "dark" : "light";
 
   return (
     <ThemeContext.Provider
       value={{
         theme,
-        setTheme,
-        toggleTheme: () => setTheme((current) => (current === "dark" ? "light" : "dark")),
+        setTheme: setColorScheme,
+        toggleTheme: () => setColorScheme(theme === "dark" ? "light" : "dark"),
       }}
     >
       {children}

@@ -1,3 +1,5 @@
+import { Badge } from "@mantine/core";
+
 type Props = {
   saveState: "idle" | "saving" | "saved" | "error";
 };
@@ -5,17 +7,12 @@ type Props = {
 export function SaveIndication({ saveState }: Props) {
   if (saveState === "idle") return null;
 
+  const color = saveState === "saved" ? "green" : saveState === "error" ? "red" : "gray";
+  const label = saveState === "saving" ? "Saving" : saveState === "saved" ? "Saved" : "Not saved";
+
   return (
-    <span
-      className={`rounded-full px-4 py-2 text-xs leading-none font-sans font-normal uppercase tracking-wider ${
-        saveState === "saving"
-          ? "bg-muted text-foreground"
-          : saveState === "saved"
-            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-            : "bg-destructive/15 text-destructive"
-      }`}
-    >
-      {saveState === "saving" ? "Saving" : saveState === "saved" ? "Saved" : "Not saved"}
-    </span>
+    <Badge size="sm" variant="light" color={color}>
+      {label}
+    </Badge>
   );
 }

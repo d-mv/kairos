@@ -4,6 +4,7 @@ import { atom } from "jotai";
 export type AddEntityType = {
   entityLabel: string;
   type: EntityType;
+  areaId?: string | null;
   errorMessage?: string | null;
   loading?: boolean | null;
 };

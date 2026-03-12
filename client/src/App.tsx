@@ -22,8 +22,8 @@ const AreaPage = lazy(() => import("./pages/AreaPage.js"));
 
 function RouteFallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-6">
-      <div className="soft-panel rounded-[1.4rem] px-5 py-[1.6rem] text-sm text-muted-foreground">
+    <div>
+      <div>
         Loading workspace...
       </div>
     </div>

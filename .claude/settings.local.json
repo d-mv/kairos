@@ -7,7 +7,26 @@
       "Bash(/opt/homebrew/bin/pnpm approve-builds:*)",
       "Bash(printf a\\\\n\\\\ny\\\\n:*)",
       "Bash(/opt/homebrew/bin/pnpm:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "WebFetch(domain:alpha.mantine.dev)",
+      "WebSearch",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(npx vite:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm --filter @kairos/client build 2>&1 | tail -30)",
+      "Bash(pnpm --filter @kairos/client build 2>&1 | grep -E \"error|Error|built in|✓\")",
+      "Bash(find /Users/dmelnikov/code/kairos -maxdepth 3 -name \"fly.toml\" -o -name \"netlify.toml\" -o -name \".env*\" 2>/dev/null | grep -v node_modules)",
+      "Bash(fly deploy:*)",
+      "Bash(pnpm --filter @kairos/client build 2>&1 | grep -E \"error|Error|✓ built\")",
+      "Bash(pnpm --filter @kairos/client add -D @vite-pwa/assets-generator 2>&1 | tail -5)",
+      "Bash(pnpm --filter @kairos/client exec pwa-assets-generator --preset minimal-2023 public/icon.svg 2>&1)",
+      "Bash(echo $KAIROS_MCP_BEARER_TOKEN)",
+      "Bash(curl -s -X POST https://kairos-app.fly.dev/mcp \\\\\n  -H \"Authorization: Bearer kr_356795b66f784fbae7c3ddd0ecc409d74948b5f7e7e5acb7\" \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -d '{\"jsonrpc\":\"2.0\",\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1\"}},\"id\":1}' 2>&1)",
+      "Bash(curl -s -X POST https://kairos-app.fly.dev/mcp \\\\\n  -H \"Authorization: Bearer kr_356795b66f784fbae7c3ddd0ecc409d74948b5f7e7e5acb7\" \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -H \"Accept: application/json, text/event-stream\" \\\\\n  -d '{\"jsonrpc\":\"2.0\",\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1\"}},\"id\":1}' 2>&1)",
+      "Bash(pnpm --filter server test 2>&1 | tail -30)",
+      "Bash(node scripts/db-migrate-position.mjs)"
     ]
   }
 }

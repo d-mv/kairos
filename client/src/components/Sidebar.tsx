@@ -1,209 +1,161 @@
-import type { EntityType, TaskDTO } from "@kairos/shared";
+import { ActionIcon, Box, NavLink, Paper, Stack, Text, Tooltip } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
-import { projectsAtom, projectsByAreaAtom } from "../atoms/projects.js";
-import { renameEntityAtom } from "../atoms/renameEntity.atom.js";
-import { tasksAtom } from "../atoms/tasks.js";
-import { workspaceLoadingAtom } from "../atoms/workspace.js";
-import { api } from "../lib/api.js";
+import { addEntityAtom } from "../atoms/addEntity.atom.js";
+import { projectsByAreaAtom } from "../atoms/projects.js";
 import { useIsActive } from "../lib/useIsActive.js";
-import { AddNewButton } from "./AddNewButton.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
-import { AreaItem } from "./AreaItem.js";
-import { Menu } from "./Menu/Menu.js";
-import { RenameEntityDialog } from "./RenameEntityDialog.js";
-import { ProjectItem } from "./ProjectItem.js";
-import { SectionLabel } from "./SectionLabel.js";
-import { SystemSidebarItem } from "./SystemSidebarItem.js";
 import { SYSTEM_SIDEBAR_ITEMS } from "./data.js";
+
+const STORAGE_KEY = "kairos-sidebar-areas-open";
+
+function loadOpenState(): Record<string, boolean> {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveOpenState(state: Record<string, boolean>) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+type SectionHeaderProps = {
+  label: string;
+  onAdd: () => void;
+  addLabel: string;
+};
+
+function SectionHeader({ label, onAdd, addLabel }: SectionHeaderProps) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <Box
+      px={8}
+      pt={12}
+      pb={2}
+      style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+        {label}
+      </Text>
+      <Box
+        component="button"
+        onClick={onAdd}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+          padding: "2px 4px",
+          borderRadius: 4,
+          color: "var(--mantine-color-dimmed)",
+          fontSize: "var(--mantine-font-size-xs)",
+          whiteSpace: "nowrap",
+          opacity: hovered ? 1 : 0,
+          transition: "opacity 120ms ease",
+        }}
+        aria-label={addLabel}
+      >
+        + {addLabel}
+      </Box>
+    </Box>
+  );
+}
 
 export function Sidebar() {
   const areas = useAtomValue(areasAtom);
   const projectsByArea = useAtomValue(projectsByAreaAtom);
-  const isLoading = useAtomValue(workspaceLoadingAtom);
-  const setProjects = useSetAtom(projectsAtom);
-  const setTasks = useSetAtom(tasksAtom);
   const navigate = useNavigate();
-  const [busyProjectId, setBusyProjectId] = useState<string | null>(null);
-  const setRenameEntityState = useSetAtom(renameEntityAtom);
-
   const isActive = useIsActive();
+  const setAddEntity = useSetAtom(addEntityAtom);
 
   const unassignedProjects = projectsByArea.get(null) ?? [];
-  const allProjects = [
-    unassignedProjects,
-    ...areas.map((area) => projectsByArea.get(area.id) ?? []),
-  ].flat();
+  const [openAreas, setOpenAreas] = useState<Record<string, boolean>>(loadOpenState);
 
-  const handleRenameProject = async (projectId: string, name: string) => {
-    const currentProject = allProjects.find((project) => project.id === projectId);
-    if (!currentProject) return;
-
-    const previousProject = currentProject;
-    const optimisticProject = { ...currentProject, name, updatedAt: new Date().toISOString() };
-    setBusyProjectId(projectId);
-    setRenameEntityState((s) => ({ ...s!, loading: true }));
-
-    setProjects((prev) => prev.map((item) => (item.id === projectId ? optimisticProject : item)));
-
-    try {
-      const updated = await api.projects.update(projectId, { name });
-      setProjects((prev) => prev.map((item) => (item.id === projectId ? updated : item)));
-      setRenameEntityState(null);
-    } catch (err) {
-      setProjects((prev) => prev.map((item) => (item.id === projectId ? previousProject : item)));
-      setRenameEntityState((s) => ({
-        ...s!,
-        loading: false,
-        errorMessage: err instanceof Error ? err.message : "Failed to rename project",
-      }));
-      // TODO: remove?
-      throw err instanceof Error ? err : new Error("Failed to rename project");
-    } finally {
-      setBusyProjectId((current) => (current === projectId ? null : current));
-    }
-  };
-
-  const handleDeleteProject = async (projectId: string) => {
-    const currentProject = allProjects.find((project) => project.id === projectId);
-    if (!currentProject) return;
-    if (!window.confirm(`Delete project "${currentProject.name}"? Tasks will become unassigned.`))
-      return;
-
-    const previousProject = currentProject;
-    const previousTasks: TaskDTO[] = [];
-    const wasOnProjectPage = isActive(`/project/${projectId}`);
-    setBusyProjectId(projectId);
-    setProjects((prev) => prev.filter((item) => item.id !== projectId));
-    setTasks((prev) => {
-      const relatedTasks = prev.filter((item) => item.projectId === projectId);
-      previousTasks.push(...relatedTasks);
-      return prev.map((item) =>
-        item.projectId === projectId ? { ...item, projectId: null } : item,
-      );
+  const setAreaOpen = (areaId: string, open: boolean) => {
+    setOpenAreas((prev) => {
+      const next = { ...prev, [areaId]: open };
+      saveOpenState(next);
+      return next;
     });
-
-    const activePath = `/project/${projectId}`;
-    if (wasOnProjectPage) navigate("/inbox");
-
-    try {
-      await api.projects.delete(projectId);
-    } catch (err) {
-      setProjects((prev) => {
-        if (prev.some((item) => item.id === previousProject.id)) return prev;
-        return [...prev, previousProject];
-      });
-      setTasks((prev) =>
-        prev.map((item) => previousTasks.find((task) => task.id === item.id) ?? item),
-      );
-      if (wasOnProjectPage) {
-        navigate(activePath);
-      }
-      window.alert(err instanceof Error ? err.message : "Failed to delete project");
-    } finally {
-      setBusyProjectId((current) => (current === projectId ? null : current));
-    }
   };
-
-  async function handleRename(name: string, entityId: string, type: EntityType) {
-    if (type === "project") {
-      return handleRenameProject(entityId, name);
-    }
-  }
-
-  function renderSkeleton() {
-    return (
-      <>
-        <div className="skeleton h-[4.6rem] rounded-2xl" />
-        <div className="space-y-2">
-          <div className="skeleton h-[1.2rem] w-[8rem] rounded-full" />
-          <div className="skeleton h-[4.4rem] rounded-2xl" />
-          <div className="skeleton h-[4.4rem] rounded-2xl" />
-        </div>
-        <div className="space-y-2">
-          <div className="skeleton h-[1.2rem] w-[6rem] rounded-full" />
-          <div className="soft-panel rounded-[1.35rem] p-2">
-            <div className="skeleton h-[4.4rem] rounded-2xl" />
-            <div className="mt-2 skeleton h-[4rem] rounded-2xl" />
-          </div>
-        </div>
-      </>
-    );
-  }
 
   return (
     <>
-      <aside className="relative flex min-h-0 w-[31rem] flex-col gap-5 border-r border-sidebar-border/80 bg-sidebar/90 px-5 py-5 text-[var(--color-sidebar-foreground)] backdrop-blur">
-        <Menu />
-        <nav className={`overflow-y-auto flex flex-col gap-6`}>
-          {isLoading ? (
-            renderSkeleton()
-          ) : (
-            <>
-              <div className="flex flex-col">
-                {SYSTEM_SIDEBAR_ITEMS.map((item) => (
-                  <SystemSidebarItem key={item.path} path={item.path}>
-                    {item.label}
-                  </SystemSidebarItem>
-                ))}
-              </div>
+      <Paper
+        w={240}
+        p="sm"
+        radius="md"
+        style={{ flexShrink: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}
+      >
+        <Stack gap={2} style={{ overflow: "auto", flex: 1 }}>
+          {SYSTEM_SIDEBAR_ITEMS.map((item) => (
+            <NavLink
+              key={item.path}
+              label={item.label}
+              active={isActive(item.path)}
+              onClick={() => navigate(item.path)}
+              style={{ borderRadius: 6 }}
+            />
+          ))}
 
-              {areas.length > 0 && (
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between pb-1 pe-3">
-                    <SectionLabel>Areas</SectionLabel>
-                    <AddNewButton type="area" label="Area">
-                      + New area
-                    </AddNewButton>
-                  </div>
-                  {areas.map((area) => (
-                    <AreaItem
-                      key={area.id}
-                      area={area}
-                      busyProjectId={busyProjectId}
-                      handleDeleteProject={handleDeleteProject}
-                    />
-                  ))}
-                </div>
-              )}
-              {areas.length === 0 && (
-                <div className="soft-panel rounded-xl p-3">
-                  <SectionLabel>Areas</SectionLabel>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Create your first area to group related projects.
-                  </p>
-                  <AddNewButton type="project" label="Project">
-                    + New project
-                  </AddNewButton>
-                </div>
-              )}
+          <SectionHeader
+            label="Areas"
+            addLabel="New Area"
+            onAdd={() => setAddEntity({ type: "area", entityLabel: "Area" })}
+          />
 
-              <div className="space-y-1">
-                <div className="flex items-center justify-between pb-1 pe-3">
-                  <SectionLabel>Projects</SectionLabel>
-                  <AddNewButton type="project" label="Project">
-                    + New project
-                  </AddNewButton>
-                </div>
-                {unassignedProjects.map((project, index) => (
-                  <ProjectItem
+          {areas.map((area) => {
+            const areaProjects = projectsByArea.get(area.id) ?? [];
+            return (
+              <NavLink
+                key={area.id}
+                label={area.name}
+                active={isActive(`/area/${area.id}`)}
+                onClick={() => navigate(`/area/${area.id}`)}
+                style={{ borderRadius: 6 }}
+                opened={openAreas[area.id] ?? true}
+                onChange={(open) => setAreaOpen(area.id, open)}
+                childrenOffset={12}
+              >
+                {areaProjects.map((project) => (
+                  <NavLink
                     key={project.id}
-                    project={project}
-                    isLast={index === unassignedProjects.length - 1}
-                    busyProjectId={busyProjectId}
-                    handleDeleteProject={handleDeleteProject}
-                    showIndent={false}
+                    label={project.name}
+                    active={isActive(`/project/${project.id}`)}
+                    onClick={() => navigate(`/project/${project.id}`)}
+                    style={{ borderRadius: 6 }}
                   />
                 ))}
-              </div>
-            </>
-          )}
-        </nav>
-      </aside>
+              </NavLink>
+            );
+          })}
+
+          <SectionHeader
+            label="Projects"
+            addLabel="New Project"
+            onAdd={() => setAddEntity({ type: "project", entityLabel: "Project" })}
+          />
+          {unassignedProjects.map((project) => (
+            <NavLink
+              key={project.id}
+              label={project.name}
+              active={isActive(`/project/${project.id}`)}
+              onClick={() => navigate(`/project/${project.id}`)}
+              style={{ borderRadius: 6 }}
+            />
+          ))}
+        </Stack>
+      </Paper>
       <AddNewEntityDialog />
-      <RenameEntityDialog onRename={handleRename} />
     </>
   );
 }

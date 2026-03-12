@@ -1,26 +1,15 @@
 import type { AreaDTO } from "@kairos/shared";
+import { Button, Group, Modal, Stack, TextInput } from "@mantine/core";
 import { useSetAtom } from "jotai";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
-import { cn } from "../lib/utils.js";
-import { Button, type ButtonProps } from "./ui/button.js";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog.js";
-import { Input } from "./ui/input.js";
-import { Label } from "./ui/label.js";
+import { Button as Btn, type ButtonProps } from "./ui/button.js";
 
 interface CreateAreaButtonProps {
   label: string;
-  className?: string;
   navigateToArea?: boolean;
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
@@ -28,7 +17,6 @@ interface CreateAreaButtonProps {
 
 export function CreateAreaButton({
   label,
-  className,
   navigateToArea = false,
   variant = "ghost",
   size = "default",
@@ -68,9 +56,7 @@ export function CreateAreaButton({
       });
       setOpen(false);
       setName("");
-      if (navigateToArea) {
-        navigate(`/area/${area.id}`);
-      }
+      if (navigateToArea) navigate(`/area/${area.id}`);
     } catch (err) {
       setAreas((prev) => prev.filter((item) => item.id !== optimisticArea.id));
       setError(err instanceof Error ? err.message : "Failed to create area");
@@ -81,72 +67,52 @@ export function CreateAreaButton({
 
   return (
     <>
-      <Button
-        type="button"
-        onClick={() => setOpen(true)}
-        variant={variant}
-        size={size}
-        className={cn(
-          "justify-start rounded-2xl px-4 py-3 text-left text-sm font-light hover:bg-[var(--color-sidebar-accent)] hover:text-accent-foreground",
-          className,
-        )}
-      >
+      <Btn type="button" onClick={() => setOpen(true)} variant={variant} size={size}>
         {label}
-      </Button>
-      <Dialog
-        open={open}
-        onOpenChange={(nextOpen) => {
+      </Btn>
+      <Modal
+        opened={open}
+        onClose={() => {
           if (loading) return;
-          setOpen(nextOpen);
-          if (!nextOpen) {
-            setError(null);
-          }
+          setOpen(false);
+          setError(null);
         }}
+        title="Create Area"
       >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Create Area</DialogTitle>
-            <DialogDescription>
-              Create a new area for grouping projects and direct work.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-2 py-4">
-            <Label>Area</Label>
-            <Input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  void handleCreateArea();
-                }
-              }}
-              placeholder="e.g. Product"
-              disabled={loading}
-              autoFocus
-            />
-            {error && <p className="text-xs text-destructive">{error}</p>}
-          </div>
-          <DialogFooter>
+        <Stack gap="sm">
+          <TextInput
+            label="Area"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void handleCreateArea();
+              }
+            }}
+            placeholder="e.g. Product"
+            disabled={loading}
+            error={error}
+            autoFocus
+          />
+          <Group justify="flex-end" mt="xs">
             <Button
-              type="button"
+              variant="subtle"
               onClick={() => {
                 if (loading) return;
                 setOpen(false);
                 setError(null);
               }}
-              variant="outline"
               disabled={loading}
             >
               Cancel
             </Button>
-            <Button type="button" onClick={handleCreateArea} disabled={loading}>
+            <Button onClick={handleCreateArea} disabled={loading}>
               {loading ? "Creating..." : "Create"}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </Group>
+        </Stack>
+      </Modal>
     </>
   );
 }

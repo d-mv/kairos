@@ -11,6 +11,7 @@ import {
 } from "../atoms/workspace.js";
 import { lastWsEventAtom } from "../atoms/ws.js";
 import { api } from "../lib/api.js";
+import { loadWorkspaceCache, saveWorkspaceCache } from "../lib/cache.js";
 
 /**
  * Loads initial data and applies WebSocket patches.
@@ -34,6 +35,16 @@ export function useDataSync() {
       setWorkspaceReady(false);
       setWorkspaceError(null);
 
+      // Hydrate from cache immediately so UI is responsive before the API responds
+      const cached = loadWorkspaceCache();
+      if (cached && !cancelled) {
+        setAreas(cached.areas);
+        setProjects(cached.projects);
+        setTasks(cached.tasks);
+        setWorkspaceReady(true);
+        setWorkspaceLoading(false);
+      }
+
       try {
         const [areas, projects, tasks] = await Promise.all([
           api.areas.list(),
@@ -47,10 +58,14 @@ export function useDataSync() {
         setProjects(projects);
         setTasks(tasks);
         setWorkspaceReady(true);
+        saveWorkspaceCache({ areas, projects, tasks });
       } catch (error) {
         if (!cancelled) {
           console.error(error);
-          setWorkspaceError(error instanceof Error ? error.message : "Failed to load workspace");
+          // If we already hydrated from cache, don't show an error
+          if (!cached) {
+            setWorkspaceError(error instanceof Error ? error.message : "Failed to load workspace");
+          }
         }
       } finally {
         if (!cancelled) {
@@ -73,6 +88,28 @@ export function useDataSync() {
     setWorkspaceLoading,
     setWorkspaceReady,
   ]);
+
+  useEffect(() => {
+    const poll = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const [areas, projects, tasks] = await Promise.all([
+          api.areas.list(),
+          api.projects.list(),
+          api.tasks.list(),
+        ]);
+        setAreas(areas);
+        setProjects(projects);
+        setTasks(tasks);
+        saveWorkspaceCache({ areas, projects, tasks });
+      } catch {
+        // silent — don't surface polling errors
+      }
+    };
+
+    const id = window.setInterval(() => void poll(), 30_000);
+    return () => window.clearInterval(id);
+  }, [setAreas, setProjects, setTasks]);
 
   useEffect(() => {
     if (!lastEvent) return;

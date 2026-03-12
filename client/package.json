@@ -18,33 +18,29 @@
   },
   "dependencies": {
     "@kairos/shared": "workspace:*",
-    "@mv-d/toolbelt": "^10.1.1",
-    "@radix-ui/react-dialog": "^1.1.2",
-    "@radix-ui/react-label": "^2.1.0",
+    "@mantine/core": "9.0.0-alpha.4",
+    "@mantine/hooks": "9.0.0-alpha.4",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
-    "@supabase/supabase-js": "^2.49.8",
+    "@supabase/supabase-js": "2.98",
     "@types/ramda": "^0.31.1",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "is-mobile": "^5.0.0",
     "jotai": "^2.18.0",
     "ramda": "^0.32.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7.6.2",
-    "tailwind-merge": "^2.5.4"
+    "react-router-dom": "^7.6.2"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.1",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@vite-pwa/assets-generator": "^1.0.2",
     "@vitejs/plugin-react": "^5.1.4",
-    "oxfmt": "^0.35.0",
-    "oxlint": "^1.50.0",
-    "tailwindcss": "^4.2.1",
-    "typescript": "^5.8.3",
-    "vite": "^7.3.1"
+    "oxfmt": "^0.36.0",
+    "oxlint": "^1.51.0",
+    "typescript": "5.9",
+    "vite": "^7.3.1",
+    "vite-plugin-pwa": "^1.2.0"
   }
 }

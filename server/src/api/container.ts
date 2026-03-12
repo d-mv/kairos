@@ -26,6 +26,7 @@ import { CreateTask } from "../application/task/CreateTask.js";
 import { DeleteTask } from "../application/task/DeleteTask.js";
 import { ListTasks } from "../application/task/ListTasks.js";
 import { PromoteTask } from "../application/task/PromoteTask.js";
+import { ReorderTask } from "../application/task/ReorderTask.js";
 import { UpdateTask } from "../application/task/UpdateTask.js";
 
 import { CreateLink } from "../application/link/CreateLink.js";
@@ -63,6 +64,7 @@ export const completeTask = new CompleteTask(taskRepo, eventBus);
 export const reopenTask = new ReopenTask(taskRepo, eventBus);
 export const listTasks = new ListTasks(taskRepo);
 export const promoteTask = new PromoteTask(taskRepo, projectRepo, eventBus);
+export const reorderTask = new ReorderTask(taskRepo, eventBus);
 
 // Use cases — Links
 export const createLink = new CreateLink(linkRepo, eventBus);

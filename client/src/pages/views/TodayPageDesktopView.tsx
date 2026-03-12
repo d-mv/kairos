@@ -1,59 +1,45 @@
 import type { TaskDTO } from "@kairos/shared";
-import { PageTaskMenu } from "../../components/PageTaskMenu.js";
+import { Box, Skeleton, Stack, Text, Title } from "@mantine/core";
 import { TaskDetailPanel } from "../../components/TaskDetailPanel/TaskDetailPanel.js";
 import { TaskList } from "../../components/TaskList.js";
 
 type TodayPageDesktopViewProps = {
   tasks: TaskDTO[];
   isLoading: boolean;
-  selectedTaskId: string | null;
-  showCompleted: boolean;
-  onToggleShowCompleted: () => void;
+  hideCompleted: boolean;
 };
 
 export function TodayPageDesktopView({
   tasks,
   isLoading,
-  selectedTaskId,
-  showCompleted,
-  onToggleShowCompleted,
+  hideCompleted,
 }: TodayPageDesktopViewProps) {
   return (
-    <div className="flex h-full flex-1">
-      <div className={`flex-1 overflow-y-auto ${selectedTaskId ? "lg:mr-[46rem]" : ""}`}>
-        <div className="mx-auto max-w-[98rem] px-8 py-10 sm:px-12">
-          <div className="mb-8 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[1rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Focus
-              </p>
-              <h1 className="mt-2 text-[3.2rem] font-semibold tracking-tight sm:text-[4.2rem]">
-                Today
-              </h1>
-            </div>
-            <PageTaskMenu
-              showCompleted={showCompleted}
-              onToggleShowCompleted={onToggleShowCompleted}
-            />
-          </div>
-          {isLoading ? (
-            <div className="panel overflow-hidden rounded-2xl">
-              <div className="skeleton h-[5.6rem]" />
-              <div className="skeleton h-[5.6rem]" />
-              <div className="skeleton h-[5.6rem]" />
-              <div className="skeleton h-[5.6rem]" />
-            </div>
-          ) : (
-            <TaskList
-              tasks={tasks}
-              emptyMessage="No tasks due today or overdue"
-              showNewTaskInput={false}
-              hideCompleted={!showCompleted}
-            />
-          )}
-        </div>
-      </div>
-      {selectedTaskId && <TaskDetailPanel />}
-    </div>
+    <Box flex={1} style={{ overflowY: "auto" }} p="xl">
+      <Box maw={760}>
+        <Box mb="lg">
+          <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
+            Focus
+          </Text>
+          <Title order={2}>Today</Title>
+        </Box>
+        {isLoading ? (
+          <Stack gap="sm">
+            <Skeleton h={40} radius="sm" />
+            <Skeleton h={40} radius="sm" />
+            <Skeleton h={40} radius="sm" />
+            <Skeleton h={40} radius="sm" />
+          </Stack>
+        ) : (
+          <TaskList
+            tasks={tasks}
+            emptyMessage="No tasks due today or overdue"
+            showNewTaskInput={false}
+            hideCompleted={hideCompleted}
+          />
+        )}
+      </Box>
+      <TaskDetailPanel />
+    </Box>
   );
 }

@@ -1,11 +1,11 @@
 import type { TaskDTO } from "@kairos/shared";
+import { Text, TextInput } from "@mantine/core";
 import { useSetAtom } from "jotai";
 import { useState } from "react";
 import { tasksAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
 import { createOptimisticId } from "../lib/optimistic.js";
 import { getTaskErrorMessage } from "../lib/task-errors.js";
-import { Input } from "./ui/input.js";
 
 interface NewTaskInputProps {
   projectId?: string;
@@ -47,6 +47,7 @@ export function NewTaskInput({
       dueDate: null,
       duration: null,
       durationUnit: null,
+      position: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -82,10 +83,9 @@ export function NewTaskInput({
   };
 
   return (
-    <div className="flex flex-col">
-      <form onSubmit={handleSubmit} className="flex items-center">
-        <Input
-          type="text"
+    <div>
+      <form onSubmit={handleSubmit}>
+        <TextInput
           value={title}
           onChange={(e) => {
             setTitle(e.target.value);
@@ -93,10 +93,15 @@ export function NewTaskInput({
           }}
           placeholder={placeholder}
           disabled={loading}
-          className="h-[5.6rem] flex-1 rounded-[1.8rem] px-[1.8rem] py-[1.1rem] text-[1.55rem] leading-tight"
+          size="sm"
+          variant="filled"
         />
       </form>
-      {error ? <p className="mt-2 px-1 text-xs text-destructive">{error}</p> : null}
+      {error ? (
+        <Text size="xs" c="red" mt={4}>
+          {error}
+        </Text>
+      ) : null}
     </div>
   );
 }
