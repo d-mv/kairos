@@ -5,6 +5,7 @@ import {
   getBrainDocument,
   getBrainDocumentHtml,
   isBrainDocument,
+  linkifyBrainHtml,
 } from "./brain-content.js";
 
 test("createBrainDocument stores formatted text as a single block", () => {
@@ -41,6 +42,22 @@ test("getBrainDocumentHtml returns the first formatted text block", () => {
       ],
     }),
     "<p>First</p>",
+  );
+});
+
+test("linkifyBrainHtml turns bare urls into anchors", () => {
+  assert.equal(
+    linkifyBrainHtml("<p>See https://example.com/docs today.</p>"),
+    '<p>See <a href="https://example.com/docs" target="_blank" rel="noreferrer">https://example.com/docs</a> today.</p>',
+  );
+});
+
+test("linkifyBrainHtml leaves existing anchors unchanged", () => {
+  assert.equal(
+    linkifyBrainHtml(
+      '<p><a href="https://example.com/docs" target="_blank" rel="noreferrer">Docs</a></p>',
+    ),
+    '<p><a href="https://example.com/docs" target="_blank" rel="noreferrer">Docs</a></p>',
   );
 });
 
