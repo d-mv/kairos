@@ -93,10 +93,11 @@ describe("CreateTask use case", () => {
   });
 
   it("normalizes bare links in task title before saving", async () => {
-    const createTaskWithNormalizer = new CreateTask(
-      taskRepo,
-      eventBus,
-      async (title) => title.replace("https://kairos-web.fly.dev/inbox", "[Kairos](https://kairos-web.fly.dev/inbox)"),
+    const createTaskWithNormalizer = new CreateTask(taskRepo, eventBus, async (title) =>
+      title.replace(
+        "https://kairos-web.fly.dev/inbox",
+        "[Kairos](https://kairos-web.fly.dev/inbox)",
+      ),
     );
 
     const result = await createTaskWithNormalizer.execute({

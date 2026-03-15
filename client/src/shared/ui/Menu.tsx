@@ -22,11 +22,7 @@ export function Menu({ items, topSection }: Props) {
   return (
     <MantineMenu opened={opened} onChange={setOpened} withinPortal>
       <MantineMenu.Target>
-        <ActionIcon
-          variant="subtle"
-          size="md"
-          aria-label="Open workspace menu"
-        >
+        <ActionIcon variant="subtle" size="md" aria-label="Open workspace menu">
           <EllipsisVerticalIcon />
         </ActionIcon>
       </MantineMenu.Target>

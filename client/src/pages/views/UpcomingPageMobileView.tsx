@@ -35,8 +35,12 @@ export function UpcomingPageMobileView({
           {groupedTasks.map(([date, tasks]) => (
             <Box key={date}>
               <Group gap="xs" mb="sm">
-                <Text size="sm" fw={600}>{toDistance(date)}</Text>
-                <Text size="sm" c="dimmed">({toFormat(date)})</Text>
+                <Text size="sm" fw={600}>
+                  {toDistance(date)}
+                </Text>
+                <Text size="sm" c="dimmed">
+                  ({toFormat(date)})
+                </Text>
               </Group>
               <TaskList
                 active

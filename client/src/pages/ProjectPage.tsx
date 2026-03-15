@@ -91,8 +91,17 @@ export default function ProjectPage() {
           setAreaOpen(true);
         },
       },
-      { label: "Demote to Task", disabled: deleteLoading, onClick: () => handleDemoteRef.current() },
-      { label: "Delete", color: "red", disabled: deleteLoading, onClick: () => handleDeleteRef.current() },
+      {
+        label: "Demote to Task",
+        disabled: deleteLoading,
+        onClick: () => handleDemoteRef.current(),
+      },
+      {
+        label: "Delete",
+        color: "red",
+        disabled: deleteLoading,
+        onClick: () => handleDeleteRef.current(),
+      },
     ]);
     return () => setPageMenu([]);
   }, [setPageMenu, showCompleted, deleteLoading, project?.name, project?.areaId]);
@@ -215,37 +224,41 @@ export default function ProjectPage() {
   return (
     <Box flex={1} style={{ overflowY: "auto" }} p={isMobile ? "md" : "xl"}>
       <Box maw={760}>
-          <Box mb="lg">
-            <Group gap="xs" align="center">
-              <Title order={2}>{projectName}</Title>
-              {actionState !== "idle" && (
-                <Badge
-                  size="sm"
-                  variant="light"
-                  color={actionState === "saved" ? "green" : actionState === "error" ? "red" : "gray"}
-                >
-                  {actionState === "saving" ? "Updating" : actionState === "saved" ? "Updated" : "Not saved"}
-                </Badge>
-              )}
-            </Group>
-          </Box>
-          {isLoading ? (
-            <Stack gap="sm">
-              <Skeleton h={40} radius="sm" />
-              <Skeleton h={40} radius="sm" />
-              <Skeleton h={40} radius="sm" />
-              <Skeleton h={40} radius="sm" />
-            </Stack>
-          ) : (
-            <TaskList
-              isList
-              tasks={tasks}
-              projectId={id}
-              emptyMessage="No tasks yet"
-              hideCompleted={!showCompleted}
-              appearance={isMobile ? "mobile" : "desktop"}
-            />
-          )}
+        <Box mb="lg">
+          <Group gap="xs" align="center">
+            <Title order={2}>{projectName}</Title>
+            {actionState !== "idle" && (
+              <Badge
+                size="sm"
+                variant="light"
+                color={actionState === "saved" ? "green" : actionState === "error" ? "red" : "gray"}
+              >
+                {actionState === "saving"
+                  ? "Updating"
+                  : actionState === "saved"
+                    ? "Updated"
+                    : "Not saved"}
+              </Badge>
+            )}
+          </Group>
+        </Box>
+        {isLoading ? (
+          <Stack gap="sm">
+            <Skeleton h={40} radius="sm" />
+            <Skeleton h={40} radius="sm" />
+            <Skeleton h={40} radius="sm" />
+            <Skeleton h={40} radius="sm" />
+          </Stack>
+        ) : (
+          <TaskList
+            isList
+            tasks={tasks}
+            projectId={id}
+            emptyMessage="No tasks yet"
+            hideCompleted={!showCompleted}
+            appearance={isMobile ? "mobile" : "desktop"}
+          />
+        )}
       </Box>
       <TaskDetailPanel />
 
@@ -265,10 +278,14 @@ export default function ProjectPage() {
             if (e.key !== "Enter") return;
             e.preventDefault();
             const nextName = renameValue.trim();
-            if (!nextName) { setRenameError("Project name is required"); return; }
+            if (!nextName) {
+              setRenameError("Project name is required");
+              return;
+            }
             void handleRename(nextName).then(
               () => setRenameOpen(false),
-              (err: unknown) => setRenameError(err instanceof Error ? err.message : "Failed to rename project"),
+              (err: unknown) =>
+                setRenameError(err instanceof Error ? err.message : "Failed to rename project"),
             );
           }}
           placeholder="Project name..."
@@ -277,17 +294,28 @@ export default function ProjectPage() {
           autoFocus
         />
         <Group justify="flex-end" mt="md">
-          <Button variant="subtle" disabled={renameLoading} onClick={() => { setRenameOpen(false); setRenameError(null); }}>
+          <Button
+            variant="subtle"
+            disabled={renameLoading}
+            onClick={() => {
+              setRenameOpen(false);
+              setRenameError(null);
+            }}
+          >
             Cancel
           </Button>
           <Button
             disabled={renameLoading}
             onClick={() => {
               const nextName = renameValue.trim();
-              if (!nextName) { setRenameError("Project name is required"); return; }
+              if (!nextName) {
+                setRenameError("Project name is required");
+                return;
+              }
               void handleRename(nextName).then(
                 () => setRenameOpen(false),
-                (err: unknown) => setRenameError(err instanceof Error ? err.message : "Failed to rename project"),
+                (err: unknown) =>
+                  setRenameError(err instanceof Error ? err.message : "Failed to rename project"),
               );
             }}
           >
@@ -298,7 +326,10 @@ export default function ProjectPage() {
 
       <Modal
         opened={areaOpen}
-        onClose={() => { if (moveLoading) return; setAreaOpen(false); }}
+        onClose={() => {
+          if (moveLoading) return;
+          setAreaOpen(false);
+        }}
         title="Move to Area"
       >
         <NativeSelect

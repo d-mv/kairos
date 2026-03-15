@@ -8,10 +8,7 @@ type CompletedPageDesktopViewProps = {
   isLoading: boolean;
 };
 
-export function CompletedPageDesktopView({
-  tasks,
-  isLoading,
-}: CompletedPageDesktopViewProps) {
+export function CompletedPageDesktopView({ tasks, isLoading }: CompletedPageDesktopViewProps) {
   return (
     <Box flex={1} style={{ overflowY: "auto" }} p="xl">
       <Box maw={760}>

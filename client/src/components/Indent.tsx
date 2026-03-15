@@ -9,26 +9,16 @@ export function Indent({ entityId, isActive, isListItem }: Props) {
   function renderHorizontalIndent() {
     if (!isActive) return null;
 
-    return (
-      <span
-        id={`indent-h-${entityId}`}
-      />
-    );
+    return <span id={`indent-h-${entityId}`} />;
   }
   function renderVerticalIndent() {
     if (isListItem) return null;
 
-    return (
-      <span
-        id={`indent-v-${entityId}`}
-      />
-    );
+    return <span id={`indent-v-${entityId}`} />;
   }
 
   return (
-    <div
-      id={`indent-container-${entityId}`}
-    >
+    <div id={`indent-container-${entityId}`}>
       {renderVerticalIndent()}
       {renderHorizontalIndent()}
     </div>

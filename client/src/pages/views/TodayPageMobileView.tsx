@@ -9,11 +9,7 @@ type TodayPageMobileViewProps = {
   hideCompleted: boolean;
 };
 
-export function TodayPageMobileView({
-  tasks,
-  isLoading,
-  hideCompleted,
-}: TodayPageMobileViewProps) {
+export function TodayPageMobileView({ tasks, isLoading, hideCompleted }: TodayPageMobileViewProps) {
   return (
     <Box p="md">
       <Box mb="lg">

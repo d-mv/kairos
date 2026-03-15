@@ -52,12 +52,22 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
   return (
     <Modal opened fullScreen onClose={handleClose} withCloseButton={false} padding={0}>
       <Box style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-        <Group justify="space-between" px="md" py="sm" style={{ borderBottom: "1px solid var(--mantine-color-default-border)" }}>
+        <Group
+          justify="space-between"
+          px="md"
+          py="sm"
+          style={{ borderBottom: "1px solid var(--mantine-color-default-border)" }}
+        >
           <Group gap="xs">
             <Title order={5}>Task</Title>
             <SaveIndication saveState={saveState} />
           </Group>
-          <ActionIcon variant="subtle" size="md" onClick={handleClose} aria-label="Close task details">
+          <ActionIcon
+            variant="subtle"
+            size="md"
+            onClick={handleClose}
+            aria-label="Close task details"
+          >
             <XIcon size={14} />
           </ActionIcon>
         </Group>
@@ -78,7 +88,9 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
           </Group>
 
           {saveError ? (
-            <Text size="xs" c="red">{saveError}</Text>
+            <Text size="xs" c="red">
+              {saveError}
+            </Text>
           ) : null}
 
           <Textarea
@@ -139,7 +151,9 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
 
           {!task.parentTaskId && (
             <Box>
-              <Text size="sm" fw={500} mb={8}>Subtasks</Text>
+              <Text size="sm" fw={500} mb={8}>
+                Subtasks
+              </Text>
               <SubtaskList parentTaskId={task.id} />
             </Box>
           )}

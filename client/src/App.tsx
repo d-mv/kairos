@@ -2,6 +2,7 @@ import { useAtom, useSetAtom } from "jotai";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { areasAtom } from "./atoms/areas.js";
+import { brainFoldersAtom, brainPagesAtom } from "./atoms/brain.js";
 import { isAuthenticatedAtom, sessionAtom } from "./atoms/auth.js";
 import { projectsAtom } from "./atoms/projects.js";
 import { tasksAtom } from "./atoms/tasks.js";
@@ -15,6 +16,7 @@ import { wsClient } from "./lib/ws.js";
 const LoginPage = lazy(() => import("./pages/LoginPage.js"));
 const InboxPage = lazy(() => import("./pages/InboxPage.js"));
 const TodayPage = lazy(() => import("./pages/TodayPage.js"));
+const BrainPage = lazy(() => import("./pages/BrainPage.js"));
 const UpcomingPage = lazy(() => import("./pages/UpcomingPage.js"));
 const CompletedPage = lazy(() => import("./pages/CompletedPage.js"));
 const ProjectPage = lazy(() => import("./pages/ProjectPage.js"));
@@ -23,9 +25,7 @@ const AreaPage = lazy(() => import("./pages/AreaPage.js"));
 function RouteFallback() {
   return (
     <div>
-      <div>
-        Loading workspace...
-      </div>
+      <div>Loading workspace...</div>
     </div>
   );
 }
@@ -35,6 +35,8 @@ export default function App() {
   const isAuthenticated = useAtom(isAuthenticatedAtom)[0];
   const setLastEvent = useSetAtom(lastWsEventAtom);
   const setAreas = useSetAtom(areasAtom);
+  const setBrainFolders = useSetAtom(brainFoldersAtom);
+  const setBrainPages = useSetAtom(brainPagesAtom);
   const setProjects = useSetAtom(projectsAtom);
   const setTasks = useSetAtom(tasksAtom);
   const setWorkspaceLoading = useSetAtom(workspaceLoadingAtom);
@@ -79,6 +81,8 @@ export default function App() {
     if (session) return;
 
     setAreas([]);
+    setBrainFolders([]);
+    setBrainPages([]);
     setProjects([]);
     setTasks([]);
     setWorkspaceLoading(false);
@@ -88,6 +92,8 @@ export default function App() {
   }, [
     session,
     setAreas,
+    setBrainFolders,
+    setBrainPages,
     setLastEvent,
     setProjects,
     setTasks,
@@ -114,6 +120,7 @@ export default function App() {
               <Route path="/" element={<Navigate to="/inbox" replace />} />
               <Route path="/inbox" element={<InboxPage />} />
               <Route path="/today" element={<TodayPage />} />
+              <Route path="/brain/page/:id" element={<BrainPage />} />
               <Route path="/upcoming" element={<UpcomingPage />} />
               <Route path="/completed" element={<CompletedPage />} />
               <Route path="/project/:id" element={<ProjectPage />} />

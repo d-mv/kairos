@@ -8,10 +8,7 @@ type CompletedPageMobileViewProps = {
   isLoading: boolean;
 };
 
-export function CompletedPageMobileView({
-  tasks,
-  isLoading,
-}: CompletedPageMobileViewProps) {
+export function CompletedPageMobileView({ tasks, isLoading }: CompletedPageMobileViewProps) {
   return (
     <Box p="md">
       <Box mb="lg">
@@ -34,7 +31,6 @@ export function CompletedPageMobileView({
           showNewTaskInput={false}
           appearance="mobile"
         />
-
       )}
       <TaskDetailPanel />
     </Box>

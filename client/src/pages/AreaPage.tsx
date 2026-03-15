@@ -13,16 +13,7 @@ import { RenameEntityDialog } from "../components/RenameEntityDialog.js";
 import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.js";
 import { TaskList } from "../components/TaskList.js";
 import { api } from "../lib/api.js";
-import {
-  Badge,
-  Box,
-  Flex,
-  Group,
-  Skeleton,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Badge, Box, Flex, Group, Skeleton, Stack, Text, Title } from "@mantine/core";
 
 export default function AreaPage() {
   const { id } = useParams<{ id: string }>();
@@ -77,9 +68,17 @@ export default function AreaPage() {
 
   useEffect(() => {
     setPageMenu([
-      { label: "New Project", onClick: () => setAddEntity({ type: "project", entityLabel: "Project", areaId: id }) },
+      {
+        label: "New Project",
+        onClick: () => setAddEntity({ type: "project", entityLabel: "Project", areaId: id }),
+      },
       { label: "Rename", onClick: () => openRenameRef.current() },
-      { label: "Delete", color: "red", disabled: deleteLoading, onClick: () => handleDeleteRef.current() },
+      {
+        label: "Delete",
+        color: "red",
+        disabled: deleteLoading,
+        onClick: () => handleDeleteRef.current(),
+      },
     ]);
     return () => setPageMenu([]);
   }, [setPageMenu, deleteLoading, setAddEntity]);
@@ -170,14 +169,20 @@ export default function AreaPage() {
                 variant="light"
                 color={actionState === "saved" ? "green" : actionState === "error" ? "red" : "gray"}
               >
-                {actionState === "saving" ? "Updating" : actionState === "saved" ? "Updated" : "Not saved"}
+                {actionState === "saving"
+                  ? "Updating"
+                  : actionState === "saved"
+                    ? "Updated"
+                    : "Not saved"}
               </Badge>
             )}
           </Group>
         </Box>
 
         <Box>
-          <Title order={4} mb="md">Tasks</Title>
+          <Title order={4} mb="md">
+            Tasks
+          </Title>
           {isLoading ? (
             <Stack gap="sm">
               <Skeleton h={40} radius="sm" />

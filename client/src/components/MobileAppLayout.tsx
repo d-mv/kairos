@@ -1,15 +1,29 @@
-import { Box, Drawer, NavLink, Stack, Text } from "@mantine/core";
+import { Box, Drawer, Menu as MantineMenu, NavLink, Stack, Text } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import { type PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addEntityAtom } from "../atoms/addEntity.atom.js";
 import { areasAtom } from "../atoms/areas.js";
+import {
+  brainFoldersAtom,
+  brainPagesAtom,
+  brainPagesByFolderAtom,
+  rootBrainPagesAtom,
+  sortedBrainFoldersAtom,
+} from "../atoms/brain.js";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { projectsByAreaAtom } from "../atoms/projects.js";
+import { api } from "../lib/api.js";
 import { useIsActive } from "../lib/useIsActive.js";
-import { Menu } from "../shared/ui/Menu.js";
+import { Menu, type MenuItem } from "../shared/ui/Menu.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
-import { CalendarIcon, CheckCircleIcon, EllipsisHorizontalIcon, InboxIcon, SunSmallIcon } from "./ui/icons.js";
+import {
+  CalendarIcon,
+  CheckCircleIcon,
+  EllipsisHorizontalIcon,
+  InboxIcon,
+  SunSmallIcon,
+} from "./ui/icons.js";
 
 const SYSTEM_ITEMS = [
   { path: "/inbox", label: "Inbox", Icon: InboxIcon },
@@ -20,15 +34,25 @@ const SYSTEM_ITEMS = [
 
 const NAV_HEIGHT = 56;
 
-export function MobileAppLayout({ children }: PropsWithChildren) {
+type Props = PropsWithChildren<{
+  menuItems: MenuItem[];
+}>;
+
+export function MobileAppLayout({ children, menuItems }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const areas = useAtomValue(areasAtom);
+  const brainFolders = useAtomValue(sortedBrainFoldersAtom);
+  const rootBrainPages = useAtomValue(rootBrainPagesAtom);
+  const brainPagesByFolder = useAtomValue(brainPagesByFolderAtom);
   const projectsByArea = useAtomValue(projectsByAreaAtom);
   const pageMenuItems = useAtomValue(pageMenuAtom);
   const setAddEntity = useSetAtom(addEntityAtom);
+  const setBrainFolders = useSetAtom(brainFoldersAtom);
+  const setBrainPages = useSetAtom(brainPagesAtom);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openAreas, setOpenAreas] = useState<Record<string, boolean>>({});
+  const [openBrainFolders, setOpenBrainFolders] = useState<Record<string, boolean>>({});
   const isActive = useIsActive();
 
   const unassignedProjects = projectsByArea.get(null) ?? [];
@@ -42,17 +66,38 @@ export function MobileAppLayout({ children }: PropsWithChildren) {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!drawerOpen) setOpenAreas({});
+    if (!drawerOpen) {
+      setOpenAreas({});
+      setOpenBrainFolders({});
+    }
   }, [drawerOpen]);
+
+  const createBrainFolder = async () => {
+    const name = window.prompt("Folder name");
+    if (!name?.trim()) return;
+    const folder = await api.brain.createFolder(name.trim());
+    setBrainFolders((prev) => [...prev, folder]);
+  };
+
+  const createBrainPage = async (folderId?: string | null) => {
+    const title = window.prompt("Page title");
+    if (!title?.trim()) return;
+    const page = await api.brain.createPage({
+      title: title.trim(),
+      folderId: folderId ?? null,
+      contentJson: { type: "doc", version: 1, blocks: [{ type: "formatted_text", html: "" }] },
+    });
+    setBrainPages((prev) => [...prev, page]);
+    setDrawerOpen(false);
+    navigate(`/brain/page/${page.id}`);
+  };
 
   return (
     <Box style={{ height: "100dvh", display: "flex", flexDirection: "column" }}>
-      <Box style={{ flex: 1, overflow: "auto", paddingBottom: NAV_HEIGHT }}>
-        {children}
-      </Box>
-      {pageMenuItems.length > 0 && (
+      <Box style={{ flex: 1, overflow: "auto", paddingBottom: NAV_HEIGHT }}>{children}</Box>
+      {(pageMenuItems.length > 0 || menuItems.length > 0) && (
         <Box style={{ position: "fixed", top: 8, right: 8, zIndex: 200 }}>
-          <Menu items={[]} topSection={pageMenuItems} />
+          <Menu items={menuItems} topSection={pageMenuItems} />
         </Box>
       )}
 
@@ -143,7 +188,9 @@ export function MobileAppLayout({ children }: PropsWithChildren) {
             pb={2}
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
           >
-            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>Areas</Text>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+              Areas
+            </Text>
             <Box
               component="button"
               onClick={() => setAddEntity({ type: "area", entityLabel: "Area" })}
@@ -168,7 +215,10 @@ export function MobileAppLayout({ children }: PropsWithChildren) {
                   key={area.id}
                   label={area.name}
                   active={isActive(`/area/${area.id}`)}
-                  onClick={() => { setDrawerOpen(false); navigate(`/area/${area.id}`); }}
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigate(`/area/${area.id}`);
+                  }}
                   style={{ borderRadius: 6 }}
                 />
               );
@@ -211,7 +261,9 @@ export function MobileAppLayout({ children }: PropsWithChildren) {
             pb={2}
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
           >
-            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>Projects</Text>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+              Projects
+            </Text>
             <Box
               component="button"
               onClick={() => setAddEntity({ type: "project", entityLabel: "Project" })}
@@ -235,6 +287,92 @@ export function MobileAppLayout({ children }: PropsWithChildren) {
               label={project.name}
               active={isActive(`/project/${project.id}`)}
               onClick={() => navigate(`/project/${project.id}`)}
+              style={{ borderRadius: 6 }}
+            />
+          ))}
+
+          <Box
+            px={8}
+            pt={12}
+            pb={2}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+          >
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+              Brain
+            </Text>
+            <MantineMenu withinPortal position="bottom-end">
+              <MantineMenu.Target>
+                <Box
+                  component="button"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "2px 4px",
+                    borderRadius: 4,
+                    color: "var(--mantine-color-dimmed)",
+                    fontSize: "var(--mantine-font-size-xs)",
+                  }}
+                >
+                  + New...
+                </Box>
+              </MantineMenu.Target>
+              <MantineMenu.Dropdown>
+                <MantineMenu.Item onClick={() => void createBrainFolder()}>Folder</MantineMenu.Item>
+                <MantineMenu.Item onClick={() => void createBrainPage(null)}>Page</MantineMenu.Item>
+              </MantineMenu.Dropdown>
+            </MantineMenu>
+          </Box>
+
+          {brainFolders.map((folder) => (
+            <NavLink
+              key={folder.id}
+              label={folder.name}
+              opened={openBrainFolders[folder.id] ?? false}
+              onChange={(open) => setOpenBrainFolders((prev) => ({ ...prev, [folder.id]: open }))}
+              style={{ borderRadius: 6 }}
+              childrenOffset={12}
+            >
+              <Box
+                component="button"
+                onClick={() => void createBrainPage(folder.id)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--mantine-color-dimmed)",
+                  fontSize: "var(--mantine-font-size-xs)",
+                  padding: "6px 12px",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                + New Page
+              </Box>
+              {(brainPagesByFolder.get(folder.id) ?? []).map((page) => (
+                <NavLink
+                  key={page.id}
+                  label={page.title}
+                  active={isActive(`/brain/page/${page.id}`)}
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigate(`/brain/page/${page.id}`);
+                  }}
+                  style={{ borderRadius: 6 }}
+                />
+              ))}
+            </NavLink>
+          ))}
+
+          {rootBrainPages.map((page) => (
+            <NavLink
+              key={page.id}
+              label={page.title}
+              active={isActive(`/brain/page/${page.id}`)}
+              onClick={() => {
+                setDrawerOpen(false);
+                navigate(`/brain/page/${page.id}`);
+              }}
               style={{ borderRadius: 6 }}
             />
           ))}

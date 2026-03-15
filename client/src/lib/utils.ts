@@ -4,7 +4,11 @@ export const toDistance = (v: string) => formatDistance(v, new Date(), { addSuff
 
 export const toFormat = (v: string) => format(v, "EEEE, MMM d");
 
-export function formatDueDate(dueDate: string): { label: string; relative: string; overdue: boolean } {
+export function formatDueDate(dueDate: string): {
+  label: string;
+  relative: string;
+  overdue: boolean;
+} {
   const date = new Date(dueDate);
   const today = new Date();
   const diff = differenceInCalendarDays(date, today);

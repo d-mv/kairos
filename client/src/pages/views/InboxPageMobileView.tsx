@@ -9,11 +9,7 @@ type InboxPageMobileViewProps = {
   hideCompleted: boolean;
 };
 
-export function InboxPageMobileView({
-  tasks,
-  isLoading,
-  hideCompleted,
-}: InboxPageMobileViewProps) {
+export function InboxPageMobileView({ tasks, isLoading, hideCompleted }: InboxPageMobileViewProps) {
   return (
     <Box p="md">
       <Box mb="lg">

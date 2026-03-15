@@ -1,9 +1,11 @@
-import type { AreaDTO, ProjectDTO, TaskDTO } from "@kairos/shared";
+import type { AreaDTO, BrainFolderDTO, BrainPageDTO, ProjectDTO, TaskDTO } from "@kairos/shared";
 
 const KEY = "kairos:workspace";
 
 interface WorkspaceCache {
   areas: AreaDTO[];
+  brainFolders: BrainFolderDTO[];
+  brainPages: BrainPageDTO[];
   projects: ProjectDTO[];
   tasks: TaskDTO[];
 }
@@ -12,7 +14,14 @@ export function loadWorkspaceCache(): WorkspaceCache | null {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as WorkspaceCache;
+    const parsed = JSON.parse(raw) as Partial<WorkspaceCache>;
+    return {
+      areas: parsed.areas ?? [],
+      brainFolders: parsed.brainFolders ?? [],
+      brainPages: parsed.brainPages ?? [],
+      projects: parsed.projects ?? [],
+      tasks: parsed.tasks ?? [],
+    };
   } catch {
     return null;
   }

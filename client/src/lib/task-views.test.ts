@@ -78,9 +78,8 @@ test("getCompletedTasks returns only done tasks sorted by most recently updated"
     buildTask({ id: "done-middle", status: "done", updatedAt: "2026-03-02T10:00:00.000Z" }),
   ];
 
-  assert.deepEqual(getCompletedTasks(tasks).map((task) => task.id), [
-    "done-newest",
-    "done-middle",
-    "done-oldest",
-  ]);
+  assert.deepEqual(
+    getCompletedTasks(tasks).map((task) => task.id),
+    ["done-newest", "done-middle", "done-oldest"],
+  );
 });

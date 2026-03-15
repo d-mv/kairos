@@ -2,7 +2,11 @@ import type {
   ApiKeyRotationDTO,
   ApiKeyStatusDTO,
   AreaDTO,
+  BrainContent,
+  BrainFolderDTO,
+  BrainPageDTO,
   EntityType,
+  IntegrationStatusDTO,
   LinkDTO,
   LinkType,
   ProjectDTO,
@@ -60,6 +64,15 @@ export const api = {
     rotateApiKey: () => request<ApiKeyRotationDTO>("POST", "/auth/api-key"),
   },
 
+  integrations: {
+    list: () => request<IntegrationStatusDTO[]>("GET", "/integrations"),
+    getGoogleAuthUrl: () => request<{ url: string }>("POST", "/integrations/google/start"),
+    saveTodoistToken: (token: string) =>
+      request<void>("PUT", "/integrations/todoist/token", { token }),
+    disconnect: (provider: "google" | "todoist") =>
+      request<void>("DELETE", `/integrations/${provider}`),
+  },
+
   areas: {
     list: () => request<AreaDTO[]>("GET", "/areas"),
     create: (name: string) => request<AreaDTO>("POST", "/areas", { name }),
@@ -75,6 +88,17 @@ export const api = {
       request<ProjectDTO>("PUT", `/projects/${id}`, data),
     delete: (id: string) => request<void>("DELETE", `/projects/${id}`),
     demote: (id: string) => request<TaskDTO>("POST", `/projects/${id}/demote`),
+  },
+
+  brain: {
+    list: () => request<{ folders: BrainFolderDTO[]; pages: BrainPageDTO[] }>("GET", "/brain"),
+    createFolder: (name: string) => request<BrainFolderDTO>("POST", "/brain/folders", { name }),
+    createPage: (data: { title: string; folderId?: string | null; contentJson?: BrainContent }) =>
+      request<BrainPageDTO>("POST", "/brain/pages", data),
+    updatePage: (
+      id: string,
+      data: { title?: string; folderId?: string | null; contentJson?: BrainContent },
+    ) => request<BrainPageDTO>("PUT", `/brain/pages/${id}`, data),
   },
 
   tasks: {

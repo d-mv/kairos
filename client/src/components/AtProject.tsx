@@ -9,10 +9,7 @@ export function AtProject({ project }: AtProjectProps) {
   if (!project) return null;
 
   return (
-    <Link
-      to={`/project/${project.id}`}
-      onClick={(event) => event.stopPropagation()}
-    >
+    <Link to={`/project/${project.id}`} onClick={(event) => event.stopPropagation()}>
       @ {project.name}
     </Link>
   );

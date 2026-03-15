@@ -37,7 +37,9 @@ export function UpcomingPageDesktopView({
               <Box key={date}>
                 <Group gap="xs" mb="sm">
                   <Text fw={600}>{toDistance(date)}</Text>
-                  <Text size="sm" c="dimmed">({toFormat(date)})</Text>
+                  <Text size="sm" c="dimmed">
+                    ({toFormat(date)})
+                  </Text>
                 </Group>
                 <TaskList
                   active

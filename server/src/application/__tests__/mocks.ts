@@ -1,4 +1,6 @@
 import type { Area, AreaRepository } from "../../domain/area/index.js";
+import type { BrainFolder, BrainFolderRepository } from "../../domain/brain-folder/index.js";
+import type { BrainPage, BrainPageRepository } from "../../domain/brain-page/index.js";
 import type { Project, ProjectRepository } from "../../domain/project/index.js";
 import type { Task, TaskRepository } from "../../domain/task/index.js";
 import type { Link, LinkRepository } from "../../domain/link/index.js";
@@ -123,6 +125,54 @@ export class InMemoryLinkRepository implements LinkRepository {
 
   async save(link: Link): Promise<void> {
     this.store.set(link.id, link);
+  }
+
+  async delete(id: string): Promise<void> {
+    this.store.delete(id);
+  }
+}
+
+export class InMemoryBrainFolderRepository implements BrainFolderRepository {
+  private store = new Map<string, BrainFolder>();
+
+  async findById(id: string, userId: string): Promise<BrainFolder | null> {
+    const folder = this.store.get(id);
+    return folder && folder.userId === userId ? folder : null;
+  }
+
+  async findAll(userId: string): Promise<BrainFolder[]> {
+    return [...this.store.values()].filter((folder) => folder.userId === userId);
+  }
+
+  async save(folder: BrainFolder): Promise<void> {
+    this.store.set(folder.id, folder);
+  }
+
+  async delete(id: string): Promise<void> {
+    this.store.delete(id);
+  }
+}
+
+export class InMemoryBrainPageRepository implements BrainPageRepository {
+  private store = new Map<string, BrainPage>();
+
+  async findById(id: string, userId: string): Promise<BrainPage | null> {
+    const page = this.store.get(id);
+    return page && page.userId === userId ? page : null;
+  }
+
+  async findAll(userId: string): Promise<BrainPage[]> {
+    return [...this.store.values()].filter((page) => page.userId === userId);
+  }
+
+  async findByFolderId(folderId: string, userId: string): Promise<BrainPage[]> {
+    return [...this.store.values()].filter(
+      (page) => page.userId === userId && page.folderId === folderId,
+    );
+  }
+
+  async save(page: BrainPage): Promise<void> {
+    this.store.set(page.id, page);
   }
 
   async delete(id: string): Promise<void> {

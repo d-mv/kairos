@@ -91,11 +91,7 @@ export function AddNewEntityDialog() {
   };
 
   return (
-    <Modal
-      opened={open}
-      onClose={handleClose}
-      title={`New ${state?.entityLabel ?? "Item"}`}
-    >
+    <Modal opened={open} onClose={handleClose} title={`New ${state?.entityLabel ?? "Item"}`}>
       <TextInput
         value={name}
         onChange={(e) => {

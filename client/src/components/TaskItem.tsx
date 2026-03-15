@@ -64,7 +64,7 @@ export function TaskItem({
         />
       )}
       <Text
-        size="sm"
+        size="16px"
         style={{
           flex: 1,
           textDecoration: isDone ? "line-through" : "none",

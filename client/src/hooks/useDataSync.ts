@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useSetAtom, useAtomValue } from "jotai";
 import { areasAtom } from "../atoms/areas.js";
+import { brainFoldersAtom, brainPagesAtom } from "../atoms/brain.js";
 import { projectsAtom } from "../atoms/projects.js";
 import { tasksAtom } from "../atoms/tasks.js";
 import {
@@ -19,6 +20,8 @@ import { loadWorkspaceCache, saveWorkspaceCache } from "../lib/cache.js";
  */
 export function useDataSync() {
   const setAreas = useSetAtom(areasAtom);
+  const setBrainFolders = useSetAtom(brainFoldersAtom);
+  const setBrainPages = useSetAtom(brainPagesAtom);
   const setProjects = useSetAtom(projectsAtom);
   const setTasks = useSetAtom(tasksAtom);
   const setWorkspaceError = useSetAtom(workspaceErrorAtom);
@@ -39,6 +42,8 @@ export function useDataSync() {
       const cached = loadWorkspaceCache();
       if (cached && !cancelled) {
         setAreas(cached.areas);
+        setBrainFolders(cached.brainFolders);
+        setBrainPages(cached.brainPages);
         setProjects(cached.projects);
         setTasks(cached.tasks);
         setWorkspaceReady(true);
@@ -46,8 +51,9 @@ export function useDataSync() {
       }
 
       try {
-        const [areas, projects, tasks] = await Promise.all([
+        const [areas, brain, projects, tasks] = await Promise.all([
           api.areas.list(),
+          api.brain.list(),
           api.projects.list(),
           api.tasks.list(),
         ]);
@@ -55,10 +61,18 @@ export function useDataSync() {
         if (cancelled) return;
 
         setAreas(areas);
+        setBrainFolders(brain.folders);
+        setBrainPages(brain.pages);
         setProjects(projects);
         setTasks(tasks);
         setWorkspaceReady(true);
-        saveWorkspaceCache({ areas, projects, tasks });
+        saveWorkspaceCache({
+          areas,
+          brainFolders: brain.folders,
+          brainPages: brain.pages,
+          projects,
+          tasks,
+        });
       } catch (error) {
         if (!cancelled) {
           console.error(error);
@@ -82,6 +96,8 @@ export function useDataSync() {
   }, [
     reloadTick,
     setAreas,
+    setBrainFolders,
+    setBrainPages,
     setProjects,
     setTasks,
     setWorkspaceError,
@@ -93,15 +109,24 @@ export function useDataSync() {
     const poll = async () => {
       if (document.visibilityState !== "visible") return;
       try {
-        const [areas, projects, tasks] = await Promise.all([
+        const [areas, brain, projects, tasks] = await Promise.all([
           api.areas.list(),
+          api.brain.list(),
           api.projects.list(),
           api.tasks.list(),
         ]);
         setAreas(areas);
+        setBrainFolders(brain.folders);
+        setBrainPages(brain.pages);
         setProjects(projects);
         setTasks(tasks);
-        saveWorkspaceCache({ areas, projects, tasks });
+        saveWorkspaceCache({
+          areas,
+          brainFolders: brain.folders,
+          brainPages: brain.pages,
+          projects,
+          tasks,
+        });
       } catch {
         // silent — don't surface polling errors
       }
@@ -109,7 +134,7 @@ export function useDataSync() {
 
     const id = window.setInterval(() => void poll(), 30_000);
     return () => window.clearInterval(id);
-  }, [setAreas, setProjects, setTasks]);
+  }, [setAreas, setBrainFolders, setBrainPages, setProjects, setTasks]);
 
   useEffect(() => {
     if (!lastEvent) return;

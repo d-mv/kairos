@@ -25,7 +25,9 @@ export function RenameEntityDialog({ onRename }: Props) {
       return;
     }
     onRename(trimmed, entityId, type).then(cancelDialog, (err: unknown) =>
-      setError(err instanceof Error ? err.message : `Failed to rename ${entityLabel.toLowerCase()}`),
+      setError(
+        err instanceof Error ? err.message : `Failed to rename ${entityLabel.toLowerCase()}`,
+      ),
     );
   }
 

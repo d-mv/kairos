@@ -69,19 +69,11 @@ export function renderTaskTitleMarkdown(title: string): ReactNode[] {
   return tokenizeTaskTitleMarkdown(title).map((token, index) => {
     const key = `${index}-${token.type}`;
     if (token.type === "bold") {
-      return (
-        <strong key={key}>
-          {token.value}
-        </strong>
-      );
+      return <strong key={key}>{token.value}</strong>;
     }
 
     if (token.type === "italic") {
-      return (
-        <em key={key}>
-          {token.value}
-        </em>
-      );
+      return <em key={key}>{token.value}</em>;
     }
 
     if (token.type === "link") {

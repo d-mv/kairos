@@ -1,5 +1,14 @@
-import type { AreaDTO, ProjectDTO, TaskDTO, LinkDTO } from "@kairos/shared";
+import type {
+  AreaDTO,
+  BrainFolderDTO,
+  BrainPageDTO,
+  LinkDTO,
+  ProjectDTO,
+  TaskDTO,
+} from "@kairos/shared";
 import type { Area } from "../domain/area/index.js";
+import type { BrainFolder } from "../domain/brain-folder/index.js";
+import type { BrainPage } from "../domain/brain-page/index.js";
 import type { Project } from "../domain/project/index.js";
 import type { Task } from "../domain/task/index.js";
 import type { Link } from "../domain/link/index.js";
@@ -55,5 +64,27 @@ export function toLinkDTO(link: Link): LinkDTO {
     linkType: link.linkType,
     userId: link.userId,
     createdAt: link.createdAt.toISOString(),
+  };
+}
+
+export function toBrainFolderDTO(folder: BrainFolder): BrainFolderDTO {
+  return {
+    id: folder.id,
+    name: folder.name,
+    userId: folder.userId,
+    createdAt: folder.createdAt.toISOString(),
+    updatedAt: folder.updatedAt.toISOString(),
+  };
+}
+
+export function toBrainPageDTO(page: BrainPage): BrainPageDTO {
+  return {
+    id: page.id,
+    title: page.title,
+    folderId: page.folderId,
+    contentJson: page.contentJson,
+    userId: page.userId,
+    createdAt: page.createdAt.toISOString(),
+    updatedAt: page.updatedAt.toISOString(),
   };
 }

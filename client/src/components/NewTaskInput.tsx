@@ -95,6 +95,7 @@ export function NewTaskInput({
           disabled={loading}
           size="sm"
           variant="filled"
+          styles={{ input: { fontSize: "16px" } }}
         />
       </form>
       {error ? (

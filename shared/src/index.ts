@@ -5,6 +5,8 @@ export type TaskPriority = 1 | 2 | 3 | 4;
 export type TaskDurationUnit = "h" | "d" | "w" | "m";
 export type LinkType = "blocks" | "blocked_by" | "related_to";
 export type EntityType = "task" | "project" | "area";
+export type BrainContent = unknown;
+export type IntegrationProvider = "google_calendar" | "google_drive" | "todoist";
 
 export interface TaskDTO {
   id: string;
@@ -52,6 +54,24 @@ export interface LinkDTO {
   createdAt: string;
 }
 
+export interface BrainFolderDTO {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BrainPageDTO {
+  id: string;
+  title: string;
+  folderId: string | null;
+  contentJson: BrainContent;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiKeyStatusDTO {
   hasKey: boolean;
   keyPreview: string | null;
@@ -66,6 +86,12 @@ export interface ApiKeyRotationDTO {
   updatedAt: string;
 }
 
+export interface IntegrationStatusDTO {
+  provider: IntegrationProvider;
+  connected: boolean;
+  connectedAt: string | null;
+}
+
 // WebSocket event types
 export type WsEvent =
   | { type: "task:created"; payload: TaskDTO }
@@ -77,5 +103,11 @@ export type WsEvent =
   | { type: "area:created"; payload: AreaDTO }
   | { type: "area:updated"; payload: AreaDTO }
   | { type: "area:deleted"; payload: { id: string } }
+  | { type: "brain-folder:created"; payload: BrainFolderDTO }
+  | { type: "brain-folder:updated"; payload: BrainFolderDTO }
+  | { type: "brain-folder:deleted"; payload: { id: string } }
+  | { type: "brain-page:created"; payload: BrainPageDTO }
+  | { type: "brain-page:updated"; payload: BrainPageDTO }
+  | { type: "brain-page:deleted"; payload: { id: string } }
   | { type: "link:created"; payload: LinkDTO }
   | { type: "link:deleted"; payload: { id: string } };

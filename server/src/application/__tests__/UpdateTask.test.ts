@@ -16,14 +16,11 @@ describe("UpdateTask use case", () => {
 
   it("normalizes bare links when updating task title", async () => {
     const created = await createTask.execute({ title: "Draft", userId: "u1" });
-    const updateTask = new UpdateTask(
-      taskRepo,
-      eventBus,
-      async (title) =>
-        title.replace(
-          "https://kairos-web.fly.dev/inbox",
-          "[Kairos](https://kairos-web.fly.dev/inbox)",
-        ),
+    const updateTask = new UpdateTask(taskRepo, eventBus, async (title) =>
+      title.replace(
+        "https://kairos-web.fly.dev/inbox",
+        "[Kairos](https://kairos-web.fly.dev/inbox)",
+      ),
     );
 
     const updated = await updateTask.execute({
