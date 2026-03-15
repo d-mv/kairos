@@ -8,6 +8,7 @@ import { projectsAtom as projAtom, projectsAtom } from "../atoms/projects.js";
 import { tasksAtom, tasksByProjectAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.js";
+import { ProjectGantt } from "../components/ProjectGantt.js";
 import { TaskList } from "../components/TaskList.js";
 import { api } from "../lib/api.js";
 import {
@@ -23,6 +24,7 @@ import {
   TextInput,
   Title,
   Badge,
+  SegmentedControl,
 } from "@mantine/core";
 
 export default function ProjectPage() {
@@ -39,6 +41,7 @@ export default function ProjectPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [moveLoading, setMoveLoading] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [view, setView] = useState<"list" | "gantt">("list");
   const [actionState, setActionState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const actionResetTimeoutRef = useRef<number | null>(null);
 
@@ -64,6 +67,7 @@ export default function ProjectPage() {
 
   const project = projects.find((p) => p.id === id);
   const tasks = id ? (tasksByProject.get(id) ?? []) : [];
+  const visibleTasks = showCompleted ? tasks : tasks.filter((task) => task.status !== "done");
   const projectName = project?.name ?? "Project";
 
   // Refs to always call latest handlers from stable menu closures
@@ -241,6 +245,15 @@ export default function ProjectPage() {
               </Badge>
             )}
           </Group>
+          <SegmentedControl
+            mt="sm"
+            value={view}
+            onChange={(value) => setView(value as "list" | "gantt")}
+            data={[
+              { label: "List", value: "list" },
+              { label: "Gantt", value: "gantt" },
+            ]}
+          />
         </Box>
         {isLoading ? (
           <Stack gap="sm">
@@ -249,6 +262,8 @@ export default function ProjectPage() {
             <Skeleton h={40} radius="sm" />
             <Skeleton h={40} radius="sm" />
           </Stack>
+        ) : view === "gantt" ? (
+          <ProjectGantt tasks={visibleTasks} />
         ) : (
           <TaskList
             isList

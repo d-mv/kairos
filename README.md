@@ -20,8 +20,8 @@ Setup:
 
 ```bash
 pnpm install
-cp server/.env.example server/.env
 cp client/.env.example client/.env
+cp .env.example .env
 ```
 
 Run:
@@ -73,8 +73,7 @@ Codex does not currently have Kairos-specific auth configured in this repo's rem
 Create the auth file once:
 
 ```bash
-cd server
-pnpm mcp:login
+pnpm --filter server mcp:login
 ```
 
 That stores a refresh token in `~/.codex/kairos-auth.json`. Then point Codex at the local stdio server:

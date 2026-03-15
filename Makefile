@@ -9,7 +9,7 @@ PNPM := pnpm
 install: ## Install all workspace dependencies
 	$(PNPM) install
 
-dev-server: ## Start Fastify dev server (requires server/.env)
+dev-server: ## Start Fastify dev server (requires root .env)
 	$(PNPM) --filter server dev
 
 dev-client: ## Start Vite dev client (requires client/.env)
