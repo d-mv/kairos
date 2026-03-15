@@ -1,9 +1,10 @@
 import type { TaskDTO } from "@kairos/shared";
 import { Text, TextInput } from "@mantine/core";
 import { useSetAtom } from "jotai";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { tasksAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
+import { shouldRestoreNewTaskInputFocus } from "../lib/new-task-input-focus.js";
 import { createOptimisticId } from "../lib/optimistic.js";
 import { getTaskErrorMessage } from "../lib/task-errors.js";
 
@@ -24,6 +25,24 @@ export function NewTaskInput({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const setTasks = useSetAtom(tasksAtom);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const pendingFocusRestoreRef = useRef(false);
+  const previousLoadingRef = useRef(false);
+
+  useEffect(() => {
+    if (
+      shouldRestoreNewTaskInputFocus({
+        wasLoading: previousLoadingRef.current,
+        loading,
+        pendingRestore: pendingFocusRestoreRef.current,
+      })
+    ) {
+      inputRef.current?.focus();
+      pendingFocusRestoreRef.current = false;
+    }
+
+    previousLoadingRef.current = loading;
+  }, [loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +85,7 @@ export function NewTaskInput({
       if (parentTaskId) createInput.parentTaskId = parentTaskId;
 
       const task = await api.tasks.create(createInput);
+      pendingFocusRestoreRef.current = true;
       setTasks((prev) => {
         const withoutOptimistic = prev.filter((item) => item.id !== optimisticTask.id);
         if (withoutOptimistic.some((item) => item.id === task.id)) return withoutOptimistic;
@@ -86,6 +106,7 @@ export function NewTaskInput({
     <div>
       <form onSubmit={handleSubmit}>
         <TextInput
+          ref={inputRef}
           value={title}
           onChange={(e) => {
             setTitle(e.target.value);
