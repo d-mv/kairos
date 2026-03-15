@@ -1,7 +1,7 @@
 import { Box, Button, Group, Stack, Text, TextInput, Title } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { brainPagesAtom } from "../atoms/brain.js";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { api } from "../lib/api.js";
@@ -31,6 +31,7 @@ const FORMAT_ACTIONS: FormatAction[] = [
 
 export default function BrainPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const pages = useAtomValue(brainPagesAtom);
   const setPages = useSetAtom(brainPagesAtom);
   const setPageMenu = useSetAtom(pageMenuAtom);
@@ -70,6 +71,11 @@ export default function BrainPage() {
   }, [isEditingTitle]);
 
   useEffect(() => {
+    if (!page) {
+      setPageMenu([]);
+      return;
+    }
+
     const toggleMode = () => {
       if (editorMode === "rich") {
         setRawJson(JSON.stringify(createBrainDocument(richHtml), null, 2));
@@ -90,15 +96,31 @@ export default function BrainPage() {
       }
     };
 
+    const deletePage = async () => {
+      if (!window.confirm("Delete this page?")) return;
+
+      try {
+        await api.brain.deletePage(page.id);
+        setPages((prev) => prev.filter((item) => item.id !== page.id));
+        navigate("/inbox");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to delete page");
+      }
+    };
+
     setPageMenu([
       {
         label: editorMode === "rich" ? "Edit Raw JSON" : "Back to Editor",
         onClick: toggleMode,
       },
+      {
+        label: "Delete Page",
+        onClick: () => void deletePage(),
+      },
     ]);
 
     return () => setPageMenu([]);
-  }, [editorMode, rawJson, richHtml, setPageMenu]);
+  }, [editorMode, navigate, page, rawJson, richHtml, setPageMenu, setPages]);
 
   if (!page) {
     return (

@@ -38,6 +38,7 @@ import { DeleteLink } from "../application/link/DeleteLink.js";
 import { ReopenTask } from "../application/task/ReopenTask.js";
 import { CreateBrainFolder } from "../application/brain/CreateBrainFolder.js";
 import { CreateBrainPage } from "../application/brain/CreateBrainPage.js";
+import { DeleteBrainPage } from "../application/brain/DeleteBrainPage.js";
 import { ListBrainFolders } from "../application/brain/ListBrainFolders.js";
 import { ListBrainPages } from "../application/brain/ListBrainPages.js";
 import { UpdateBrainPage } from "../application/brain/UpdateBrainPage.js";
@@ -108,6 +109,7 @@ export const listBrainPages = new ListBrainPages(brainPageRepo);
 export const createBrainFolder = new CreateBrainFolder(brainFolderRepo, eventBus);
 export const createBrainPage = new CreateBrainPage(brainPageRepo, brainFolderRepo, eventBus);
 export const updateBrainPage = new UpdateBrainPage(brainPageRepo, brainFolderRepo, eventBus);
+export const deleteBrainPage = new DeleteBrainPage(brainPageRepo);
 
 // Use cases — Links
 export const createLink = new CreateLink(linkRepo, eventBus);

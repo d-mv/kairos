@@ -99,6 +99,7 @@ export const api = {
       id: string,
       data: { title?: string; folderId?: string | null; contentJson?: BrainContent },
     ) => request<BrainPageDTO>("PUT", `/brain/pages/${id}`, data),
+    deletePage: (id: string) => request<void>("DELETE", `/brain/pages/${id}`),
   },
 
   tasks: {

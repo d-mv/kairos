@@ -52,4 +52,13 @@ export async function brainRoutes(fastify: FastifyInstance) {
     if (result.isErr) return reply.status(400).send({ error: result.error });
     return result.value;
   });
+
+  fastify.delete<{ Params: { id: string } }>("/pages/:id", async (req, reply) => {
+    const result = await container.deleteBrainPage.execute({
+      id: req.params.id,
+      userId: req.userId,
+    });
+    if (result.isErr) return reply.status(404).send({ error: result.error });
+    return reply.status(204).send();
+  });
 }

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { CreateBrainFolder } from "../brain/CreateBrainFolder.js";
 import { CreateBrainPage } from "../brain/CreateBrainPage.js";
+import { DeleteBrainPage } from "../brain/DeleteBrainPage.js";
 import { ListBrainFolders } from "../brain/ListBrainFolders.js";
 import { ListBrainPages } from "../brain/ListBrainPages.js";
 import { UpdateBrainPage } from "../brain/UpdateBrainPage.js";
@@ -61,5 +62,28 @@ describe("Brain use cases", () => {
     const listed = await listPages.execute("u1");
     expect(listed.isOk).toBe(true);
     expect(listed.value[0]?.folderId).toBe(folder.value.id);
+  });
+
+  it("deletes pages", async () => {
+    const createPage = new CreateBrainPage(pageRepo, folderRepo, eventBus);
+    const listPages = new ListBrainPages(pageRepo);
+    const deletePage = new DeleteBrainPage(pageRepo);
+
+    const created = await createPage.execute({
+      title: "Temporary page",
+      userId: "u1",
+      contentJson: { type: "doc", blocks: [] },
+    });
+    expect(created.isOk).toBe(true);
+
+    const deleted = await deletePage.execute({
+      id: created.value.id,
+      userId: "u1",
+    });
+    expect(deleted.isOk).toBe(true);
+
+    const listed = await listPages.execute("u1");
+    expect(listed.isOk).toBe(true);
+    expect(listed.value).toHaveLength(0);
   });
 });

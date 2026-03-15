@@ -48,6 +48,7 @@ vi.mock("../container.js", () => ({
   createBrainFolder: { execute: vi.fn() },
   createBrainPage: { execute: vi.fn() },
   updateBrainPage: { execute: vi.fn() },
+  deleteBrainPage: { execute: vi.fn() },
   createLink: { execute: vi.fn() },
   deleteLink: { execute: vi.fn() },
   listIntegrationStatuses: { execute: listIntegrationStatusesExecuteMock },
