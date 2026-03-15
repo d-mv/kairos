@@ -16,6 +16,10 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { selectedTaskAtom, selectedTaskIdAtom, tasksAtom } from "../../atoms/tasks.js";
 import { api } from "../../lib/api.js";
+import {
+  getTaskDetailSavePayload,
+  hasTaskDetailDraftChanges,
+} from "../../lib/task-detail-draft.js";
 import { getTaskErrorMessage } from "../../lib/task-errors.js";
 import { SubtaskList } from "../SubtaskList.js";
 import { TrashIcon } from "../ui/icons.js";
@@ -36,26 +40,25 @@ export function TaskDetailPanel() {
   const [durationUnit, setDurationUnit] = useState<TaskDurationUnit | "">("");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
-  const lastSyncedRef = useRef("");
-  const savedIndicatorTimeoutRef = useRef<number | null>(null);
-  const selectedTaskIdRef = useRef<string | null>(null);
-
-  const serializeTaskState = (value: {
+  const lastSyncedRef = useRef<{
     title: string;
     description: string;
     priority: TaskPriority;
     dueDate: string;
     duration: string;
     durationUnit: TaskDurationUnit | "";
-  }) =>
-    JSON.stringify({
-      title: value.title.trim(),
-      description: value.description,
-      priority: value.priority,
-      dueDate: value.dueDate,
-      duration: value.duration,
-      durationUnit: value.durationUnit,
-    });
+  } | null>(null);
+  const savedIndicatorTimeoutRef = useRef<number | null>(null);
+  const autosaveTimeoutRef = useRef<number | null>(null);
+  const selectedTaskIdRef = useRef<string | null>(null);
+  const latestDraftRef = useRef<{
+    title: string;
+    description: string;
+    priority: TaskPriority;
+    dueDate: string;
+    duration: string;
+    durationUnit: TaskDurationUnit | "";
+  } | null>(null);
 
   useEffect(() => {
     if (task) {
@@ -71,18 +74,37 @@ export function TaskDetailPanel() {
         setSaveState("idle");
         setSaveError(null);
       }
-      lastSyncedRef.current = serializeTaskState({
+      lastSyncedRef.current = {
         title: task.title,
         description: task.description ?? "",
         priority: task.priority,
         dueDate: task.dueDate ?? "",
         duration: task.duration ? String(task.duration) : "",
         durationUnit: task.durationUnit ?? "",
-      });
+      };
+      latestDraftRef.current = {
+        title: task.title,
+        description: task.description ?? "",
+        priority: task.priority,
+        dueDate: task.dueDate ?? "",
+        duration: task.duration ? String(task.duration) : "",
+        durationUnit: task.durationUnit ?? "",
+      };
     } else {
       selectedTaskIdRef.current = null;
     }
   }, [task]);
+
+  useEffect(() => {
+    latestDraftRef.current = {
+      title,
+      description,
+      priority,
+      dueDate,
+      duration,
+      durationUnit,
+    };
+  }, [description, dueDate, duration, durationUnit, priority, title]);
 
   const persistTaskChanges = async (overrides?: {
     title?: string;
@@ -100,7 +122,29 @@ export function TaskDetailPanel() {
     const nextDueDate = overrides?.dueDate ?? dueDate;
     const nextDuration = overrides?.duration ?? duration;
     const nextDurationUnit = overrides?.durationUnit ?? durationUnit;
-    const nextSnapshot = serializeTaskState({
+    const savedState = lastSyncedRef.current;
+    if (!savedState) return;
+
+    if (
+      !hasTaskDetailDraftChanges({
+        savedTitle: savedState.title,
+        savedDescription: savedState.description,
+        savedPriority: savedState.priority,
+        savedDueDate: savedState.dueDate,
+        savedDuration: savedState.duration,
+        savedDurationUnit: savedState.durationUnit,
+        title: nextTitle,
+        description: nextDescription,
+        priority: nextPriority,
+        dueDate: nextDueDate,
+        duration: nextDuration,
+        durationUnit: nextDurationUnit,
+      })
+    ) {
+      return;
+    }
+
+    const savePayload = getTaskDetailSavePayload({
       title: nextTitle,
       description: nextDescription,
       priority: nextPriority,
@@ -109,24 +153,14 @@ export function TaskDetailPanel() {
       durationUnit: nextDurationUnit,
     });
 
-    if (nextSnapshot === lastSyncedRef.current) return;
-    if (!nextTitle.trim()) return;
-
-    let parsedDuration: number | null = null;
-    let parsedDurationUnit: TaskDurationUnit | null = null;
-    if (nextDuration !== "") {
-      parsedDuration = Number(nextDuration);
-      if (!Number.isInteger(parsedDuration) || parsedDuration <= 0) {
-        if (!overrides?.silentValidation) window.alert("Duration must be a positive whole number");
-        return;
+    if (!savePayload.ok) {
+      if (!overrides?.silentValidation && savePayload.error !== "Title is required") {
+        window.alert(savePayload.error);
       }
-    }
-    if (nextDurationUnit !== "") parsedDurationUnit = nextDurationUnit;
-    if ((parsedDuration === null) !== (parsedDurationUnit === null)) {
-      if (!overrides?.silentValidation)
-        window.alert("Set both duration and duration unit, or leave both empty");
-      setSaveState("error");
-      setSaveError("Set both duration and duration unit, or leave both empty");
+      if (savePayload.error !== "Title is required") {
+        setSaveState("error");
+        setSaveError(savePayload.error);
+      }
       return;
     }
 
@@ -134,15 +168,17 @@ export function TaskDetailPanel() {
     setSaveError(null);
     const previousTask = task;
     const previousSnapshot = lastSyncedRef.current;
-    lastSyncedRef.current = nextSnapshot;
+    lastSyncedRef.current = {
+      title: savePayload.payload.title,
+      description: savePayload.payload.description ?? "",
+      priority: savePayload.payload.priority,
+      dueDate: savePayload.payload.dueDate ?? "",
+      duration: savePayload.payload.duration ? String(savePayload.payload.duration) : "",
+      durationUnit: savePayload.payload.durationUnit ?? "",
+    };
     const optimisticTask = {
       ...task,
-      title: nextTitle.trim(),
-      description: nextDescription || null,
-      priority: nextPriority,
-      dueDate: nextDueDate || null,
-      duration: parsedDuration,
-      durationUnit: parsedDurationUnit,
+      ...savePayload.payload,
       updatedAt: new Date().toISOString(),
     };
 
@@ -150,12 +186,7 @@ export function TaskDetailPanel() {
 
     try {
       const updated = await api.tasks.update(task.id, {
-        title: nextTitle.trim(),
-        description: nextDescription || null,
-        priority: nextPriority,
-        dueDate: nextDueDate || null,
-        duration: parsedDuration,
-        durationUnit: parsedDurationUnit,
+        ...savePayload.payload,
       });
       setTasks((prev) => prev.map((t) => (t.id === task.id ? updated : t)));
       setSaveState("saved");
@@ -175,15 +206,21 @@ export function TaskDetailPanel() {
   const handleSave = async () => persistTaskChanges();
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
+    if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
+    autosaveTimeoutRef.current = window.setTimeout(() => {
       void persistTaskChanges({ title, description, duration, silentValidation: true });
     }, 500);
-    return () => window.clearTimeout(timeoutId);
+    return () => {
+      if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
+    };
   }, [description, duration, title]);
 
   useEffect(() => {
     return () => {
       if (savedIndicatorTimeoutRef.current) window.clearTimeout(savedIndicatorTimeoutRef.current);
+      if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
+      if (!latestDraftRef.current) return;
+      void persistTaskChanges({ ...latestDraftRef.current, silentValidation: true });
     };
   }, []);
 
@@ -250,7 +287,13 @@ export function TaskDetailPanel() {
     }
   };
 
-  const handleClose = () => setSelectedTaskId(null);
+  const handleClose = async () => {
+    if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
+    if (latestDraftRef.current) {
+      await persistTaskChanges({ ...latestDraftRef.current, silentValidation: true });
+    }
+    setSelectedTaskId(null);
+  };
 
   const controller: TaskDetailPanelController = {
     saveState,
