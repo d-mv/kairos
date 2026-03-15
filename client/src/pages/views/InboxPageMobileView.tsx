@@ -13,7 +13,7 @@ export function InboxPageMobileView({ tasks, isLoading, hideCompleted }: InboxPa
   return (
     <Box p="md">
       <Box mb="lg">
-        <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
+        <Text size="14px" c="dimmed" tt="uppercase" fw={500}>
           Overview
         </Text>
         <Title order={2}>Inbox</Title>

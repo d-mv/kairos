@@ -133,7 +133,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
               color: isActive(item.path)
                 ? "var(--mantine-color-blue-filled)"
                 : "var(--mantine-color-dimmed)",
-              fontSize: "var(--mantine-font-size-xs)",
+              fontSize: "14px",
               fontWeight: isActive(item.path) ? 600 : 400,
             }}
           >
@@ -155,7 +155,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
             background: "none",
             cursor: "pointer",
             color: "var(--mantine-color-dimmed)",
-            fontSize: "var(--mantine-font-size-xs)",
+            fontSize: "14px",
           }}
           aria-label="Open full navigation"
         >
@@ -179,6 +179,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
               active={isActive(item.path)}
               onClick={() => navigate(item.path)}
               style={{ borderRadius: 6 }}
+              styles={{ label: { fontSize: "16px" } }}
             />
           ))}
 
@@ -188,7 +189,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
             pb={2}
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
           >
-            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+            <Text size="14px" c="dimmed" tt="uppercase" fw={600}>
               Areas
             </Text>
             <Box
@@ -201,7 +202,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                 padding: "2px 4px",
                 borderRadius: 4,
                 color: "var(--mantine-color-dimmed)",
-                fontSize: "var(--mantine-font-size-xs)",
+                fontSize: "14px",
               }}
             >
               + New Area
@@ -220,6 +221,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                     navigate(`/area/${area.id}`);
                   }}
                   style={{ borderRadius: 6 }}
+                  styles={{ label: { fontSize: "16px" } }}
                 />
               );
             }
@@ -241,6 +243,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                 onChange={(open) => setOpenAreas((prev) => ({ ...prev, [area.id]: open }))}
                 style={{ borderRadius: 6 }}
                 childrenOffset={12}
+                styles={{ label: { fontSize: "16px" } }}
               >
                 {projects.map((project) => (
                   <NavLink
@@ -249,6 +252,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                     active={isActive(`/project/${project.id}`)}
                     onClick={() => navigate(`/project/${project.id}`)}
                     style={{ borderRadius: 6 }}
+                    styles={{ label: { fontSize: "16px" } }}
                   />
                 ))}
               </NavLink>
@@ -261,7 +265,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
             pb={2}
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
           >
-            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+            <Text size="14px" c="dimmed" tt="uppercase" fw={600}>
               Projects
             </Text>
             <Box
@@ -274,7 +278,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                 padding: "2px 4px",
                 borderRadius: 4,
                 color: "var(--mantine-color-dimmed)",
-                fontSize: "var(--mantine-font-size-xs)",
+                fontSize: "14px",
               }}
             >
               + New Project
@@ -288,6 +292,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
               active={isActive(`/project/${project.id}`)}
               onClick={() => navigate(`/project/${project.id}`)}
               style={{ borderRadius: 6 }}
+              styles={{ label: { fontSize: "16px" } }}
             />
           ))}
 
@@ -297,7 +302,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
             pb={2}
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
           >
-            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+            <Text size="14px" c="dimmed" tt="uppercase" fw={600}>
               Brain
             </Text>
             <MantineMenu withinPortal position="bottom-end">
@@ -311,7 +316,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                     padding: "2px 4px",
                     borderRadius: 4,
                     color: "var(--mantine-color-dimmed)",
-                    fontSize: "var(--mantine-font-size-xs)",
+                    fontSize: "14px",
                   }}
                 >
                   + New...
@@ -332,6 +337,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
               onChange={(open) => setOpenBrainFolders((prev) => ({ ...prev, [folder.id]: open }))}
               style={{ borderRadius: 6 }}
               childrenOffset={12}
+              styles={{ label: { fontSize: "16px" } }}
             >
               <Box
                 component="button"
@@ -341,7 +347,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                   border: "none",
                   cursor: "pointer",
                   color: "var(--mantine-color-dimmed)",
-                  fontSize: "var(--mantine-font-size-xs)",
+                  fontSize: "14px",
                   padding: "6px 12px",
                   textAlign: "left",
                   width: "100%",
@@ -359,6 +365,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                     navigate(`/brain/page/${page.id}`);
                   }}
                   style={{ borderRadius: 6 }}
+                  styles={{ label: { fontSize: "16px" } }}
                 />
               ))}
             </NavLink>
@@ -374,6 +381,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                 navigate(`/brain/page/${page.id}`);
               }}
               style={{ borderRadius: 6 }}
+              styles={{ label: { fontSize: "16px" } }}
             />
           ))}
         </Stack>
