@@ -12,8 +12,8 @@ export default defineConfig({
         name: "Kairos",
         short_name: "Kairos",
         description: "Self-hosted task management",
-        theme_color: "#2563eb",
-        background_color: "#ffffff",
+        theme_color: "#f4f6f1",
+        background_color: "#f4f6f1",
         display: "standalone",
         start_url: "/",
         icons: [
