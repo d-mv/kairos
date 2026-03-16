@@ -10,6 +10,7 @@ import {
   Stack,
   Tabs,
   Text,
+  TextInput,
   Title,
 } from "@mantine/core";
 import { useAtom } from "jotai";
@@ -17,8 +18,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { dialogsAtom } from "../atoms/dialogs.atom.js";
 import { api } from "../lib/api.js";
+import {
+  loadWeatherLocationSetting,
+  saveWeatherLocationSetting,
+  type WeatherLocationSetting,
+} from "../lib/weather-settings.js";
+import { searchWeatherLocations, type WeatherLocationOption } from "../lib/today-weather.js";
 
-type SettingsTab = "integrations";
+type SettingsTab = "general" | "integrations";
 
 function getStatus(
   statuses: IntegrationStatusDTO[],
@@ -35,6 +42,10 @@ export function SettingsDialog() {
   const [loading, setLoading] = useState(false);
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
   const [todoistToken, setTodoistToken] = useState("");
+  const [weatherQuery, setWeatherQuery] = useState("");
+  const [weatherLocation, setWeatherLocation] = useState<WeatherLocationSetting | null>(null);
+  const [weatherSuggestions, setWeatherSuggestions] = useState<WeatherLocationOption[]>([]);
+  const [weatherLoading, setWeatherLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const search = useMemo(() => new URLSearchParams(location.search), [location.search]);
@@ -58,6 +69,14 @@ export function SettingsDialog() {
 
   useEffect(() => {
     if (!opened) return;
+    const saved = loadWeatherLocationSetting();
+    setWeatherLocation(saved);
+    setWeatherQuery(saved?.name ?? "");
+    setWeatherSuggestions([]);
+  }, [opened]);
+
+  useEffect(() => {
+    if (!opened) return;
     setLoading(true);
     setError(null);
     api.integrations
@@ -68,6 +87,26 @@ export function SettingsDialog() {
       })
       .finally(() => setLoading(false));
   }, [opened]);
+
+  useEffect(() => {
+    if (!opened) return;
+    const trimmed = weatherQuery.trim();
+    if (trimmed.length < 2) {
+      setWeatherSuggestions([]);
+      setWeatherLoading(false);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setWeatherLoading(true);
+      searchWeatherLocations(trimmed)
+        .then((results) => setWeatherSuggestions(results))
+        .catch(() => setWeatherSuggestions([]))
+        .finally(() => setWeatherLoading(false));
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [opened, weatherQuery]);
 
   const clearSettingsSearch = () => {
     if (queryDialog !== "settings") return;
@@ -80,6 +119,8 @@ export function SettingsDialog() {
     setError(null);
     setTodoistToken("");
     setActiveProvider(null);
+    setWeatherSuggestions([]);
+    setWeatherLoading(false);
   };
 
   const refreshStatuses = async () => {
@@ -127,14 +168,89 @@ export function SettingsDialog() {
     }
   };
 
+  const handleWeatherPick = (option: WeatherLocationOption) => {
+    const nextLocation = {
+      name: option.name,
+      latitude: option.latitude,
+      longitude: option.longitude,
+      timezone: option.timezone,
+    };
+    setWeatherLocation(nextLocation);
+    setWeatherQuery(option.name);
+    setWeatherSuggestions([]);
+  };
+
+  const handleWeatherSave = () => {
+    saveWeatherLocationSetting(localStorage, weatherLocation);
+  };
+
+  const handleWeatherClear = () => {
+    setWeatherLocation(null);
+    setWeatherQuery("");
+    setWeatherSuggestions([]);
+    saveWeatherLocationSetting(localStorage, null);
+  };
+
   const googleConnected = Boolean(googleCalendar?.connected && googleDrive?.connected);
 
   return (
     <Modal opened={opened} onClose={handleClose} title="Settings" size="lg">
       <Tabs defaultValue={queryTab}>
         <Tabs.List>
+          <Tabs.Tab value="general">General</Tabs.Tab>
           <Tabs.Tab value="integrations">Integrations</Tabs.Tab>
         </Tabs.List>
+
+        <Tabs.Panel value="general" pt="md">
+          <Stack gap="md">
+            <Box>
+              <Title order={4}>Weather location</Title>
+              <Text c="dimmed" size="sm" mb="xs">
+                Used by Today to show current conditions and notable weather deviations.
+              </Text>
+              <Stack gap="sm">
+                <TextInput
+                  value={weatherQuery}
+                  onChange={(event) => {
+                    setWeatherQuery(event.currentTarget.value);
+                    if (weatherLocation?.name !== event.currentTarget.value) {
+                      setWeatherLocation(null);
+                    }
+                  }}
+                  placeholder="City, country"
+                />
+                {weatherSuggestions.length > 0 ? (
+                  <Stack gap={4}>
+                    {weatherSuggestions.map((option) => (
+                      <Button
+                        key={option.id}
+                        variant="subtle"
+                        justify="flex-start"
+                        onClick={() => handleWeatherPick(option)}
+                      >
+                        {option.name}
+                      </Button>
+                    ))}
+                  </Stack>
+                ) : null}
+                <Group justify="space-between">
+                  <Text size="sm" c="dimmed">
+                    {weatherLocation ? `Saved: ${weatherLocation.name}` : "No location saved"}
+                  </Text>
+                  <Group gap="xs">
+                    <Button variant="light" onClick={handleWeatherClear}>
+                      Clear
+                    </Button>
+                    <Button onClick={handleWeatherSave} disabled={!weatherLocation}>
+                      Save location
+                    </Button>
+                  </Group>
+                </Group>
+                {weatherLoading ? <Text c="dimmed">Searching locations…</Text> : null}
+              </Stack>
+            </Box>
+          </Stack>
+        </Tabs.Panel>
 
         <Tabs.Panel value="integrations" pt="md">
           <Stack gap="md">

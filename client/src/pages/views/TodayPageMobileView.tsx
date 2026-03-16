@@ -2,14 +2,26 @@ import type { TaskDTO } from "@kairos/shared";
 import { Box, Skeleton, Stack, Text, Title } from "@mantine/core";
 import { TaskDetailPanel } from "../../components/TaskDetailPanel/TaskDetailPanel.js";
 import { TaskList } from "../../components/TaskList.js";
+import { TodayWeatherHero } from "../../components/TodayWeatherHero.js";
+import type { TodayWeatherSummary } from "../../lib/today-weather.js";
 
 type TodayPageMobileViewProps = {
   tasks: TaskDTO[];
   isLoading: boolean;
   hideCompleted: boolean;
+  weatherLoading: boolean;
+  weatherLocationName: string | null;
+  weatherSummary: TodayWeatherSummary | null;
 };
 
-export function TodayPageMobileView({ tasks, isLoading, hideCompleted }: TodayPageMobileViewProps) {
+export function TodayPageMobileView({
+  tasks,
+  isLoading,
+  hideCompleted,
+  weatherLoading,
+  weatherLocationName,
+  weatherSummary,
+}: TodayPageMobileViewProps) {
   return (
     <Box p="md">
       <Box mb="lg">
@@ -18,6 +30,11 @@ export function TodayPageMobileView({ tasks, isLoading, hideCompleted }: TodayPa
         </Text>
         <Title order={2}>Today</Title>
       </Box>
+      <TodayWeatherHero
+        locationName={weatherLocationName}
+        summary={weatherSummary}
+        loading={weatherLoading}
+      />
       {isLoading ? (
         <Stack gap="sm">
           <Skeleton h={40} radius="sm" />
