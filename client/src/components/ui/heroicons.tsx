@@ -188,3 +188,46 @@ export const MoonIcon = forwardRef<SVGSVGElement, HeroIconProps>(
   ),
 );
 MoonIcon.displayName = "MoonIcon";
+
+export const BellIcon = forwardRef<SVGSVGElement, HeroIconProps>(
+  ({ title, titleId, ...props }, ref) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+      data-slot="icon"
+      ref={ref}
+      aria-labelledby={titleId}
+      {...props}
+    >
+      {title ? <title id={titleId}>{title}</title> : null}
+      <path
+        fillRule="evenodd"
+        d="M10 2a5 5 0 0 0-5 5v2.586l-.707.707A1 1 0 0 0 5 12h10a1 1 0 0 0 .707-1.707L15 9.586V7a5 5 0 0 0-5-5ZM8.5 15a1.5 1.5 0 1 0 3 0h-3Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  ),
+);
+BellIcon.displayName = "BellIcon";
+
+export const UserGroupIcon = forwardRef<SVGSVGElement, HeroIconProps>(
+  ({ title, titleId, ...props }, ref) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+      data-slot="icon"
+      ref={ref}
+      aria-labelledby={titleId}
+      {...props}
+    >
+      {title ? <title id={titleId}>{title}</title> : null}
+      <path d="M4 7a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM14 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+      <path d="M1.5 15.5A3.5 3.5 0 0 1 5 12h4a3.5 3.5 0 0 1 3.5 3.5.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5ZM12 15.5a4.98 4.98 0 0 0-1.02-3H14a3 3 0 0 1 3 3 .5.5 0 0 1-.5.5H12v-.5Z" />
+    </svg>
+  ),
+);
+UserGroupIcon.displayName = "UserGroupIcon";

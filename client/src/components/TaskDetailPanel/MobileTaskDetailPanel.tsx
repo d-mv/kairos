@@ -13,6 +13,8 @@ import {
   Textarea,
   Title,
 } from "@mantine/core";
+import { useSetAtom } from "jotai";
+import { shareDialogAtom } from "../../atoms/shareDialog.js";
 import { DurationInput } from "./DurationInput.js";
 import { SubtaskList } from "../SubtaskList.js";
 import { Priority } from "../Priority.js";
@@ -25,6 +27,7 @@ type MobileTaskDetailPanelProps = {
 };
 
 export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps) {
+  const setShareDialog = useSetAtom(shareDialogAtom);
   const {
     saveState,
     saveError,
@@ -166,6 +169,19 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
               Promote to Project
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setShareDialog({
+                entityType: "task",
+                entityId: task.id,
+                entityLabel: task.title,
+              })
+            }
+          >
+            Share
+          </Button>
           <Button
             variant="subtle"
             color="red"

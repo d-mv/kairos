@@ -4,6 +4,7 @@ import { type PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addEntityAtom } from "../atoms/addEntity.atom.js";
 import { areasAtom } from "../atoms/areas.js";
+import { userAtom } from "../atoms/auth.js";
 import {
   brainFoldersAtom,
   brainPagesAtom,
@@ -13,11 +14,14 @@ import {
 } from "../atoms/brain.js";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { projectsByAreaAtom } from "../atoms/projects.js";
+import { shareDialogAtom } from "../atoms/shareDialog.js";
 import { api } from "../lib/api.js";
 import { loadSidebarOpenState, saveSidebarOpenState } from "../lib/sidebar-open-state.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { Menu, type MenuItem } from "../shared/ui/Menu.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
+import { NotificationsMenu } from "./NotificationsMenu.js";
+import { SharedItemLabel } from "./SharedItemLabel.js";
 import {
   CalendarIcon,
   CheckCircleIcon,
@@ -46,11 +50,13 @@ export function MobileAppLayout({ children, menuItems }: Props) {
   const brainFolders = useAtomValue(sortedBrainFoldersAtom);
   const rootBrainPages = useAtomValue(rootBrainPagesAtom);
   const brainPagesByFolder = useAtomValue(brainPagesByFolderAtom);
+  const currentUser = useAtomValue(userAtom);
   const projectsByArea = useAtomValue(projectsByAreaAtom);
   const pageMenuItems = useAtomValue(pageMenuAtom);
   const setAddEntity = useSetAtom(addEntityAtom);
   const setBrainFolders = useSetAtom(brainFoldersAtom);
   const setBrainPages = useSetAtom(brainPagesAtom);
+  const setShareDialog = useSetAtom(shareDialogAtom);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openAreas, setOpenAreas] = useState<Record<string, boolean>>(loadSidebarOpenState);
   const [openBrainFolders, setOpenBrainFolders] = useState<Record<string, boolean>>({});
@@ -104,7 +110,18 @@ export function MobileAppLayout({ children, menuItems }: Props) {
     <Box style={{ height: "100dvh", display: "flex", flexDirection: "column" }}>
       <Box style={{ flex: 1, overflow: "auto", paddingBottom: NAV_HEIGHT }}>{children}</Box>
       {(pageMenuItems.length > 0 || menuItems.length > 0) && (
-        <Box style={{ position: "fixed", top: 8, right: 8, zIndex: 200 }}>
+        <Box
+          style={{
+            position: "fixed",
+            top: 8,
+            right: 8,
+            zIndex: 200,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <NotificationsMenu />
           <Menu items={menuItems} topSection={pageMenuItems} />
         </Box>
       )}
@@ -256,7 +273,12 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                 {projects.map((project) => (
                   <NavLink
                     key={project.id}
-                    label={project.name}
+                    label={
+                      <SharedItemLabel
+                        label={project.name}
+                        shared={project.userId !== currentUser?.id}
+                      />
+                    }
                     active={isActive(`/project/${project.id}`)}
                     onClick={() => navigate(`/project/${project.id}`)}
                     style={{ borderRadius: 6 }}
@@ -296,7 +318,9 @@ export function MobileAppLayout({ children, menuItems }: Props) {
           {unassignedProjects.map((project) => (
             <NavLink
               key={project.id}
-              label={project.name}
+              label={
+                <SharedItemLabel label={project.name} shared={project.userId !== currentUser?.id} />
+              }
               active={isActive(`/project/${project.id}`)}
               onClick={() => navigate(`/project/${project.id}`)}
               style={{ borderRadius: 6 }}
@@ -340,7 +364,9 @@ export function MobileAppLayout({ children, menuItems }: Props) {
           {brainFolders.map((folder) => (
             <NavLink
               key={folder.id}
-              label={folder.name}
+              label={
+                <SharedItemLabel label={folder.name} shared={folder.userId !== currentUser?.id} />
+              }
               opened={openBrainFolders[folder.id] ?? false}
               onChange={(open) => setOpenBrainFolders((prev) => ({ ...prev, [folder.id]: open }))}
               style={{ borderRadius: 6 }}
@@ -363,10 +389,34 @@ export function MobileAppLayout({ children, menuItems }: Props) {
               >
                 + New Page
               </Box>
+              <Box
+                component="button"
+                onClick={() =>
+                  setShareDialog({
+                    entityType: "brain_folder",
+                    entityId: folder.id,
+                    entityLabel: folder.name,
+                  })
+                }
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--mantine-color-dimmed)",
+                  fontSize: "14px",
+                  padding: "6px 12px",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                Share Folder
+              </Box>
               {(brainPagesByFolder.get(folder.id) ?? []).map((page) => (
                 <NavLink
                   key={page.id}
-                  label={page.title}
+                  label={
+                    <SharedItemLabel label={page.title} shared={page.userId !== currentUser?.id} />
+                  }
                   active={isActive(`/brain/page/${page.id}`)}
                   onClick={() => {
                     setDrawerOpen(false);
@@ -382,7 +432,9 @@ export function MobileAppLayout({ children, menuItems }: Props) {
           {rootBrainPages.map((page) => (
             <NavLink
               key={page.id}
-              label={page.title}
+              label={
+                <SharedItemLabel label={page.title} shared={page.userId !== currentUser?.id} />
+              }
               active={isActive(`/brain/page/${page.id}`)}
               onClick={() => {
                 setDrawerOpen(false);

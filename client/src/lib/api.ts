@@ -9,7 +9,9 @@ import type {
   IntegrationStatusDTO,
   LinkDTO,
   LinkType,
+  NotificationDTO,
   ProjectDTO,
+  ShareEntityType,
   TaskDTO,
   TaskDurationUnit,
   TaskPriority,
@@ -71,6 +73,20 @@ export const api = {
       request<void>("PUT", "/integrations/todoist/token", { token }),
     disconnect: (provider: "google" | "todoist") =>
       request<void>("DELETE", `/integrations/${provider}`),
+  },
+
+  collaboration: {
+    createInvite: (data: {
+      recipientEmail: string;
+      entityType: ShareEntityType;
+      entityId: string;
+    }) => request<{ ok: true }>("POST", "/collaboration/invites", data),
+  },
+
+  notifications: {
+    list: () => request<NotificationDTO[]>("GET", "/notifications"),
+    accept: (id: string) => request<{ ok: true }>("POST", `/notifications/${id}/accept`),
+    decline: (id: string) => request<{ ok: true }>("POST", `/notifications/${id}/decline`),
   },
 
   areas: {

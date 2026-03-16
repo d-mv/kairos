@@ -1,9 +1,12 @@
 import type { TaskDTO } from "@kairos/shared";
 import { Box, Group, Text } from "@mantine/core";
+import { useAtomValue } from "jotai";
 import { type MouseEvent } from "react";
 import type React from "react";
+import { userAtom } from "../atoms/auth.js";
 import { formatDueDate } from "../lib/utils.js";
 import { renderTaskTitleMarkdown } from "../lib/task-title-markdown.js";
+import { UserGroupIcon } from "./ui/heroicons.js";
 import { Priority } from "./Priority.js";
 
 const PRIORITY_COLOR: Record<number, string> = {
@@ -32,6 +35,7 @@ export function TaskItem({
   isDragging = false,
   onPointerDown,
 }: Props) {
+  const currentUser = useAtomValue(userAtom);
   const isDone = task.status === "done";
   const priorityColor = PRIORITY_COLOR[task.priority];
   const due = task.dueDate ? formatDueDate(task.dueDate) : null;
@@ -67,13 +71,30 @@ export function TaskItem({
         size="16px"
         style={{
           flex: 1,
-          textDecoration: isDone ? "line-through" : "none",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
+          minWidth: 0,
         }}
       >
-        {renderTaskTitleMarkdown(task.title)}
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            maxWidth: "100%",
+            minWidth: 0,
+            textDecoration: isDone ? "line-through" : "none",
+          }}
+        >
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {renderTaskTitleMarkdown(task.title)}
+          </span>
+          {task.userId !== currentUser?.id ? (
+            <UserGroupIcon
+              width={14}
+              height={14}
+              style={{ flexShrink: 0, color: "var(--mantine-color-dimmed)" }}
+            />
+          ) : null}
+        </span>
       </Text>
       {due && (
         <Text

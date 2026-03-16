@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { addEntityAtom } from "../atoms/addEntity.atom.js";
+import { userAtom } from "../atoms/auth.js";
 import {
   brainFoldersAtom,
   brainPagesAtom,
@@ -21,10 +22,12 @@ import {
   sortedBrainFoldersAtom,
 } from "../atoms/brain.js";
 import { projectsByAreaAtom } from "../atoms/projects.js";
+import { shareDialogAtom } from "../atoms/shareDialog.js";
 import { loadSidebarOpenState, saveSidebarOpenState } from "../lib/sidebar-open-state.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { api } from "../lib/api.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
+import { SharedItemLabel } from "./SharedItemLabel.js";
 import { SYSTEM_SIDEBAR_ITEMS } from "./data.js";
 
 type SectionHeaderProps = {
@@ -119,11 +122,13 @@ function SectionHeader({ label, actions = [], menuActions = [] }: SectionHeaderP
 export function Sidebar() {
   const areas = useAtomValue(areasAtom);
   const projectsByArea = useAtomValue(projectsByAreaAtom);
+  const currentUser = useAtomValue(userAtom);
   const navigate = useNavigate();
   const isActive = useIsActive();
   const setAddEntity = useSetAtom(addEntityAtom);
   const setBrainFolders = useSetAtom(brainFoldersAtom);
   const setBrainPages = useSetAtom(brainPagesAtom);
+  const setShareDialog = useSetAtom(shareDialogAtom);
   const brainFolders = useAtomValue(sortedBrainFoldersAtom);
   const rootBrainPages = useAtomValue(rootBrainPagesAtom);
   const brainPagesByFolder = useAtomValue(brainPagesByFolderAtom);
@@ -206,7 +211,12 @@ export function Sidebar() {
                 {areaProjects.map((project) => (
                   <NavLink
                     key={project.id}
-                    label={project.name}
+                    label={
+                      <SharedItemLabel
+                        label={project.name}
+                        shared={project.userId !== currentUser?.id}
+                      />
+                    }
                     active={isActive(`/project/${project.id}`)}
                     onClick={() => navigate(`/project/${project.id}`)}
                     style={{ borderRadius: 6 }}
@@ -229,7 +239,9 @@ export function Sidebar() {
           {unassignedProjects.map((project) => (
             <NavLink
               key={project.id}
-              label={project.name}
+              label={
+                <SharedItemLabel label={project.name} shared={project.userId !== currentUser?.id} />
+              }
               active={isActive(`/project/${project.id}`)}
               onClick={() => navigate(`/project/${project.id}`)}
               style={{ borderRadius: 6 }}
@@ -247,7 +259,9 @@ export function Sidebar() {
           {brainFolders.map((folder) => (
             <NavLink
               key={folder.id}
-              label={folder.name}
+              label={
+                <SharedItemLabel label={folder.name} shared={folder.userId !== currentUser?.id} />
+              }
               style={{ borderRadius: 6 }}
               styles={{ label: { fontSize: "16px" } }}
               opened={openBrainFolders[folder.id] ?? true}
@@ -270,10 +284,34 @@ export function Sidebar() {
               >
                 + New Page
               </Box>
+              <Box
+                component="button"
+                onClick={() =>
+                  setShareDialog({
+                    entityType: "brain_folder",
+                    entityId: folder.id,
+                    entityLabel: folder.name,
+                  })
+                }
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--mantine-color-dimmed)",
+                  fontSize: "14px",
+                  padding: "6px 12px",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                Share Folder
+              </Box>
               {(brainPagesByFolder.get(folder.id) ?? []).map((page) => (
                 <NavLink
                   key={page.id}
-                  label={page.title}
+                  label={
+                    <SharedItemLabel label={page.title} shared={page.userId !== currentUser?.id} />
+                  }
                   active={isActive(`/brain/page/${page.id}`)}
                   onClick={() => navigate(`/brain/page/${page.id}`)}
                   style={{ borderRadius: 6 }}
@@ -285,7 +323,9 @@ export function Sidebar() {
           {rootBrainPages.map((page) => (
             <NavLink
               key={page.id}
-              label={page.title}
+              label={
+                <SharedItemLabel label={page.title} shared={page.userId !== currentUser?.id} />
+              }
               active={isActive(`/brain/page/${page.id}`)}
               onClick={() => navigate(`/brain/page/${page.id}`)}
               style={{ borderRadius: 6 }}

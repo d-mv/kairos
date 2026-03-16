@@ -8,9 +8,11 @@ import authPlugin from "./plugins/auth.js";
 import { authRoutes } from "./routes/auth.js";
 import { areaRoutes } from "./routes/areas.js";
 import { brainRoutes } from "./routes/brain.js";
+import { collaborationRoutes } from "./routes/collaboration.js";
 import { integrationRoutes } from "./routes/integrations.js";
 import { linkRoutes } from "./routes/links.js";
 import { createKairosMcpServer } from "../mcp/kairosMcpServer.js";
+import { notificationRoutes } from "./routes/notifications.js";
 import { projectRoutes } from "./routes/projects.js";
 import { taskRoutes } from "./routes/tasks.js";
 
@@ -77,7 +79,9 @@ export async function buildApp() {
   await fastify.register(areaRoutes, { prefix: "/api/v1/areas" });
   await fastify.register(authRoutes, { prefix: "/api/v1/auth" });
   await fastify.register(brainRoutes, { prefix: "/api/v1/brain" });
+  await fastify.register(collaborationRoutes, { prefix: "/api/v1/collaboration" });
   await fastify.register(integrationRoutes, { prefix: "/api/v1/integrations" });
+  await fastify.register(notificationRoutes, { prefix: "/api/v1/notifications" });
   await fastify.register(projectRoutes, { prefix: "/api/v1/projects" });
   await fastify.register(taskRoutes, { prefix: "/api/v1/tasks" });
   await fastify.register(linkRoutes, { prefix: "/api/v1/links" });

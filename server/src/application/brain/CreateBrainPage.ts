@@ -21,12 +21,15 @@ export class CreateBrainPage {
   ) {}
 
   async execute(input: CreateBrainPageInput): Promise<Result<BrainPageDTO, string>> {
+    let pageUserId = input.userId;
+
     if (input.folderId) {
       const folder = await this.folderRepo.findById(input.folderId, input.userId);
       if (!folder) return Result.fail("Folder not found");
+      pageUserId = folder.userId;
     }
 
-    const result = BrainPage.create(input.title, input.userId, {
+    const result = BrainPage.create(input.title, pageUserId, {
       folderId: input.folderId ?? null,
       contentJson: input.contentJson,
     });

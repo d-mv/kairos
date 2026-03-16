@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { TaskStatus, TaskPriority, TaskDurationUnit } from "@kairos/shared";
 import { Task } from "../../domain/task/index.js";
 import type { TaskRepository } from "../../domain/task/index.js";
+import type { CollaborationShareRepository } from "../../domain/collaboration/index.js";
 
 interface TaskRow {
   id: string;
@@ -41,17 +42,64 @@ function toTask(row: TaskRow): Task {
 }
 
 export class SupabaseTaskRepository implements TaskRepository {
-  constructor(private readonly client: SupabaseClient) {}
+  constructor(
+    private readonly client: SupabaseClient,
+    private readonly shareRepo: CollaborationShareRepository,
+  ) {}
+
+  private async getSharedTaskIds(userId: string): Promise<string[]> {
+    return this.shareRepo.findSharedEntityIds(userId, "task");
+  }
+
+  private async getSharedProjectIds(userId: string): Promise<string[]> {
+    return this.shareRepo.findSharedEntityIds(userId, "project");
+  }
+
+  private async queryTasksByIds(ids: string[]): Promise<Task[]> {
+    if (ids.length === 0) return [];
+    const { data, error } = await this.client.from("tasks").select("*").in("id", ids);
+    if (error || !data) return [];
+    return (data as TaskRow[]).map(toTask);
+  }
+
+  private dedupe(tasks: Task[]): Task[] {
+    const seen = new Set<string>();
+    return tasks.filter((task) => {
+      if (seen.has(task.id)) return false;
+      seen.add(task.id);
+      return true;
+    });
+  }
 
   async findById(id: string, userId: string): Promise<Task | null> {
-    const { data, error } = await this.client
+    const { data } = await this.client
       .from("tasks")
       .select("*")
       .eq("id", id)
       .eq("user_id", userId)
-      .single();
-    if (error || !data) return null;
-    return toTask(data as TaskRow);
+      .maybeSingle();
+    if (data) return toTask(data as TaskRow);
+
+    const { data: accessibleData, error } = await this.client
+      .from("tasks")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (error || !accessibleData) return null;
+
+    const row = accessibleData as TaskRow;
+    const [sharedTaskIds, sharedProjectIds] = await Promise.all([
+      this.getSharedTaskIds(userId),
+      this.getSharedProjectIds(userId),
+    ]);
+
+    if (
+      sharedTaskIds.includes(id) ||
+      (row.project_id && sharedProjectIds.includes(row.project_id))
+    ) {
+      return toTask(row);
+    }
+    return null;
   }
 
   async findAll(userId: string): Promise<Task[]> {
@@ -60,20 +108,50 @@ export class SupabaseTaskRepository implements TaskRepository {
       .select("*")
       .eq("user_id", userId)
       .order("position", { ascending: true });
+    const ownTasks = error || !data ? [] : (data as TaskRow[]).map(toTask);
+    const [sharedTaskIds, sharedProjectIds] = await Promise.all([
+      this.getSharedTaskIds(userId),
+      this.getSharedProjectIds(userId),
+    ]);
+    const [sharedTasks, sharedProjectTasks] = await Promise.all([
+      this.queryTasksByIds(sharedTaskIds),
+      sharedProjectIds.length === 0
+        ? Promise.resolve([] as Task[])
+        : this.findTasksByProjectIds(sharedProjectIds),
+    ]);
+    return this.dedupe([...ownTasks, ...sharedTasks, ...sharedProjectTasks]);
+  }
+
+  private async findTasksByProjectIds(projectIds: string[]): Promise<Task[]> {
+    const { data, error } = await this.client
+      .from("tasks")
+      .select("*")
+      .in("project_id", projectIds)
+      .order("position", { ascending: true });
     if (error || !data) return [];
     return (data as TaskRow[]).map(toTask);
   }
 
   async findByProjectId(projectId: string, userId: string): Promise<Task[]> {
-    const { data, error } = await this.client
+    const { data } = await this.client
       .from("tasks")
       .select("*")
       .eq("project_id", projectId)
       .eq("user_id", userId)
       .is("parent_task_id", null)
       .order("position", { ascending: true });
-    if (error || !data) return [];
-    return (data as TaskRow[]).map(toTask);
+    const ownTasks = data ? (data as TaskRow[]).map(toTask) : [];
+    const sharedProjectIds = await this.getSharedProjectIds(userId);
+    if (!sharedProjectIds.includes(projectId)) return ownTasks;
+
+    const { data: sharedData, error } = await this.client
+      .from("tasks")
+      .select("*")
+      .eq("project_id", projectId)
+      .is("parent_task_id", null)
+      .order("position", { ascending: true });
+    if (error || !sharedData) return ownTasks;
+    return this.dedupe([...ownTasks, ...(sharedData as TaskRow[]).map(toTask)]);
   }
 
   async findByAreaId(areaId: string, userId: string): Promise<Task[]> {
@@ -96,16 +174,21 @@ export class SupabaseTaskRepository implements TaskRepository {
       .is("project_id", null)
       .is("area_id", null)
       .order("position", { ascending: true });
-    if (error || !data) return [];
-    return (data as TaskRow[]).map(toTask);
+    const ownTasks = error || !data ? [] : (data as TaskRow[]).map(toTask);
+    const sharedTasks = (await this.queryTasksByIds(await this.getSharedTaskIds(userId))).filter(
+      (task) => !task.parentTaskId && !task.projectId && !task.areaId,
+    );
+    return this.dedupe([...ownTasks, ...sharedTasks]);
   }
 
   async findSubtasks(parentTaskId: string, userId: string): Promise<Task[]> {
+    const parent = await this.findById(parentTaskId, userId);
+    if (!parent) return [];
+
     const { data, error } = await this.client
       .from("tasks")
       .select("*")
       .eq("parent_task_id", parentTaskId)
-      .eq("user_id", userId)
       .order("position", { ascending: true });
     if (error || !data) return [];
     return (data as TaskRow[]).map(toTask);
@@ -140,7 +223,13 @@ export class SupabaseTaskRepository implements TaskRepository {
   }
 
   async delete(id: string, userId: string): Promise<void> {
-    const { error } = await this.client.from("tasks").delete().eq("id", id).eq("user_id", userId);
+    const task = await this.findById(id, userId);
+    if (!task) return;
+    const { error } = await this.client
+      .from("tasks")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", task.userId);
     if (error) throw new Error(`Failed to delete task: ${error.message}`);
   }
 }

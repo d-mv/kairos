@@ -28,6 +28,9 @@ export class UpdateProject {
     }
 
     if ("areaId" in input) {
+      if (project.userId !== input.userId) {
+        return Result.fail("Shared projects cannot be moved into areas");
+      }
       project.moveToArea(input.areaId ?? null);
     }
 

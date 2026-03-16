@@ -2,8 +2,11 @@ import { Box, Button, Group, Stack, Text, TextInput, Title } from "@mantine/core
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { userAtom } from "../atoms/auth.js";
 import { brainPagesAtom } from "../atoms/brain.js";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
+import { shareDialogAtom } from "../atoms/shareDialog.js";
+import { SharedItemLabel } from "../components/SharedItemLabel.js";
 import { api } from "../lib/api.js";
 import {
   createBrainDocument,
@@ -33,8 +36,10 @@ export default function BrainPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const pages = useAtomValue(brainPagesAtom);
+  const currentUser = useAtomValue(userAtom);
   const setPages = useSetAtom(brainPagesAtom);
   const setPageMenu = useSetAtom(pageMenuAtom);
+  const setShareDialog = useSetAtom(shareDialogAtom);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const titleInputRef = useRef<HTMLInputElement | null>(null);
   const page = pages.find((item) => item.id === id) ?? null;
@@ -109,6 +114,15 @@ export default function BrainPage() {
     };
 
     setPageMenu([
+      {
+        label: "Share",
+        onClick: () =>
+          setShareDialog({
+            entityType: "brain_page",
+            entityId: page.id,
+            entityLabel: page.title,
+          }),
+      },
       {
         label: editorMode === "rich" ? "Edit Raw JSON" : "Back to Editor",
         onClick: toggleMode,
@@ -231,7 +245,12 @@ export default function BrainPage() {
               textAlign: "left",
             }}
           >
-            <Title order={1}>{title || "Untitled"}</Title>
+            <Title order={1}>
+              <SharedItemLabel
+                label={title || "Untitled"}
+                shared={page.userId !== currentUser?.id}
+              />
+            </Title>
           </Box>
         )}
         <Text size="sm" c="dimmed">

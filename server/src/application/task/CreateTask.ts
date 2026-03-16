@@ -1,4 +1,5 @@
 import type { TaskDTO, TaskPriority, TaskDurationUnit } from "@kairos/shared";
+import type { ProjectRepository } from "../../domain/project/index.js";
 import { Task } from "../../domain/task/index.js";
 import type { TaskRepository } from "../../domain/task/index.js";
 import { Result } from "../../domain/shared/index.js";
@@ -24,20 +25,31 @@ export class CreateTask {
     private readonly taskRepo: TaskRepository,
     private readonly eventBus: EventBus,
     private readonly normalizeTitle: (title: string) => Promise<string> = normalizeTaskTitleLinks,
+    private readonly projectRepo?: ProjectRepository,
   ) {}
 
   async execute(input: CreateTaskInput): Promise<Result<TaskDTO, string>> {
+    let taskUserId = input.userId;
+
     // If adding a subtask, validate parent exists and can have subtasks
     if (input.parentTaskId) {
       const parent = await this.taskRepo.findById(input.parentTaskId, input.userId);
       if (!parent) return Result.fail("Parent task not found");
       const canAdd = parent.canHaveSubtask();
       if (canAdd.isErr) return Result.fail(canAdd.error);
+      taskUserId = parent.userId;
+    }
+
+    if (input.projectId) {
+      if (!this.projectRepo) return Result.fail("Project repository not configured");
+      const project = await this.projectRepo.findById(input.projectId, input.userId);
+      if (!project) return Result.fail("Project not found");
+      taskUserId = project.userId;
     }
 
     const normalizedTitle = await this.normalizeTitle(input.title);
 
-    const result = Task.create(normalizedTitle, input.userId, {
+    const result = Task.create(normalizedTitle, taskUserId, {
       description: input.description,
       priority: input.priority,
       projectId: input.projectId,

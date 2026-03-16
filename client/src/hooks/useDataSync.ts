@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useSetAtom, useAtomValue } from "jotai";
 import { areasAtom } from "../atoms/areas.js";
 import { brainFoldersAtom, brainPagesAtom } from "../atoms/brain.js";
+import { notificationsAtom } from "../atoms/notifications.js";
 import { projectsAtom } from "../atoms/projects.js";
 import { tasksAtom } from "../atoms/tasks.js";
 import {
@@ -22,6 +23,7 @@ export function useDataSync() {
   const setAreas = useSetAtom(areasAtom);
   const setBrainFolders = useSetAtom(brainFoldersAtom);
   const setBrainPages = useSetAtom(brainPagesAtom);
+  const setNotifications = useSetAtom(notificationsAtom);
   const setProjects = useSetAtom(projectsAtom);
   const setTasks = useSetAtom(tasksAtom);
   const setWorkspaceError = useSetAtom(workspaceErrorAtom);
@@ -51,9 +53,10 @@ export function useDataSync() {
       }
 
       try {
-        const [areas, brain, projects, tasks] = await Promise.all([
+        const [areas, brain, notifications, projects, tasks] = await Promise.all([
           api.areas.list(),
           api.brain.list(),
+          api.notifications.list(),
           api.projects.list(),
           api.tasks.list(),
         ]);
@@ -63,6 +66,7 @@ export function useDataSync() {
         setAreas(areas);
         setBrainFolders(brain.folders);
         setBrainPages(brain.pages);
+        setNotifications(notifications);
         setProjects(projects);
         setTasks(tasks);
         setWorkspaceReady(true);
@@ -98,6 +102,7 @@ export function useDataSync() {
     setAreas,
     setBrainFolders,
     setBrainPages,
+    setNotifications,
     setProjects,
     setTasks,
     setWorkspaceError,
@@ -109,15 +114,17 @@ export function useDataSync() {
     const poll = async () => {
       if (document.visibilityState !== "visible") return;
       try {
-        const [areas, brain, projects, tasks] = await Promise.all([
+        const [areas, brain, notifications, projects, tasks] = await Promise.all([
           api.areas.list(),
           api.brain.list(),
+          api.notifications.list(),
           api.projects.list(),
           api.tasks.list(),
         ]);
         setAreas(areas);
         setBrainFolders(brain.folders);
         setBrainPages(brain.pages);
+        setNotifications(notifications);
         setProjects(projects);
         setTasks(tasks);
         saveWorkspaceCache({
@@ -134,7 +141,7 @@ export function useDataSync() {
 
     const id = window.setInterval(() => void poll(), 30_000);
     return () => window.clearInterval(id);
-  }, [setAreas, setBrainFolders, setBrainPages, setProjects, setTasks]);
+  }, [setAreas, setBrainFolders, setBrainPages, setNotifications, setProjects, setTasks]);
 
   useEffect(() => {
     if (!lastEvent) return;

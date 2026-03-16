@@ -18,7 +18,7 @@ describe("DemoteProject use case", () => {
     eventBus = new SpyEventBus();
     demoteProject = new DemoteProject(taskRepo, projectRepo, eventBus);
     createProject = new CreateProject(projectRepo, eventBus);
-    createTask = new CreateTask(taskRepo, eventBus);
+    createTask = new CreateTask(taskRepo, eventBus, async (title) => title, projectRepo);
   });
 
   it("demotes an empty project to a task", async () => {

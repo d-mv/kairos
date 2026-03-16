@@ -11,6 +11,8 @@ import { useDataSync } from "../hooks/useDataSync.js";
 import { supabase } from "../lib/supabase.js";
 import { Menu, type MenuItem } from "../shared/ui/Menu.js";
 import { MobileAppLayout } from "./MobileAppLayout.js";
+import { NotificationsMenu } from "./NotificationsMenu.js";
+import { ShareDialog } from "./ShareDialog.js";
 import { SettingsDialog } from "./SettingsDialog.js";
 import { Sidebar } from "./Sidebar.js";
 
@@ -80,6 +82,7 @@ export function AppLayout() {
         {error && errorPanel}
         {!error && <Outlet />}
         <SettingsDialog />
+        <ShareDialog />
       </MobileAppLayout>
     );
   }
@@ -88,13 +91,25 @@ export function AppLayout() {
     <Flex h="100dvh" style={{ overflow: "hidden", position: "fixed", inset: 0 }} p="md" gap="md">
       <Sidebar />
       <Box style={{ flex: 1, overflow: "hidden", position: "relative" }}>
-        <Box style={{ position: "absolute", top: 0, right: 0, zIndex: 10 }}>
+        <Box
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            zIndex: 10,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <NotificationsMenu />
           <Menu items={items} topSection={pageMenuItems} />
         </Box>
         <Box h="100%" style={{ overflow: "hidden" }}>
           {error ? errorPanel : <Outlet />}
         </Box>
         <SettingsDialog />
+        <ShareDialog />
       </Box>
     </Flex>
   );

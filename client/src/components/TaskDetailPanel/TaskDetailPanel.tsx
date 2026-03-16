@@ -14,6 +14,7 @@ import {
 import checkIsMobile from "is-mobile";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
+import { shareDialogAtom } from "../../atoms/shareDialog.js";
 import { selectedTaskAtom, selectedTaskIdAtom, tasksAtom } from "../../atoms/tasks.js";
 import { api } from "../../lib/api.js";
 import {
@@ -32,6 +33,7 @@ export function TaskDetailPanel() {
   const setSelectedTaskId = useSetAtom(selectedTaskIdAtom);
   const task = useAtomValue(selectedTaskAtom);
   const setTasks = useSetAtom(tasksAtom);
+  const setShareDialog = useSetAtom(shareDialogAtom);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>(4);
@@ -425,6 +427,19 @@ export function TaskDetailPanel() {
               Promote to Project
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setShareDialog({
+                entityType: "task",
+                entityId: task.id,
+                entityLabel: task.title,
+              })
+            }
+          >
+            Share
+          </Button>
           <Button
             variant="subtle"
             color="red"

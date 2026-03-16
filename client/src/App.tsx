@@ -4,7 +4,9 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { areasAtom } from "./atoms/areas.js";
 import { brainFoldersAtom, brainPagesAtom } from "./atoms/brain.js";
 import { isAuthenticatedAtom, sessionAtom } from "./atoms/auth.js";
+import { notificationsAtom } from "./atoms/notifications.js";
 import { projectsAtom } from "./atoms/projects.js";
+import { shareDialogAtom } from "./atoms/shareDialog.js";
 import { tasksAtom } from "./atoms/tasks.js";
 import { workspaceErrorAtom, workspaceLoadingAtom, workspaceReadyAtom } from "./atoms/workspace.js";
 import { lastWsEventAtom } from "./atoms/ws.js";
@@ -37,7 +39,9 @@ export default function App() {
   const setAreas = useSetAtom(areasAtom);
   const setBrainFolders = useSetAtom(brainFoldersAtom);
   const setBrainPages = useSetAtom(brainPagesAtom);
+  const setNotifications = useSetAtom(notificationsAtom);
   const setProjects = useSetAtom(projectsAtom);
+  const setShareDialog = useSetAtom(shareDialogAtom);
   const setTasks = useSetAtom(tasksAtom);
   const setWorkspaceLoading = useSetAtom(workspaceLoadingAtom);
   const setWorkspaceReady = useSetAtom(workspaceReadyAtom);
@@ -83,7 +87,9 @@ export default function App() {
     setAreas([]);
     setBrainFolders([]);
     setBrainPages([]);
+    setNotifications([]);
     setProjects([]);
+    setShareDialog(null);
     setTasks([]);
     setWorkspaceLoading(false);
     setWorkspaceReady(false);
@@ -95,7 +101,9 @@ export default function App() {
     setBrainFolders,
     setBrainPages,
     setLastEvent,
+    setNotifications,
     setProjects,
+    setShareDialog,
     setTasks,
     setWorkspaceError,
     setWorkspaceLoading,

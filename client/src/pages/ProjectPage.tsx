@@ -3,10 +3,13 @@ import checkIsMobile from "is-mobile";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
+import { userAtom } from "../atoms/auth.js";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { projectsAtom as projAtom, projectsAtom } from "../atoms/projects.js";
+import { shareDialogAtom } from "../atoms/shareDialog.js";
 import { tasksAtom, tasksByProjectAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
+import { SharedItemLabel } from "../components/SharedItemLabel.js";
 import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.js";
 import { ProjectGantt } from "../components/ProjectGantt.js";
 import { TaskList } from "../components/TaskList.js";
@@ -31,12 +34,14 @@ export default function ProjectPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const projects = useAtomValue(projectsAtom);
+  const currentUser = useAtomValue(userAtom);
   const areas = useAtomValue(areasAtom);
   const tasksByProject = useAtomValue(tasksByProjectAtom);
   const isLoading = useAtomValue(workspaceLoadingAtom);
   const setProjects = useSetAtom(projAtom);
   const setTasks = useSetAtom(tasksAtom);
   const setPageMenu = useSetAtom(pageMenuAtom);
+  const setShareDialog = useSetAtom(shareDialogAtom);
   const [completeLoading, setCompleteLoading] = useState(false);
   const [renameLoading, setRenameLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -81,6 +86,16 @@ export default function ProjectPage() {
       {
         label: showCompleted ? "Hide Completed" : "Show Completed",
         onClick: () => setShowCompleted((c) => !c),
+      },
+      {
+        label: "Share",
+        onClick: () =>
+          project &&
+          setShareDialog({
+            entityType: "project",
+            entityId: project.id,
+            entityLabel: project.name,
+          }),
       },
       {
         label: "Rename",
@@ -278,7 +293,9 @@ export default function ProjectPage() {
       <Box maw={760}>
         <Box mb="lg">
           <Group gap="xs" align="center">
-            <Title order={2}>{projectName}</Title>
+            <Title order={2}>
+              <SharedItemLabel label={projectName} shared={project?.userId !== currentUser?.id} />
+            </Title>
             {project?.completedAt ? <Badge color="green">Completed</Badge> : null}
             {actionState !== "idle" && (
               <Badge

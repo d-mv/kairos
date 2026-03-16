@@ -7,6 +7,7 @@ export type LinkType = "blocks" | "blocked_by" | "related_to";
 export type EntityType = "task" | "project" | "area";
 export type BrainContent = unknown;
 export type IntegrationProvider = "google_calendar" | "google_drive" | "todoist";
+export type ShareEntityType = "project" | "task" | "brain_folder" | "brain_page";
 
 export interface TaskDTO {
   id: string;
@@ -91,6 +92,18 @@ export interface IntegrationStatusDTO {
   provider: IntegrationProvider;
   connected: boolean;
   connectedAt: string | null;
+}
+
+export interface NotificationDTO {
+  id: string;
+  type: "share_invite";
+  entityType: ShareEntityType;
+  entityId: string;
+  entityLabel: string;
+  senderEmail: string;
+  recipientEmail: string;
+  createdAt: string;
+  expiresAt: string;
 }
 
 // WebSocket event types
