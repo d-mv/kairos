@@ -18,7 +18,8 @@
     "lint": "oxlint src",
     "format": "oxfmt src",
     "format:check": "oxfmt --check src",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "smoke": "node dist/smokeCheck.js"
   },
   "dependencies": {
     "@fastify/cors": "^11.2.0",

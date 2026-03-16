@@ -15,6 +15,11 @@ auto_stop_machines = "stop"
 auto_start_machines = true
 min_machines_running = 1
 
+[[checks]]
+command = "pnpm --filter @kairos/server smoke"
+timeout = 600
+interval = "30s"
+
 [[vm]]
 memory_mb = 512
 cpu_kind = "shared"
