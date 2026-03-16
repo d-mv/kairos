@@ -2,7 +2,7 @@ import { URL } from "node:url";
 
 async function main() {
   const baseUrl = process.env["SERVER_URL"] ?? "http://127.0.0.1:3000";
-  const endpoints = ["/health"];
+  const endpoints = ["/health", "/api/v1/projects", "/api/v1/tasks"];
   const timeout = Number(process.env["SMOKE_TIMEOUT_MS"] ?? 5000);
   const controller = new AbortController();
 
