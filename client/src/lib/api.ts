@@ -84,8 +84,10 @@ export const api = {
     list: () => request<ProjectDTO[]>("GET", "/projects"),
     create: (name: string, areaId?: string) =>
       request<ProjectDTO>("POST", "/projects", { name, areaId }),
-    update: (id: string, data: { name?: string; areaId?: string | null }) =>
-      request<ProjectDTO>("PUT", `/projects/${id}`, data),
+    update: (
+      id: string,
+      data: { name?: string; areaId?: string | null; completedAt?: string | null },
+    ) => request<ProjectDTO>("PUT", `/projects/${id}`, data),
     delete: (id: string) => request<void>("DELETE", `/projects/${id}`),
     demote: (id: string) => request<TaskDTO>("POST", `/projects/${id}/demote`),
   },

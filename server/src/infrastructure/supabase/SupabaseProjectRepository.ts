@@ -6,6 +6,7 @@ interface ProjectRow {
   id: string;
   name: string;
   area_id: string | null;
+  completed_at: string | null;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -15,6 +16,7 @@ function toProject(row: ProjectRow): Project {
   return Project.reconstitute(row.id, {
     name: row.name,
     areaId: row.area_id,
+    completedAt: row.completed_at ? new Date(row.completed_at) : null,
     userId: row.user_id,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
@@ -61,6 +63,7 @@ export class SupabaseProjectRepository implements ProjectRepository {
       id: project.id,
       name: project.name,
       area_id: project.areaId,
+      completed_at: project.completedAt?.toISOString() ?? null,
       user_id: project.userId,
       created_at: project.createdAt.toISOString(),
       updated_at: project.updatedAt.toISOString(),

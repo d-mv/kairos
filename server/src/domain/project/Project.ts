@@ -1,9 +1,16 @@
 import { Entity, UniqueId, Result } from "../shared/index.js";
-import { ProjectCreated, ProjectRenamed, ProjectMovedToArea } from "./ProjectDomainEvents.js";
+import {
+  ProjectCompleted,
+  ProjectCreated,
+  ProjectMovedToArea,
+  ProjectReopened,
+  ProjectRenamed,
+} from "./ProjectDomainEvents.js";
 
 interface ProjectProps {
   name: string;
   areaId: string | null;
+  completedAt: Date | null;
   userId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -25,7 +32,14 @@ export class Project extends Entity<ProjectProps> {
       return Result.fail("Project name cannot be empty");
     }
     const project = new Project(
-      { name: trimmed, areaId, userId, createdAt: new Date(), updatedAt: new Date() },
+      {
+        name: trimmed,
+        areaId,
+        completedAt: null,
+        userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
       id ? new UniqueId(id) : undefined,
     );
     project.addDomainEvent(new ProjectCreated(project.id, trimmed, areaId, userId));
@@ -44,6 +58,9 @@ export class Project extends Entity<ProjectProps> {
   }
   get userId(): string {
     return this.props.userId;
+  }
+  get completedAt(): Date | null {
+    return this.props.completedAt;
   }
   get createdAt(): Date {
     return this.props.createdAt;
@@ -68,5 +85,19 @@ export class Project extends Entity<ProjectProps> {
     this.props.areaId = areaId;
     this.props.updatedAt = new Date();
     this.addDomainEvent(new ProjectMovedToArea(this.id, areaId));
+  }
+
+  complete(completedAt: Date = new Date()): void {
+    if (this.props.completedAt) return;
+    this.props.completedAt = completedAt;
+    this.props.updatedAt = new Date();
+    this.addDomainEvent(new ProjectCompleted(this.id));
+  }
+
+  reopen(): void {
+    if (!this.props.completedAt) return;
+    this.props.completedAt = null;
+    this.props.updatedAt = new Date();
+    this.addDomainEvent(new ProjectReopened(this.id));
   }
 }

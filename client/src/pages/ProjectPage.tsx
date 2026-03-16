@@ -37,6 +37,7 @@ export default function ProjectPage() {
   const setProjects = useSetAtom(projAtom);
   const setTasks = useSetAtom(tasksAtom);
   const setPageMenu = useSetAtom(pageMenuAtom);
+  const [completeLoading, setCompleteLoading] = useState(false);
   const [renameLoading, setRenameLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [moveLoading, setMoveLoading] = useState(false);
@@ -73,6 +74,7 @@ export default function ProjectPage() {
   // Refs to always call latest handlers from stable menu closures
   const handleDeleteRef = useRef<() => void>(() => {});
   const handleDemoteRef = useRef<() => void>(() => {});
+  const handleToggleCompleteRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     setPageMenu([
@@ -96,6 +98,11 @@ export default function ProjectPage() {
         },
       },
       {
+        label: project?.completedAt ? "Reopen Project" : "Complete Project",
+        disabled: completeLoading,
+        onClick: () => void handleToggleCompleteRef.current(),
+      },
+      {
         label: "Demote to Task",
         disabled: deleteLoading,
         onClick: () => handleDemoteRef.current(),
@@ -108,7 +115,15 @@ export default function ProjectPage() {
       },
     ]);
     return () => setPageMenu([]);
-  }, [setPageMenu, showCompleted, deleteLoading, project?.name, project?.areaId]);
+  }, [
+    completeLoading,
+    deleteLoading,
+    project?.areaId,
+    project?.completedAt,
+    project?.name,
+    setPageMenu,
+    showCompleted,
+  ]);
 
   if (!project && !isLoading) {
     return (
@@ -220,8 +235,41 @@ export default function ProjectPage() {
     }
   };
 
+  const handleToggleComplete = async () => {
+    if (!project) return;
+
+    const nextCompletedAt = project.completedAt ? null : new Date().toISOString();
+    const previousProject = project;
+    const optimisticProject = {
+      ...project,
+      completedAt: nextCompletedAt,
+      updatedAt: new Date().toISOString(),
+    };
+
+    setCompleteLoading(true);
+    setActionState("saving");
+    setProjects((prev) => prev.map((item) => (item.id === project.id ? optimisticProject : item)));
+
+    try {
+      const updated = await api.projects.update(project.id, { completedAt: nextCompletedAt });
+      setProjects((prev) => prev.map((item) => (item.id === project.id ? updated : item)));
+      setActionState("saved");
+      if (updated.completedAt) {
+        navigate("/completed");
+      }
+    } catch (err) {
+      setProjects((prev) => prev.map((item) => (item.id === project.id ? previousProject : item)));
+      setActionState("error");
+      window.alert(err instanceof Error ? err.message : "Failed to update project");
+    } finally {
+      setCompleteLoading(false);
+      scheduleActionReset();
+    }
+  };
+
   handleDeleteRef.current = handleDelete;
   handleDemoteRef.current = handleDemote;
+  handleToggleCompleteRef.current = handleToggleComplete;
 
   const isMobile = checkIsMobile();
 
@@ -231,6 +279,7 @@ export default function ProjectPage() {
         <Box mb="lg">
           <Group gap="xs" align="center">
             <Title order={2}>{projectName}</Title>
+            {project?.completedAt ? <Badge color="green">Completed</Badge> : null}
             {actionState !== "idle" && (
               <Badge
                 size="sm"

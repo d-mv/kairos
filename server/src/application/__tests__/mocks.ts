@@ -29,7 +29,7 @@ export class InMemoryAreaRepository implements AreaRepository {
 }
 
 export class InMemoryProjectRepository implements ProjectRepository {
-  private store = new Map<string, Project>();
+  public store = new Map<string, Project>();
 
   async findById(id: string, userId: string): Promise<Project | null> {
     const p = this.store.get(id);

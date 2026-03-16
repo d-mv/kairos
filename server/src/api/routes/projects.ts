@@ -31,7 +31,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
   // PUT /api/v1/projects/:id
   fastify.put<{
     Params: { id: string };
-    Body: { name?: string; areaId?: string | null };
+    Body: { name?: string; areaId?: string | null; completedAt?: string | null };
   }>("/:id", async (req, reply) => {
     const result = await container.updateProject.execute({
       id: req.params.id,

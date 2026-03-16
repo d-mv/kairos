@@ -30,6 +30,7 @@ export interface ProjectDTO {
   id: string;
   name: string;
   areaId: string | null;
+  completedAt: string | null;
   userId: string;
   createdAt: string;
   updatedAt: string;

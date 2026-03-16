@@ -47,6 +47,7 @@ export function CreateProjectButton({
       id: createOptimisticId("project"),
       name: trimmed,
       areaId: nextAreaId ?? null,
+      completedAt: null,
       userId: "optimistic",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

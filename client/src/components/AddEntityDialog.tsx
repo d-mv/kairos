@@ -68,6 +68,7 @@ export function AddNewEntityDialog() {
       id: createOptimisticId("project"),
       name: trimmed,
       areaId,
+      completedAt: null,
       userId: "optimistic",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

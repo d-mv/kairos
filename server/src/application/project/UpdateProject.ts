@@ -9,6 +9,7 @@ export interface UpdateProjectInput {
   userId: string;
   name?: string;
   areaId?: string | null;
+  completedAt?: string | null;
 }
 
 export class UpdateProject {
@@ -28,6 +29,14 @@ export class UpdateProject {
 
     if ("areaId" in input) {
       project.moveToArea(input.areaId ?? null);
+    }
+
+    if ("completedAt" in input) {
+      if (input.completedAt) {
+        project.complete(new Date(input.completedAt));
+      } else {
+        project.reopen();
+      }
     }
 
     await this.projectRepo.save(project);

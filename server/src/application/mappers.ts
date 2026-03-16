@@ -28,6 +28,7 @@ export function toProjectDTO(project: Project): ProjectDTO {
     id: project.id,
     name: project.name,
     areaId: project.areaId,
+    completedAt: project.completedAt?.toISOString() ?? null,
     userId: project.userId,
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),

@@ -33,6 +33,7 @@ export function NewProjectInput({
       id: createOptimisticId("project"),
       name: trimmed,
       areaId: areaId ?? null,
+      completedAt: null,
       userId: "optimistic",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

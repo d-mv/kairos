@@ -40,3 +40,17 @@ export class ProjectDeleted implements DomainEvent {
   readonly eventName = "project.deleted";
   constructor(public readonly projectId: string) {}
 }
+
+export class ProjectCompleted implements DomainEvent {
+  readonly eventId = new UniqueId().value;
+  readonly occurredOn = new Date();
+  readonly eventName = "project.completed";
+  constructor(public readonly projectId: string) {}
+}
+
+export class ProjectReopened implements DomainEvent {
+  readonly eventId = new UniqueId().value;
+  readonly occurredOn = new Date();
+  readonly eventName = "project.reopened";
+  constructor(public readonly projectId: string) {}
+}

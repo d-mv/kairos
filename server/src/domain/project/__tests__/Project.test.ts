@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { Project } from "../Project.js";
-import { ProjectCreated, ProjectRenamed, ProjectMovedToArea } from "../ProjectDomainEvents.js";
+import {
+  ProjectCompleted,
+  ProjectCreated,
+  ProjectMovedToArea,
+  ProjectReopened,
+  ProjectRenamed,
+} from "../ProjectDomainEvents.js";
 
 describe("Project", () => {
   describe("create", () => {
@@ -85,18 +91,47 @@ describe("Project", () => {
     });
   });
 
+  describe("completion", () => {
+    it("marks the project as completed", () => {
+      const project = Project.create("P", "user-1").value;
+      project.clearDomainEvents();
+
+      project.complete();
+
+      expect(project.completedAt).toBeInstanceOf(Date);
+      const event = project.domainEvents[0] as ProjectCompleted;
+      expect(event).toBeInstanceOf(ProjectCompleted);
+      expect(event.projectId).toBe(project.id);
+    });
+
+    it("reopens a completed project", () => {
+      const project = Project.create("P", "user-1").value;
+      project.complete();
+      project.clearDomainEvents();
+
+      project.reopen();
+
+      expect(project.completedAt).toBeNull();
+      const event = project.domainEvents[0] as ProjectReopened;
+      expect(event).toBeInstanceOf(ProjectReopened);
+      expect(event.projectId).toBe(project.id);
+    });
+  });
+
   describe("reconstitute", () => {
     it("restores from persistence without emitting events", () => {
       const now = new Date();
       const project = Project.reconstitute("proj-id", {
         name: "My Project",
         areaId: "area-1",
+        completedAt: now,
         userId: "user-1",
         createdAt: now,
         updatedAt: now,
       });
       expect(project.id).toBe("proj-id");
       expect(project.domainEvents).toHaveLength(0);
+      expect(project.completedAt).toBe(now);
     });
   });
 });
