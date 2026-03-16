@@ -14,6 +14,7 @@ import {
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { projectsByAreaAtom } from "../atoms/projects.js";
 import { api } from "../lib/api.js";
+import { loadSidebarOpenState, saveSidebarOpenState } from "../lib/sidebar-open-state.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { Menu, type MenuItem } from "../shared/ui/Menu.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
@@ -51,7 +52,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
   const setBrainFolders = useSetAtom(brainFoldersAtom);
   const setBrainPages = useSetAtom(brainPagesAtom);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [openAreas, setOpenAreas] = useState<Record<string, boolean>>({});
+  const [openAreas, setOpenAreas] = useState<Record<string, boolean>>(loadSidebarOpenState);
   const [openBrainFolders, setOpenBrainFolders] = useState<Record<string, boolean>>({});
   const isActive = useIsActive();
 
@@ -67,10 +68,17 @@ export function MobileAppLayout({ children, menuItems }: Props) {
 
   useEffect(() => {
     if (!drawerOpen) {
-      setOpenAreas({});
       setOpenBrainFolders({});
     }
   }, [drawerOpen]);
+
+  const setAreaOpen = (areaId: string, open: boolean) => {
+    setOpenAreas((prev) => {
+      const next = { ...prev, [areaId]: open };
+      saveSidebarOpenState(next);
+      return next;
+    });
+  };
 
   const createBrainFolder = async () => {
     const name = window.prompt("Folder name");
@@ -237,10 +245,10 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                     setDrawerOpen(false);
                     navigate(`/area/${area.id}`);
                   } else {
-                    setOpenAreas((prev) => ({ ...prev, [area.id]: true }));
+                    setAreaOpen(area.id, true);
                   }
                 }}
-                onChange={(open) => setOpenAreas((prev) => ({ ...prev, [area.id]: open }))}
+                onChange={(open) => setAreaOpen(area.id, open)}
                 style={{ borderRadius: 6 }}
                 childrenOffset={12}
                 styles={{ label: { fontSize: "16px" } }}

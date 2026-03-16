@@ -21,24 +21,11 @@ import {
   sortedBrainFoldersAtom,
 } from "../atoms/brain.js";
 import { projectsByAreaAtom } from "../atoms/projects.js";
+import { loadSidebarOpenState, saveSidebarOpenState } from "../lib/sidebar-open-state.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { api } from "../lib/api.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
 import { SYSTEM_SIDEBAR_ITEMS } from "./data.js";
-
-const STORAGE_KEY = "kairos-sidebar-areas-open";
-
-function loadOpenState(): Record<string, boolean> {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
-  } catch {
-    return {};
-  }
-}
-
-function saveOpenState(state: Record<string, boolean>) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
 
 type SectionHeaderProps = {
   label: string;
@@ -142,7 +129,7 @@ export function Sidebar() {
   const brainPagesByFolder = useAtomValue(brainPagesByFolderAtom);
 
   const unassignedProjects = projectsByArea.get(null) ?? [];
-  const [openAreas, setOpenAreas] = useState<Record<string, boolean>>(loadOpenState);
+  const [openAreas, setOpenAreas] = useState<Record<string, boolean>>(loadSidebarOpenState);
   const [openBrainFolders, setOpenBrainFolders] = useState<Record<string, boolean>>({});
 
   const createBrainFolder = async () => {
@@ -167,7 +154,7 @@ export function Sidebar() {
   const setAreaOpen = (areaId: string, open: boolean) => {
     setOpenAreas((prev) => {
       const next = { ...prev, [areaId]: open };
-      saveOpenState(next);
+      saveSidebarOpenState(next);
       return next;
     });
   };
