@@ -2,8 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const getUserMock = vi.fn();
 const findUserIdByTokenHashMock = vi.fn();
-const rotateForUserMock = vi.fn();
-const getForUserMock = vi.fn();
+const listForUserMock = vi.fn();
+const createForUserMock = vi.fn();
+const deleteForUserMock = vi.fn();
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({
@@ -20,11 +21,13 @@ vi.mock("../container.js", () => ({
   },
   apiKeyRepo: {
     findUserIdByTokenHash: findUserIdByTokenHashMock,
-    rotateForUser: rotateForUserMock,
-    getForUser: getForUserMock,
+    listForUser: listForUserMock,
+    createForUser: createForUserMock,
+    deleteForUser: deleteForUserMock,
   },
   listAreas: { execute: vi.fn() },
   createArea: { execute: vi.fn() },
+  updateArea: { execute: vi.fn() },
   updateArea: { execute: vi.fn() },
   deleteArea: { execute: vi.fn() },
   listProjects: { execute: vi.fn() },
@@ -42,6 +45,8 @@ vi.mock("../container.js", () => ({
   deleteLink: { execute: vi.fn() },
 }));
 
+const CREATED_AT = "2026-03-02T00:00:00.000Z";
+
 describe("API key routes", () => {
   const apps: Array<{ close: () => Promise<void> }> = [];
 
@@ -49,8 +54,9 @@ describe("API key routes", () => {
     vi.resetModules();
     getUserMock.mockReset();
     findUserIdByTokenHashMock.mockReset();
-    rotateForUserMock.mockReset();
-    getForUserMock.mockReset();
+    listForUserMock.mockReset();
+    createForUserMock.mockReset();
+    deleteForUserMock.mockReset();
 
     getUserMock.mockImplementation(async (token: string) => {
       if (token === "valid-token") {
@@ -60,19 +66,52 @@ describe("API key routes", () => {
     });
 
     findUserIdByTokenHashMock.mockResolvedValue(null);
-    getForUserMock.mockResolvedValue(null);
-    rotateForUserMock.mockResolvedValue({
+    listForUserMock.mockResolvedValue([]);
+    createForUserMock.mockResolvedValue({
+      id: "token-uuid-1",
+      name: "Claude MCP",
       keyPreview: "kr_test...abcd",
-      createdAt: "2026-03-02T00:00:00.000Z",
-      updatedAt: "2026-03-02T00:00:00.000Z",
+      createdAt: CREATED_AT,
+      updatedAt: CREATED_AT,
     });
+    deleteForUserMock.mockResolvedValue(undefined);
   });
 
   afterEach(async () => {
     await Promise.all(apps.splice(0).map((app) => app.close()));
   });
 
-  it("rotates the authenticated user's API key", async () => {
+  it("lists API keys for the authenticated user", async () => {
+    process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
+    process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+
+    listForUserMock.mockResolvedValue([
+      {
+        id: "token-uuid-1",
+        name: "default",
+        keyPreview: "kr_test...abcd",
+        createdAt: CREATED_AT,
+        updatedAt: CREATED_AT,
+      },
+    ]);
+
+    const { buildApp } = await import("../buildApp.js");
+    const app = await buildApp();
+    apps.push(app);
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/auth/api-keys",
+      headers: { authorization: "Bearer valid-token" },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = response.json() as unknown[];
+    expect(body).toHaveLength(1);
+    expect(listForUserMock).toHaveBeenCalledWith("auth-user-123");
+  });
+
+  it("creates a named API key for the authenticated user", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
 
@@ -82,56 +121,61 @@ describe("API key routes", () => {
 
     const response = await app.inject({
       method: "POST",
-      url: "/api/v1/auth/api-key",
-      headers: {
-        authorization: "Bearer valid-token",
-      },
+      url: "/api/v1/auth/api-keys",
+      headers: { authorization: "Bearer valid-token" },
+      body: { name: "Claude MCP" },
     });
 
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(201);
 
     const body = response.json() as {
       apiKey: string;
+      name: string;
       keyPreview: string;
-      createdAt: string;
-      updatedAt: string;
     };
 
     expect(body.apiKey).toMatch(/^kr_/);
+    expect(body.name).toBe("Claude MCP");
     expect(body.keyPreview).toBe("kr_test...abcd");
-    expect(rotateForUserMock).toHaveBeenCalledTimes(1);
-    expect(rotateForUserMock.mock.calls[0]?.[0]).toBe("auth-user-123");
-    expect(rotateForUserMock.mock.calls[0]?.[1]).toMatch(/^[a-f0-9]{64}$/);
+    expect(createForUserMock).toHaveBeenCalledTimes(1);
+    expect(createForUserMock.mock.calls[0]?.[0]).toBe("auth-user-123");
+    expect(createForUserMock.mock.calls[0]?.[1]).toBe("Claude MCP");
+    expect(createForUserMock.mock.calls[0]?.[2]).toMatch(/^[a-f0-9]{64}$/);
   });
 
-  it("returns current API key metadata for the authenticated user", async () => {
+  it("rejects creation when name is missing", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
-
-    getForUserMock.mockResolvedValue({
-      keyPreview: "kr_test...abcd",
-      createdAt: "2026-03-02T00:00:00.000Z",
-      updatedAt: "2026-03-02T00:00:00.000Z",
-    });
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();
     apps.push(app);
 
     const response = await app.inject({
-      method: "GET",
-      url: "/api/v1/auth/api-key",
-      headers: {
-        authorization: "Bearer valid-token",
-      },
+      method: "POST",
+      url: "/api/v1/auth/api-keys",
+      headers: { authorization: "Bearer valid-token" },
+      body: { name: "  " },
     });
 
-    expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({
-      hasKey: true,
-      keyPreview: "kr_test...abcd",
-      createdAt: "2026-03-02T00:00:00.000Z",
-      updatedAt: "2026-03-02T00:00:00.000Z",
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("deletes an API key for the authenticated user", async () => {
+    process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
+    process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+
+    const { buildApp } = await import("../buildApp.js");
+    const app = await buildApp();
+    apps.push(app);
+
+    const response = await app.inject({
+      method: "DELETE",
+      url: "/api/v1/auth/api-keys/token-uuid-1",
+      headers: { authorization: "Bearer valid-token" },
     });
+
+    expect(response.statusCode).toBe(204);
+    expect(deleteForUserMock).toHaveBeenCalledWith("auth-user-123", "token-uuid-1");
   });
 });

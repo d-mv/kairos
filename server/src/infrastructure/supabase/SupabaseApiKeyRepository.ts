@@ -1,21 +1,20 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-
-export interface ApiKeyRecord {
-  keyPreview: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { ApiKeyDTO } from "@kairos/shared";
 
 interface ApiKeyRow {
+  id: string;
   user_id: string;
+  name: string;
   token_hash: string;
   key_preview: string;
   created_at: string;
   updated_at: string;
 }
 
-function toRecord(row: ApiKeyRow): ApiKeyRecord {
+function toDTO(row: ApiKeyRow): ApiKeyDTO {
   return {
+    id: row.id,
+    name: row.name,
     keyPreview: row.key_preview,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -36,38 +35,45 @@ export class SupabaseApiKeyRepository {
     return (data as { user_id: string }).user_id;
   }
 
-  async getForUser(userId: string): Promise<ApiKeyRecord | null> {
+  async listForUser(userId: string): Promise<ApiKeyDTO[]> {
     const { data, error } = await this.client
       .from("api_keys")
       .select("*")
       .eq("user_id", userId)
-      .maybeSingle();
+      .order("created_at", { ascending: true });
 
-    if (error || !data) return null;
-    return toRecord(data as ApiKeyRow);
+    if (error || !data) return [];
+    return (data as ApiKeyRow[]).map(toDTO);
   }
 
-  async rotateForUser(
+  async createForUser(
     userId: string,
+    name: string,
     tokenHash: string,
     keyPreview: string,
-  ): Promise<ApiKeyRecord> {
-    const payload = {
-      user_id: userId,
-      token_hash: tokenHash,
-      key_preview: keyPreview,
-    };
-
+  ): Promise<ApiKeyDTO> {
     const { data, error } = await this.client
       .from("api_keys")
-      .upsert(payload, { onConflict: "user_id" })
+      .insert({ user_id: userId, name, token_hash: tokenHash, key_preview: keyPreview })
       .select("*")
       .single();
 
     if (error || !data) {
-      throw new Error(`Failed to rotate API key: ${error?.message ?? "unknown error"}`);
+      throw new Error(`Failed to create API key: ${error?.message ?? "unknown error"}`);
     }
 
-    return toRecord(data as ApiKeyRow);
+    return toDTO(data as ApiKeyRow);
+  }
+
+  async deleteForUser(userId: string, id: string): Promise<void> {
+    const { error } = await this.client
+      .from("api_keys")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", userId);
+
+    if (error) {
+      throw new Error(`Failed to delete API key: ${error.message}`);
+    }
   }
 }

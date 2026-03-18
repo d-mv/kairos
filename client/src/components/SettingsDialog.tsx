@@ -1,17 +1,27 @@
-import type { IntegrationProvider, IntegrationStatusDTO } from "@kairos/shared";
+import type {
+  ApiKeyCreatedDTO,
+  ApiKeyDTO,
+  IntegrationProvider,
+  IntegrationStatusDTO,
+} from "@kairos/shared";
 import {
   Alert,
+  ActionIcon,
   Badge,
   Box,
   Button,
+  Code,
+  CopyButton,
   Group,
   Modal,
   PasswordInput,
   Stack,
+  Table,
   Tabs,
   Text,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { useAtom } from "jotai";
 import { useEffect, useMemo, useState } from "react";
@@ -25,7 +35,7 @@ import {
 } from "../lib/weather-settings.js";
 import { searchWeatherLocations, type WeatherLocationOption } from "../lib/today-weather.js";
 
-type SettingsTab = "general" | "integrations";
+type SettingsTab = "general" | "integrations" | "api";
 
 function getStatus(
   statuses: IntegrationStatusDTO[],
@@ -47,6 +57,14 @@ export function SettingsDialog() {
   const [weatherSuggestions, setWeatherSuggestions] = useState<WeatherLocationOption[]>([]);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [apiTokens, setApiTokens] = useState<ApiKeyDTO[]>([]);
+  const [apiTokensLoading, setApiTokensLoading] = useState(false);
+  const [newTokenName, setNewTokenName] = useState("");
+  const [creatingToken, setCreatingToken] = useState(false);
+  const [createdToken, setCreatedToken] = useState<ApiKeyCreatedDTO | null>(null);
+  const [deletingTokenId, setDeletingTokenId] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const search = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const queryDialog = search.get("dialog");
@@ -113,6 +131,17 @@ export function SettingsDialog() {
     navigate(location.pathname, { replace: true });
   };
 
+  useEffect(() => {
+    if (!opened) return;
+    setApiTokensLoading(true);
+    setApiError(null);
+    api.auth
+      .listApiKeys()
+      .then(setApiTokens)
+      .catch((err) => setApiError(err instanceof Error ? err.message : "Failed to load API tokens"))
+      .finally(() => setApiTokensLoading(false));
+  }, [opened]);
+
   const handleClose = () => {
     setDialogs((prev) => prev.filter((item) => item !== "settingsDialog"));
     clearSettingsSearch();
@@ -121,6 +150,48 @@ export function SettingsDialog() {
     setActiveProvider(null);
     setWeatherSuggestions([]);
     setWeatherLoading(false);
+    setCreatedToken(null);
+    setNewTokenName("");
+    setApiError(null);
+  };
+
+  const handleCreateToken = async () => {
+    if (!newTokenName.trim()) return;
+    try {
+      setCreatingToken(true);
+      setApiError(null);
+      const created = await api.auth.createApiKey(newTokenName.trim());
+      setCreatedToken(created);
+      setNewTokenName("");
+      setApiTokens((prev) => [
+        ...prev,
+        {
+          id: created.id,
+          name: created.name,
+          keyPreview: created.keyPreview,
+          createdAt: created.createdAt,
+          updatedAt: created.updatedAt,
+        },
+      ]);
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : "Failed to create API token");
+    } finally {
+      setCreatingToken(false);
+    }
+  };
+
+  const handleDeleteToken = async (id: string) => {
+    try {
+      setDeletingTokenId(id);
+      setApiError(null);
+      await api.auth.deleteApiKey(id);
+      setApiTokens((prev) => prev.filter((t) => t.id !== id));
+      if (createdToken?.id === id) setCreatedToken(null);
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : "Failed to delete API token");
+    } finally {
+      setDeletingTokenId(null);
+    }
   };
 
   const refreshStatuses = async () => {
@@ -170,6 +241,7 @@ export function SettingsDialog() {
 
   const handleWeatherPick = (option: WeatherLocationOption) => {
     const nextLocation = {
+      id: option.id,
       name: option.name,
       latitude: option.latitude,
       longitude: option.longitude,
@@ -182,6 +254,7 @@ export function SettingsDialog() {
 
   const handleWeatherSave = () => {
     saveWeatherLocationSetting(localStorage, weatherLocation);
+    window.dispatchEvent(new CustomEvent("kairos:weather-location-changed"));
   };
 
   const handleWeatherClear = () => {
@@ -189,6 +262,7 @@ export function SettingsDialog() {
     setWeatherQuery("");
     setWeatherSuggestions([]);
     saveWeatherLocationSetting(localStorage, null);
+    window.dispatchEvent(new CustomEvent("kairos:weather-location-changed"));
   };
 
   const googleConnected = Boolean(googleCalendar?.connected && googleDrive?.connected);
@@ -199,6 +273,7 @@ export function SettingsDialog() {
         <Tabs.List>
           <Tabs.Tab value="general">General</Tabs.Tab>
           <Tabs.Tab value="integrations">Integrations</Tabs.Tab>
+          <Tabs.Tab value="api">API</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="general" pt="md">
@@ -356,6 +431,112 @@ export function SettingsDialog() {
             </Box>
 
             {loading ? <Text c="dimmed">Loading integrations…</Text> : null}
+          </Stack>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="api" pt="md">
+          <Stack gap="md">
+            <Box>
+              <Title order={4}>API Tokens</Title>
+              <Text c="dimmed" size="sm" mb="xs">
+                Use API tokens to access Kairos programmatically or via the MCP server with Claude.
+              </Text>
+            </Box>
+
+            {apiError ? <Alert color="red">{apiError}</Alert> : null}
+
+            {createdToken ? (
+              <Alert color="green" title="Token created — copy it now">
+                <Text size="sm" mb="xs">
+                  This is the only time the full token will be shown.
+                </Text>
+                <Group gap="xs" wrap="nowrap">
+                  <Code style={{ flex: 1, wordBreak: "break-all" }}>{createdToken.apiKey}</Code>
+                  <CopyButton value={createdToken.apiKey}>
+                    {({ copied, copy }) => (
+                      <Tooltip label={copied ? "Copied" : "Copy"}>
+                        <ActionIcon
+                          onClick={copy}
+                          variant="light"
+                          color={copied ? "green" : "blue"}
+                        >
+                          {copied ? "✓" : "⎘"}
+                        </ActionIcon>
+                      </Tooltip>
+                    )}
+                  </CopyButton>
+                </Group>
+              </Alert>
+            ) : null}
+
+            {apiTokensLoading ? (
+              <Text c="dimmed">Loading tokens…</Text>
+            ) : apiTokens.length > 0 ? (
+              <Table>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Name</Table.Th>
+                    <Table.Th>Token</Table.Th>
+                    <Table.Th>Created</Table.Th>
+                    <Table.Th />
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {apiTokens.map((token) => (
+                    <Table.Tr key={token.id}>
+                      <Table.Td>{token.name}</Table.Td>
+                      <Table.Td>
+                        <Code>{token.keyPreview}</Code>
+                      </Table.Td>
+                      <Table.Td>
+                        <Text size="sm" c="dimmed">
+                          {new Date(token.createdAt).toLocaleDateString()}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <Button
+                          variant="subtle"
+                          color="red"
+                          size="xs"
+                          loading={deletingTokenId === token.id}
+                          onClick={() => void handleDeleteToken(token.id)}
+                        >
+                          Revoke
+                        </Button>
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            ) : (
+              <Text c="dimmed" size="sm">
+                No API tokens yet.
+              </Text>
+            )}
+
+            <Box>
+              <Text fw={500} mb="xs">
+                Create new token
+              </Text>
+              <Group gap="sm">
+                <TextInput
+                  placeholder="Token name (e.g. Claude MCP)"
+                  value={newTokenName}
+                  onChange={(e) => setNewTokenName(e.currentTarget.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") void handleCreateToken();
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  onClick={() => void handleCreateToken()}
+                  loading={creatingToken}
+                  disabled={!newTokenName.trim()}
+                >
+                  Create
+                </Button>
+              </Group>
+            </Box>
           </Stack>
         </Tabs.Panel>
       </Tabs>

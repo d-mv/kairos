@@ -74,14 +74,17 @@ export interface BrainPageDTO {
   updatedAt: string;
 }
 
-export interface ApiKeyStatusDTO {
-  hasKey: boolean;
-  keyPreview: string | null;
-  createdAt: string | null;
-  updatedAt: string | null;
+export interface ApiKeyDTO {
+  id: string;
+  name: string;
+  keyPreview: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface ApiKeyRotationDTO {
+export interface ApiKeyCreatedDTO {
+  id: string;
+  name: string;
   apiKey: string;
   keyPreview: string;
   createdAt: string;

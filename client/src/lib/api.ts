@@ -1,6 +1,6 @@
 import type {
-  ApiKeyRotationDTO,
-  ApiKeyStatusDTO,
+  ApiKeyCreatedDTO,
+  ApiKeyDTO,
   AreaDTO,
   BrainContent,
   BrainFolderDTO,
@@ -62,8 +62,9 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 // ── Areas ─────────────────────────────────────────────────────────────────
 export const api = {
   auth: {
-    getApiKey: () => request<ApiKeyStatusDTO>("GET", "/auth/api-key"),
-    rotateApiKey: () => request<ApiKeyRotationDTO>("POST", "/auth/api-key"),
+    listApiKeys: () => request<ApiKeyDTO[]>("GET", "/auth/api-keys"),
+    createApiKey: (name: string) => request<ApiKeyCreatedDTO>("POST", "/auth/api-keys", { name }),
+    deleteApiKey: (id: string) => request<void>("DELETE", `/auth/api-keys/${id}`),
   },
 
   integrations: {
