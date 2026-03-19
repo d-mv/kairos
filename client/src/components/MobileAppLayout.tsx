@@ -15,6 +15,7 @@ import {
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { shareDialogAtom } from "../atoms/shareDialog.js";
 import { api } from "../lib/api.js";
+import { buildBrainTemplateContent, type BrainTemplateType } from "../lib/brain-templates.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { Menu, type MenuItem } from "../shared/ui/Menu.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
@@ -79,13 +80,30 @@ export function MobileAppLayout({ children, menuItems }: Props) {
     setBrainFolders((prev) => [...prev, folder]);
   };
 
-  const createBrainPage = async (folderId?: string | null) => {
-    const title = window.prompt("Page title");
+  const createBrainPage = async (
+    folderId?: string | null,
+    template: BrainTemplateType = "blank",
+  ) => {
+    const url = template === "bookmark" ? (window.prompt("Bookmark URL")?.trim() ?? "") : "";
+    if (template === "bookmark" && !url) return;
+    const defaultTitle =
+      template === "bookmark"
+        ? (() => {
+            try {
+              return new URL(url).hostname.replace(/^www\./, "");
+            } catch {
+              return "Bookmark";
+            }
+          })()
+        : template === "note"
+          ? "New note"
+          : "";
+    const title = window.prompt("Page title", defaultTitle);
     if (!title?.trim()) return;
     const page = await api.brain.createPage({
       title: title.trim(),
       folderId: folderId ?? null,
-      contentJson: { type: "doc", version: 1, blocks: [{ type: "formatted_text", html: "" }] },
+      contentJson: buildBrainTemplateContent(template, { url }),
     });
     setBrainPages((prev) => [...prev, page]);
     setDrawerOpen(false);
@@ -262,7 +280,15 @@ export function MobileAppLayout({ children, menuItems }: Props) {
               </MantineMenu.Target>
               <MantineMenu.Dropdown>
                 <MantineMenu.Item onClick={() => void createBrainFolder()}>Folder</MantineMenu.Item>
-                <MantineMenu.Item onClick={() => void createBrainPage(null)}>Page</MantineMenu.Item>
+                <MantineMenu.Item onClick={() => void createBrainPage(null, "blank")}>
+                  Page
+                </MantineMenu.Item>
+                <MantineMenu.Item onClick={() => void createBrainPage(null, "note")}>
+                  Note
+                </MantineMenu.Item>
+                <MantineMenu.Item onClick={() => void createBrainPage(null, "bookmark")}>
+                  Bookmark
+                </MantineMenu.Item>
               </MantineMenu.Dropdown>
             </MantineMenu>
           </Box>
@@ -281,7 +307,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
             >
               <Box
                 component="button"
-                onClick={() => void createBrainPage(folder.id)}
+                onClick={() => void createBrainPage(folder.id, "blank")}
                 style={{
                   background: "none",
                   border: "none",
@@ -294,6 +320,38 @@ export function MobileAppLayout({ children, menuItems }: Props) {
                 }}
               >
                 + New Page
+              </Box>
+              <Box
+                component="button"
+                onClick={() => void createBrainPage(folder.id, "note")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--mantine-color-dimmed)",
+                  fontSize: "14px",
+                  padding: "6px 12px",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                + New Note
+              </Box>
+              <Box
+                component="button"
+                onClick={() => void createBrainPage(folder.id, "bookmark")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--mantine-color-dimmed)",
+                  fontSize: "14px",
+                  padding: "6px 12px",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                + New Bookmark
               </Box>
               <Box
                 component="button"

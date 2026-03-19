@@ -15,6 +15,7 @@ import {
 import { shareDialogAtom } from "../atoms/shareDialog.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { api } from "../lib/api.js";
+import { buildBrainTemplateContent, type BrainTemplateType } from "../lib/brain-templates.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
 import { SharedItemLabel } from "./SharedItemLabel.js";
 import { SYSTEM_SIDEBAR_ITEMS } from "./data.js";
@@ -130,13 +131,30 @@ export function Sidebar() {
     setBrainFolders((prev) => [...prev, folder]);
   };
 
-  const createBrainPage = async (folderId?: string | null) => {
-    const title = window.prompt("Page title");
+  const createBrainPage = async (
+    folderId?: string | null,
+    template: BrainTemplateType = "blank",
+  ) => {
+    const url = template === "bookmark" ? (window.prompt("Bookmark URL")?.trim() ?? "") : "";
+    if (template === "bookmark" && !url) return;
+    const defaultTitle =
+      template === "bookmark"
+        ? (() => {
+            try {
+              return new URL(url).hostname.replace(/^www\./, "");
+            } catch {
+              return "Bookmark";
+            }
+          })()
+        : template === "note"
+          ? "New note"
+          : "";
+    const title = window.prompt("Page title", defaultTitle);
     if (!title?.trim()) return;
     const page = await api.brain.createPage({
       title: title.trim(),
       folderId: folderId ?? null,
-      contentJson: { type: "doc", version: 1, blocks: [{ type: "formatted_text", html: "" }] },
+      contentJson: buildBrainTemplateContent(template, { url }),
     });
     setBrainPages((prev) => [...prev, page]);
     navigate(`/brain/page/${page.id}`);
@@ -187,7 +205,9 @@ export function Sidebar() {
             label="Brain"
             menuActions={[
               { label: "Folder", onClick: () => void createBrainFolder() },
-              { label: "Page", onClick: () => void createBrainPage(null) },
+              { label: "Page", onClick: () => void createBrainPage(null, "blank") },
+              { label: "Note", onClick: () => void createBrainPage(null, "note") },
+              { label: "Bookmark", onClick: () => void createBrainPage(null, "bookmark") },
             ]}
           />
           {brainFolders.map((folder) => (
@@ -204,7 +224,7 @@ export function Sidebar() {
             >
               <Box
                 component="button"
-                onClick={() => void createBrainPage(folder.id)}
+                onClick={() => void createBrainPage(folder.id, "blank")}
                 style={{
                   background: "none",
                   border: "none",
@@ -217,6 +237,38 @@ export function Sidebar() {
                 }}
               >
                 + New Page
+              </Box>
+              <Box
+                component="button"
+                onClick={() => void createBrainPage(folder.id, "note")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--mantine-color-dimmed)",
+                  fontSize: "14px",
+                  padding: "6px 12px",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                + New Note
+              </Box>
+              <Box
+                component="button"
+                onClick={() => void createBrainPage(folder.id, "bookmark")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--mantine-color-dimmed)",
+                  fontSize: "14px",
+                  padding: "6px 12px",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                + New Bookmark
               </Box>
               <Box
                 component="button"
