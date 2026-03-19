@@ -47,6 +47,7 @@ describe("Collaboration", () => {
   it("creates a pending invite for a registered user", async () => {
     const createProject = new CreateProject(projectRepo, eventBus);
     const project = await createProject.execute({ name: "Roadmap", userId: "owner" });
+    const createdNotifications: Array<{ recipientUserId: string; notification: unknown }> = [];
     const createInvite = new CreateCollaborationInvite(
       userDirectory,
       inviteRepo,
@@ -55,6 +56,9 @@ describe("Collaboration", () => {
       taskRepo,
       folderRepo,
       pageRepo,
+      (recipientUserId, notification) => {
+        createdNotifications.push({ recipientUserId, notification });
+      },
     );
 
     const result = await createInvite.execute({
@@ -69,6 +73,22 @@ describe("Collaboration", () => {
     const invite = [...inviteRepo.store.values()][0]!;
     expect(invite.entityLabel).toBe("Roadmap");
     expect(invite.status).toBe("pending");
+    expect(createdNotifications).toEqual([
+      {
+        recipientUserId: "collab",
+        notification: {
+          id: invite.id,
+          type: "share_invite",
+          entityType: "project",
+          entityId: project.value.id,
+          entityLabel: "Roadmap",
+          senderEmail: "owner@example.com",
+          recipientEmail: "collab@example.com",
+          createdAt: invite.createdAt.toISOString(),
+          expiresAt: invite.expiresAt.toISOString(),
+        },
+      },
+    ]);
   });
 
   it("rejects invites for users that are not registered", async () => {

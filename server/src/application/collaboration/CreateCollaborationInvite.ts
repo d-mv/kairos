@@ -1,4 +1,4 @@
-import type { ShareEntityType } from "@kairos/shared";
+import type { NotificationDTO, ShareEntityType } from "@kairos/shared";
 import { Result, UniqueId } from "../../domain/shared/index.js";
 import type {
   CollaborationInviteRepository,
@@ -9,6 +9,7 @@ import type { ProjectRepository } from "../../domain/project/index.js";
 import type { TaskRepository } from "../../domain/task/index.js";
 import type { BrainFolderRepository } from "../../domain/brain-folder/index.js";
 import type { BrainPageRepository } from "../../domain/brain-page/index.js";
+import type { CollaborationInvite } from "../../domain/collaboration/index.js";
 
 export interface CreateCollaborationInviteInput {
   senderUserId: string;
@@ -28,6 +29,10 @@ export class CreateCollaborationInvite {
     private readonly taskRepo: TaskRepository,
     private readonly folderRepo: BrainFolderRepository,
     private readonly pageRepo: BrainPageRepository,
+    private readonly onInviteCreated?: (
+      recipientUserId: string,
+      notification: NotificationDTO,
+    ) => void | Promise<void>,
   ) {}
 
   async execute(input: CreateCollaborationInviteInput): Promise<Result<void, string>> {
@@ -58,7 +63,7 @@ export class CreateCollaborationInvite {
 
     const label = entity.name ?? entity.title ?? "Shared item";
 
-    await this.inviteRepo.save({
+    const invite: CollaborationInvite = {
       id: new UniqueId().value,
       entityType: input.entityType,
       entityId: input.entityId,
@@ -71,6 +76,19 @@ export class CreateCollaborationInvite {
       createdAt: new Date(),
       expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
       respondedAt: null,
+    };
+
+    await this.inviteRepo.save(invite);
+    await this.onInviteCreated?.(recipient.id, {
+      id: invite.id,
+      type: "share_invite",
+      entityType: invite.entityType,
+      entityId: invite.entityId,
+      entityLabel: invite.entityLabel,
+      senderEmail: invite.senderEmail,
+      recipientEmail: invite.recipientEmail,
+      createdAt: invite.createdAt.toISOString(),
+      expiresAt: invite.expiresAt.toISOString(),
     });
 
     return Result.ok(undefined);

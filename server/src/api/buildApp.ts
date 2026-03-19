@@ -2,6 +2,7 @@ import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import Fastify from "fastify";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { createClient } from "@supabase/supabase-js";
 
 import { eventBus } from "./container.js";
 import authPlugin from "./plugins/auth.js";
@@ -18,6 +19,11 @@ import { taskRoutes } from "./routes/tasks.js";
 
 export async function buildApp() {
   const fastify = Fastify({ logger: true });
+  const supabaseUrl = process.env["SUPABASE_URL"]!;
+  const supabaseKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 
   await fastify.register(cors, {
     origin: process.env["CLIENT_URL"] ?? "http://localhost:5173",
@@ -27,8 +33,27 @@ export async function buildApp() {
 
   await fastify.register(websocket);
 
-  fastify.get("/ws", { websocket: true, config: { skipAuth: true } }, (socket) => {
-    eventBus.addClient(socket as unknown as { readyState: number; send(data: string): void });
+  fastify.get("/ws", { websocket: true, config: { skipAuth: true } }, async (socket, req) => {
+    const query =
+      req.query && typeof req.query === "object"
+        ? (req.query as Record<string, unknown>)
+        : undefined;
+    const token = typeof query?.["token"] === "string" ? query["token"] : null;
+    if (!token) {
+      socket.close();
+      return;
+    }
+
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      socket.close();
+      return;
+    }
+
+    eventBus.addClient(
+      data.user.id,
+      socket as unknown as { readyState: number; send(data: string): void },
+    );
 
     socket.on("close", () => {
       eventBus.removeClient(socket as unknown as { readyState: number; send(data: string): void });

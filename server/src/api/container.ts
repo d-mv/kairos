@@ -133,6 +133,12 @@ export const createCollaborationInvite = new CreateCollaborationInvite(
   taskRepo,
   brainFolderRepo,
   brainPageRepo,
+  (recipientUserId, notification) => {
+    eventBus.broadcastToUser(recipientUserId, {
+      type: "notification:created",
+      payload: notification,
+    });
+  },
 );
 export const listNotifications = new ListNotifications(collaborationInviteRepo);
 export const respondToInvite = new RespondToInvite(collaborationInviteRepo, collaborationShareRepo);

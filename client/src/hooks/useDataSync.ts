@@ -191,6 +191,12 @@ export function useDataSync() {
       case "area:deleted":
         setAreas((prev) => prev.filter((a) => a.id !== lastEvent.payload.id));
         break;
+      case "notification:created":
+        setNotifications((prev) => {
+          if (prev.some((notification) => notification.id === lastEvent.payload.id)) return prev;
+          return [lastEvent.payload, ...prev];
+        });
+        break;
     }
-  }, [lastEvent, setAreas, setProjects, setTasks]);
+  }, [lastEvent, setAreas, setNotifications, setProjects, setTasks]);
 }

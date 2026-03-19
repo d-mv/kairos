@@ -127,5 +127,6 @@ export type WsEvent =
   | { type: "brain-page:created"; payload: BrainPageDTO }
   | { type: "brain-page:updated"; payload: BrainPageDTO }
   | { type: "brain-page:deleted"; payload: { id: string } }
+  | { type: "notification:created"; payload: NotificationDTO }
   | { type: "link:created"; payload: LinkDTO }
   | { type: "link:deleted"; payload: { id: string } };
