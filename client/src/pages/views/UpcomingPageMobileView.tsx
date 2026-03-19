@@ -48,6 +48,7 @@ export function UpcomingPageMobileView({
                 showNewTaskInput={false}
                 appearance="mobile"
                 hideCompleted={hideCompleted}
+                showContext
               />
             </Box>
           ))}

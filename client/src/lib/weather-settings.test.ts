@@ -27,6 +27,7 @@ test("loadWeatherLocationSetting returns null for invalid data", () => {
 
 test("saveWeatherLocationSetting persists a complete location", () => {
   const location: WeatherLocationSetting = {
+    id: "2267057",
     name: "Lisbon, Portugal",
     latitude: 38.7167,
     longitude: -9.1333,

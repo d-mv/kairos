@@ -26,7 +26,22 @@
       "Bash(curl -s -X POST https://kairos-app.fly.dev/mcp \\\\\n  -H \"Authorization: Bearer kr_356795b66f784fbae7c3ddd0ecc409d74948b5f7e7e5acb7\" \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -d '{\"jsonrpc\":\"2.0\",\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1\"}},\"id\":1}' 2>&1)",
       "Bash(curl -s -X POST https://kairos-app.fly.dev/mcp \\\\\n  -H \"Authorization: Bearer kr_356795b66f784fbae7c3ddd0ecc409d74948b5f7e7e5acb7\" \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -H \"Accept: application/json, text/event-stream\" \\\\\n  -d '{\"jsonrpc\":\"2.0\",\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1\"}},\"id\":1}' 2>&1)",
       "Bash(pnpm --filter server test 2>&1 | tail -30)",
-      "Bash(node scripts/db-migrate-position.mjs)"
+      "Bash(node scripts/db-migrate-position.mjs)",
+      "Bash(pnpm:*)",
+      "Bash(make deploy:*)",
+      "mcp__kairos__list_tasks",
+      "mcp__kairos__complete_task",
+      "Bash(wait:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(fly status:*)",
+      "Bash(fly releases:*)",
+      "Bash(fly secrets:*)",
+      "Bash(curl:*)",
+      "Bash(gh api:*)",
+      "Bash(node:*)",
+      "Bash(grep -r CopyButton /Users/dmelnikov/code/kairos/client/node_modules/@mantine/core/cjs/ --include=*.js -l)"
     ]
   }
 }

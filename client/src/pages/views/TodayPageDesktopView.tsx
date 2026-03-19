@@ -9,18 +9,16 @@ type TodayPageDesktopViewProps = {
   tasks: TaskDTO[];
   isLoading: boolean;
   hideCompleted: boolean;
-  weatherLoading: boolean;
-  weatherLocationName: string | null;
   weatherSummary: TodayWeatherSummary | null;
+  weatherError: boolean;
 };
 
 export function TodayPageDesktopView({
   tasks,
   isLoading,
   hideCompleted,
-  weatherLoading,
-  weatherLocationName,
   weatherSummary,
+  weatherError,
 }: TodayPageDesktopViewProps) {
   return (
     <Box flex={1} style={{ overflowY: "auto" }} p="xl">
@@ -31,11 +29,7 @@ export function TodayPageDesktopView({
           </Text>
           <Title order={2}>Today</Title>
         </Box>
-        <TodayWeatherHero
-          locationName={weatherLocationName}
-          summary={weatherSummary}
-          loading={weatherLoading}
-        />
+        <TodayWeatherHero summary={weatherSummary} error={weatherError} />
         {isLoading ? (
           <Stack gap="sm">
             <Skeleton h={40} radius="sm" />
@@ -49,6 +43,8 @@ export function TodayPageDesktopView({
             emptyMessage="No tasks due today or overdue"
             showNewTaskInput={false}
             hideCompleted={hideCompleted}
+            todayView
+            showContext
           />
         )}
       </Box>

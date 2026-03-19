@@ -173,6 +173,22 @@ describe("normalizeTaskTitleLinks", () => {
         "See [73K likes, 822 comments…](https://www.instagram.com/reels/DVSElojChTK/)",
       );
     });
+
+    it("ignores likes/comments og:title and prefers description captions", async () => {
+      const fetchLike = vi.fn(async () => ({
+        text: async () =>
+          '<html><head><title>Instagram</title><meta property="og:title" content="73K likes, 822 comments…" /><meta property="og:description" content="user on Instagram: &quot;Follow along as we build the most awesome caption ever posted to this reel.&quot;" /></head></html>',
+      }));
+
+      const result = await normalizeTaskTitleLinks(
+        "See https://www.instagram.com/reels/DVSElojChTK/",
+        fetchLike,
+      );
+
+      expect(result).toBe(
+        "See [Follow along as we build the most awesome caption ever posted to this reel.](https://www.instagram.com/reels/DVSElojChTK/)",
+      );
+    });
   });
 
   describe("youtube", () => {

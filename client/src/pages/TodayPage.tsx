@@ -1,6 +1,6 @@
 import checkIsMobile from "is-mobile";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { tasksAtom } from "../atoms/tasks.js";
 import {
@@ -10,7 +10,10 @@ import {
 } from "../lib/today-weather.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { getTodayTasks } from "../lib/task-views.js";
-import { loadWeatherLocationSetting } from "../lib/weather-settings.js";
+import {
+  loadWeatherLocationSetting,
+  WEATHER_LOCATION_STORAGE_KEY,
+} from "../lib/weather-settings.js";
 import { TodayPageDesktopView } from "./views/TodayPageDesktopView.js";
 import { TodayPageMobileView } from "./views/TodayPageMobileView.js";
 
@@ -19,10 +22,9 @@ export default function TodayPage() {
   const isLoading = useAtomValue(workspaceLoadingAtom);
   const setPageMenu = useSetAtom(pageMenuAtom);
   const [showCompleted, setShowCompleted] = useState(false);
-  const [weatherLoading, setWeatherLoading] = useState(false);
-  const [weatherLocationName, setWeatherLocationName] = useState<string | null>(null);
   const [weatherSummary, setWeatherSummary] = useState<TodayWeatherSummary | null>(null);
-  const isMobile = checkIsMobile();
+  const [weatherError, setWeatherError] = useState(false);
+  const isMobile = useMemo(() => checkIsMobile(), []);
 
   useEffect(() => {
     setPageMenu([
@@ -35,24 +37,41 @@ export default function TodayPage() {
   }, [setPageMenu, showCompleted]);
 
   useEffect(() => {
-    const location = loadWeatherLocationSetting();
-    if (!location) {
-      setWeatherLocationName(null);
-      setWeatherSummary(null);
-      setWeatherLoading(false);
-      return;
-    }
-
-    setWeatherLocationName(location.name);
-    setWeatherLoading(true);
-    fetchTodayWeather(location)
-      .then((weather) => {
-        setWeatherSummary(getTodayWeatherSummary(weather, new Date().toISOString()));
-      })
-      .catch(() => {
+    const loadWeather = () => {
+      const location = loadWeatherLocationSetting();
+      if (!location) {
         setWeatherSummary(null);
-      })
-      .finally(() => setWeatherLoading(false));
+        setWeatherError(false);
+        return;
+      }
+
+      fetchTodayWeather(location)
+        .then((weather) => {
+          setWeatherSummary(getTodayWeatherSummary(weather));
+          setWeatherError(false);
+        })
+        .catch(() => {
+          setWeatherSummary(null);
+          setWeatherError(true);
+        });
+    };
+
+    loadWeather();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === null || e.key === WEATHER_LOCATION_STORAGE_KEY) loadWeather();
+    };
+
+    window.addEventListener("kairos:weather-location-changed" as keyof WindowEventMap, loadWeather);
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "kairos:weather-location-changed" as keyof WindowEventMap,
+        loadWeather,
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const tasks = getTodayTasks(allTasks, new Date().toISOString(), showCompleted);
@@ -61,9 +80,8 @@ export default function TodayPage() {
     tasks,
     isLoading,
     hideCompleted: !showCompleted,
-    weatherLoading,
-    weatherLocationName,
     weatherSummary,
+    weatherError,
   };
 
   if (isMobile) {

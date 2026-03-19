@@ -85,7 +85,12 @@ export function CompletedPageDesktopView({
               <Title order={4} mb="md">
                 Tasks
               </Title>
-              <TaskList tasks={tasks} emptyMessage="No completed tasks" showNewTaskInput={false} />
+              <TaskList
+                tasks={tasks}
+                emptyMessage="No completed tasks"
+                showNewTaskInput={false}
+                showContext
+              />
             </Box>
           </Stack>
         )}

@@ -46,6 +46,7 @@ export function UpcomingPageDesktopView({
                   tasks={groupTasks}
                   showNewTaskInput={false}
                   hideCompleted={hideCompleted}
+                  showContext
                 />
               </Box>
             ))}

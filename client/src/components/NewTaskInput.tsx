@@ -1,12 +1,13 @@
 import type { TaskDTO } from "@kairos/shared";
 import { Text, TextInput } from "@mantine/core";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { tasksAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
 import { shouldRestoreNewTaskInputFocus } from "../lib/new-task-input-focus.js";
 import { createOptimisticId } from "../lib/optimistic.js";
 import { getTaskErrorMessage } from "../lib/task-errors.js";
+import { userAtom } from "../atoms/auth.js";
 
 interface NewTaskInputProps {
   projectId?: string;
@@ -25,6 +26,7 @@ export function NewTaskInput({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const setTasks = useSetAtom(tasksAtom);
+  const currentUser = useAtomValue(userAtom);
   const inputRef = useRef<HTMLInputElement>(null);
   const pendingFocusRestoreRef = useRef(false);
   const previousLoadingRef = useRef(false);
@@ -44,6 +46,12 @@ export function NewTaskInput({
     previousLoadingRef.current = loading;
   }, [loading]);
 
+  const handleBlur = () => {
+    if (title.trim()) {
+      void handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = title.trim();
@@ -62,7 +70,7 @@ export function NewTaskInput({
       parentTaskId: parentTaskId ?? null,
       projectId: projectId ?? null,
       areaId: areaId ?? null,
-      userId: "optimistic",
+      userId: currentUser?.id ?? "optimistic",
       dueDate: null,
       duration: null,
       durationUnit: null,
@@ -112,6 +120,7 @@ export function NewTaskInput({
             setTitle(e.target.value);
             if (error) setError(null);
           }}
+          onBlur={handleBlur}
           placeholder={placeholder}
           disabled={loading}
           size="sm"

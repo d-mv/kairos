@@ -1,58 +1,60 @@
-import { Box, Skeleton, Stack, Text } from "@mantine/core";
+import { Group, Text } from "@mantine/core";
+import {
+  IoAlertCircleOutline,
+  IoRainyOutline,
+  IoSpeedometerOutline,
+  IoSwapVerticalOutline,
+  IoThermometerOutline,
+} from "react-icons/io5";
 import type { TodayWeatherSummary } from "../lib/today-weather.js";
 
 type TodayWeatherHeroProps = {
-  locationName: string | null;
   summary: TodayWeatherSummary | null;
-  loading: boolean;
+  error: boolean;
 };
 
-export function TodayWeatherHero({ locationName, summary, loading }: TodayWeatherHeroProps) {
-  if (loading) {
+export function TodayWeatherHero({ summary, error }: TodayWeatherHeroProps) {
+  if (error) {
     return (
-      <Box
-        mb="lg"
-        p="md"
-        style={{
-          borderRadius: 12,
-          border: "1px solid var(--mantine-color-default-border)",
-          background: "rgba(255, 255, 255, 0.38)",
-          backdropFilter: "blur(12px)",
-        }}
-      >
-        <Stack gap="xs">
-          <Skeleton h={14} radius="xl" />
-          <Skeleton h={12} radius="xl" w="80%" />
-          <Skeleton h={12} radius="xl" w="65%" />
-        </Stack>
-      </Box>
+      <Group gap={4} mb="sm" align="center">
+        <IoAlertCircleOutline size={14} />
+        <Text size="sm" c="dimmed">
+          Weather unavailable
+        </Text>
+      </Group>
     );
   }
 
-  if (!locationName || !summary) return null;
+  if (!summary) return null;
 
   return (
-    <Box
-      mb="lg"
-      p="md"
-      style={{
-        borderRadius: 12,
-        border: "1px solid rgba(255, 255, 255, 0.35)",
-        background: "rgba(255, 255, 255, 0.2)",
-        backdropFilter: "blur(12px)",
-      }}
-    >
-      <Text size="sm" c="dimmed" mb={4}>
-        {locationName}
-      </Text>
-      <Text size="lg" fw={600} mb={summary.details.length > 0 ? 8 : 0}>
-        {summary.headline}
-      </Text>
-      {summary.details.map((detail) => (
-        <Text key={detail} size="sm">
-          {detail}
-        </Text>
-      ))}
-    </Box>
+    <Group gap="md" mb="sm" align="center">
+      <Group gap={4} align="center">
+        <IoThermometerOutline size={14} />
+        <Text size="sm">{summary.temperature}</Text>
+      </Group>
+      <Group gap={4} align="center">
+        <IoSpeedometerOutline size={14} />
+        <Text size="sm">{summary.pressure}</Text>
+      </Group>
+      {summary.hasRain && (
+        <Group gap={4} align="center">
+          <IoRainyOutline size={14} />
+          <Text size="sm">Rain</Text>
+        </Group>
+      )}
+      {summary.tempAlert && (
+        <Group gap={4} align="center">
+          <IoSwapVerticalOutline size={14} />
+          <Text size="sm">{summary.tempAlert}</Text>
+        </Group>
+      )}
+      {summary.pressureAlert && (
+        <Group gap={4} align="center">
+          <IoSwapVerticalOutline size={14} />
+          <Text size="sm">{summary.pressureAlert}</Text>
+        </Group>
+      )}
+    </Group>
   );
 }

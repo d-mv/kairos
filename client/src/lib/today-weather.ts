@@ -10,18 +10,12 @@ export type TodayWeatherInput = {
 };
 
 export type TodayWeatherSummary = {
-  headline: string;
-  details: string[];
+  temperature: string;
+  pressure: string;
+  hasRain: boolean;
+  tempAlert: string | null;
+  pressureAlert: string | null;
 };
-
-function roundPercent(value: number): number {
-  return Math.round(value);
-}
-
-function getPercentChange(base: number, next: number): number {
-  if (base === 0) return 0;
-  return ((next - base) / Math.abs(base)) * 100;
-}
 
 function formatTemperature(value: number): string {
   return `${Math.round(value)}°C`;
@@ -31,58 +25,38 @@ function formatPressure(value: number): string {
   return `${Math.round(value)} hPa`;
 }
 
-export function getTodayWeatherSummary(
-  weather: TodayWeatherInput,
-  _today: string,
-): TodayWeatherSummary | null {
+export function getTodayWeatherSummary(weather: TodayWeatherInput): TodayWeatherSummary | null {
   const current = weather.current;
   if (!current) return null;
 
-  const headline = `${formatTemperature(current.temperature)} now · ${formatPressure(current.pressure)} now`;
+  const temperature = formatTemperature(current.temperature);
+  const pressure = formatPressure(current.pressure);
 
   if (weather.hourly.length === 0) {
-    return { headline, details: [] };
+    return { temperature, pressure, hasRain: false, tempAlert: null, pressureAlert: null };
   }
 
   const temperatures = weather.hourly.map((point) => point.temperature);
   const pressures = weather.hourly.map((point) => point.pressure);
 
-  const maxTemperatureRise = Math.max(
-    0,
-    ...temperatures.map((value) => getPercentChange(current.temperature, value)),
-  );
-  const maxTemperatureDrop = Math.max(
-    0,
-    ...temperatures.map((value) => getPercentChange(current.temperature, value) * -1),
-  );
-  const maxPressureRise = Math.max(
-    0,
-    ...pressures.map((value) => getPercentChange(current.pressure, value)),
-  );
-  const maxPressureDrop = Math.max(
-    0,
-    ...pressures.map((value) => getPercentChange(current.pressure, value) * -1),
-  );
+  const maxTempRise = Math.max(0, ...temperatures.map((t) => t - current.temperature));
+  const maxTempDrop = Math.max(0, ...temperatures.map((t) => current.temperature - t));
+  const maxPressureRise = Math.max(0, ...pressures.map((p) => p - current.pressure));
+  const maxPressureDrop = Math.max(0, ...pressures.map((p) => current.pressure - p));
 
-  const details: string[] = [];
+  const hasRain = weather.hourly.some((point) => point.precipitation > 0);
 
-  if (weather.hourly.some((point) => point.precipitation > 0)) {
-    details.push("Rain is expected today.");
-  }
+  const tempAlert =
+    maxTempRise > 5 || maxTempDrop > 5
+      ? `+${Math.round(maxTempRise)}°C / -${Math.round(maxTempDrop)}°C`
+      : null;
 
-  if (maxTemperatureRise > 15 || maxTemperatureDrop > 15) {
-    details.push(
-      `Temperature may rise up to ${roundPercent(maxTemperatureRise)}% and fall up to ${roundPercent(maxTemperatureDrop)}% today.`,
-    );
-  }
+  const pressureAlert =
+    maxPressureRise > 5 || maxPressureDrop > 5
+      ? `+${Math.round(maxPressureRise)} / -${Math.round(maxPressureDrop)} hPa`
+      : null;
 
-  if (maxPressureRise > 15 || maxPressureDrop > 15) {
-    details.push(
-      `Pressure may rise up to ${roundPercent(maxPressureRise)}% and fall up to ${roundPercent(maxPressureDrop)}% today.`,
-    );
-  }
-
-  return { headline, details };
+  return { temperature, pressure, hasRain, tempAlert, pressureAlert };
 }
 
 export type WeatherLocationOption = {

@@ -1,4 +1,5 @@
 export type WeatherLocationSetting = {
+  id: string;
   name: string;
   latitude: number;
   longitude: number;
@@ -7,12 +8,15 @@ export type WeatherLocationSetting = {
 
 const WEATHER_LOCATION_STORAGE_KEY = "kairos:weather-location";
 
+export { WEATHER_LOCATION_STORAGE_KEY };
+
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 function isWeatherLocationSetting(value: unknown): value is WeatherLocationSetting {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Record<string, unknown>;
   return (
+    typeof candidate["id"] === "string" &&
     typeof candidate["name"] === "string" &&
     typeof candidate["latitude"] === "number" &&
     Number.isFinite(candidate["latitude"]) &&

@@ -16,7 +16,7 @@ export function formatDueDate(dueDate: string): {
   const label = format(date, "MMM do");
 
   let relative: string;
-  if (diff === 0) relative = "today";
+  if (diff === 0) relative = "";
   else if (diff === 1) relative = "tomorrow";
   else if (diff === -1) relative = "yesterday";
   else if (diff > 0 && diff < 7) relative = `in ${diff}d`;

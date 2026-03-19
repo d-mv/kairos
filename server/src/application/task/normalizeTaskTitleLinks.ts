@@ -26,6 +26,8 @@ const YOUTUBE_DOMAINS = new Set([
   "youtube-nocookie.com",
   "www.youtube-nocookie.com",
 ]);
+const INSTAGRAM_STATS_TITLE_PATTERN =
+  /^\s*[\d.,\s]+[kKmMbB]?\s+likes?[,;]?\s*[\d.,\s]+[kKmMbB]?\s+comments?(?:\u2026|\.{3})?\s*$/i;
 
 type FetchResponseLike = {
   text(): Promise<string>;
@@ -94,6 +96,10 @@ function extractInstagramCaptionFromDescription(raw: string): string {
   if (!quotedCaption) return "";
 
   return excerptFromText(quotedCaption, 100);
+}
+
+function isInstagramStatsTitle(title: string): boolean {
+  return INSTAGRAM_STATS_TITLE_PATTERN.test(title);
 }
 
 function normalizeHtmlTitle(raw: string): string {
@@ -167,11 +173,6 @@ async function resolveUrlLabel(url: string, fetchLike: FetchLike): Promise<strin
     }
 
     if (INSTAGRAM_DOMAINS.has(parsedUrl.hostname)) {
-      if (ogTitleMatch) {
-        const excerpt = excerptFromText(ogTitleMatch, 100);
-        if (excerpt) return excerpt;
-      }
-
       const caption = extractInstagramCaption(html);
       if (caption) return caption;
 
@@ -181,6 +182,11 @@ async function resolveUrlLabel(url: string, fetchLike: FetchLike): Promise<strin
 
         const excerpt = excerptFromText(descriptionMatch, 100);
         if (excerpt) return excerpt;
+      }
+
+      if (ogTitleMatch) {
+        const excerpt = excerptFromText(ogTitleMatch, 100);
+        if (excerpt && !isInstagramStatsTitle(excerpt)) return excerpt;
       }
     }
 

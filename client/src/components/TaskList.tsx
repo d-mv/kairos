@@ -20,6 +20,8 @@ interface TaskListProps {
   active?: boolean;
   appearance?: "desktop" | "mobile";
   hideCompleted?: boolean;
+  todayView?: boolean;
+  showContext?: boolean;
 }
 
 export function TaskList({
@@ -32,6 +34,8 @@ export function TaskList({
   active,
   appearance = "desktop",
   hideCompleted = false,
+  todayView = false,
+  showContext = false,
 }: TaskListProps) {
   const setSelectedTaskId = useSetAtom(selectedTaskIdAtom);
   const setTasks = useSetAtom(tasksAtom);
@@ -284,6 +288,8 @@ export function TaskList({
             isLast={i === renderedTasks.length - 1}
             isActive={isList || active ? true : false}
             isDragging={task.id === draggingId}
+            todayView={todayView}
+            showContext={showContext}
             handleClick={(e) => {
               if (draggingId) return;
               e.stopPropagation();

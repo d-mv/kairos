@@ -89,6 +89,7 @@ export function CompletedPageMobileView({
               emptyMessage="No completed tasks"
               showNewTaskInput={false}
               appearance="mobile"
+              showContext
             />
           </Box>
         </Stack>

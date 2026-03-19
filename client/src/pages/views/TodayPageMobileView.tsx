@@ -9,18 +9,16 @@ type TodayPageMobileViewProps = {
   tasks: TaskDTO[];
   isLoading: boolean;
   hideCompleted: boolean;
-  weatherLoading: boolean;
-  weatherLocationName: string | null;
   weatherSummary: TodayWeatherSummary | null;
+  weatherError: boolean;
 };
 
 export function TodayPageMobileView({
   tasks,
   isLoading,
   hideCompleted,
-  weatherLoading,
-  weatherLocationName,
   weatherSummary,
+  weatherError,
 }: TodayPageMobileViewProps) {
   return (
     <Box p="md">
@@ -30,11 +28,7 @@ export function TodayPageMobileView({
         </Text>
         <Title order={2}>Today</Title>
       </Box>
-      <TodayWeatherHero
-        locationName={weatherLocationName}
-        summary={weatherSummary}
-        loading={weatherLoading}
-      />
+      <TodayWeatherHero summary={weatherSummary} error={weatherError} />
       {isLoading ? (
         <Stack gap="sm">
           <Skeleton h={40} radius="sm" />
@@ -49,6 +43,8 @@ export function TodayPageMobileView({
           showNewTaskInput={false}
           appearance="mobile"
           hideCompleted={hideCompleted}
+          todayView
+          showContext
         />
       )}
       <TaskDetailPanel />

@@ -4,6 +4,8 @@ import { useAtomValue } from "jotai";
 import { type MouseEvent } from "react";
 import type React from "react";
 import { userAtom } from "../atoms/auth.js";
+import { areasAtom } from "../atoms/areas.js";
+import { projectsAtom } from "../atoms/projects.js";
 import { formatDueDate } from "../lib/utils.js";
 import { renderTaskTitleMarkdown } from "../lib/task-title-markdown.js";
 import { UserGroupIcon } from "./ui/heroicons.js";
@@ -22,6 +24,8 @@ type Props = {
   appearance?: "desktop" | "mobile";
   isListItem?: boolean;
   isDragging?: boolean;
+  todayView?: boolean;
+  showContext?: boolean;
   handleClick?: (e: MouseEvent<HTMLElement>) => void;
   handleToggleComplete: () => void;
   onPointerDown?: (e: React.PointerEvent<HTMLElement>) => void;
@@ -33,10 +37,20 @@ export function TaskItem({
   handleToggleComplete,
   appearance = "desktop",
   isDragging = false,
+  todayView = false,
+  showContext = false,
   onPointerDown,
 }: Props) {
   const currentUser = useAtomValue(userAtom);
+  const projects = useAtomValue(projectsAtom);
+  const areas = useAtomValue(areasAtom);
   const isDone = task.status === "done";
+
+  const contextProject =
+    showContext && task.projectId ? projects.find((p) => p.id === task.projectId) : null;
+  const contextAreaId = task.areaId ?? contextProject?.areaId ?? null;
+  const contextArea =
+    showContext && contextAreaId ? areas.find((a) => a.id === contextAreaId) : null;
   const priorityColor = PRIORITY_COLOR[task.priority];
   const due = task.dueDate ? formatDueDate(task.dueDate) : null;
   const isMobile = appearance === "mobile";
@@ -96,15 +110,30 @@ export function TaskItem({
           ) : null}
         </span>
       </Text>
-      {due && (
-        <Text
-          size="xs"
-          c={due.overdue ? "red" : "dimmed"}
-          style={{ flexShrink: 0, whiteSpace: "nowrap" }}
-        >
-          {due.label} · {due.relative}
+      {showContext && (contextProject ?? contextArea) ? (
+        <Text size="xs" c="dimmed" style={{ flexShrink: 0, whiteSpace: "nowrap" }}>
+          {contextProject ? contextProject.name : ""}
+          {contextProject && contextArea ? " " : ""}
+          {contextArea ? `@${contextArea.name}` : ""}
         </Text>
-      )}
+      ) : null}
+      {due &&
+        (todayView ? (
+          due.overdue ? (
+            <Text size="xs" c="red" style={{ flexShrink: 0, whiteSpace: "nowrap" }}>
+              overdue
+            </Text>
+          ) : null
+        ) : (
+          <Text
+            size="xs"
+            c={due.overdue ? "red" : "dimmed"}
+            style={{ flexShrink: 0, whiteSpace: "nowrap" }}
+          >
+            {due.label}
+            {due.relative ? ` · ${due.relative}` : ""}
+          </Text>
+        ))}
     </Group>
   );
 }

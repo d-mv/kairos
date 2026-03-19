@@ -340,11 +340,13 @@ export function TaskDetailPanel() {
     >
       <Stack gap="md" style={{ overflow: "hidden", flex: 1 }}>
         <Box>
-          <TextInput
+          <Textarea
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={handleSave}
             autoFocus
+            autosize
+            minRows={1}
           />
           {saveError ? (
             <Text size="xs" c="red" mt={4}>
