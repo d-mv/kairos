@@ -10,10 +10,23 @@ import { renameEntityAtom } from "../atoms/renameEntity.atom.js";
 import { tasksAtom, tasksByAreaAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { RenameEntityDialog } from "../components/RenameEntityDialog.js";
+import { ProjectGantt } from "../components/ProjectGantt.js";
+import { TaskCalendar } from "../components/TaskCalendar.js";
 import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.js";
 import { TaskList } from "../components/TaskList.js";
 import { api } from "../lib/api.js";
-import { Badge, Box, Flex, Group, Skeleton, Stack, Text, Title } from "@mantine/core";
+import { canShowProjectGantt } from "../lib/project-gantt.js";
+import {
+  Badge,
+  Box,
+  Flex,
+  Group,
+  SegmentedControl,
+  Skeleton,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 
 export default function AreaPage() {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +41,7 @@ export default function AreaPage() {
   const setAddEntity = useSetAtom(addEntityAtom);
   const [, setRenameEntityState] = useAtom(renameEntityAtom);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [view, setView] = useState<"list" | "gantt" | "calendar">("list");
   const [actionState, setActionState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const actionResetTimeoutRef = useRef<number | null>(null);
 
@@ -47,6 +61,7 @@ export default function AreaPage() {
 
   const area = areas.find((a) => a.id === id);
   const tasks = id ? (tasksByArea.get(id) ?? []) : [];
+  const showCalendarOption = canShowProjectGantt(tasks);
   const areaName = area?.name ?? "Area";
 
   // Refs to always call latest handlers from stable menu closures
@@ -82,6 +97,12 @@ export default function AreaPage() {
     ]);
     return () => setPageMenu([]);
   }, [setPageMenu, deleteLoading, setAddEntity]);
+
+  useEffect(() => {
+    if (!showCalendarOption && view !== "list") {
+      setView("list");
+    }
+  }, [showCalendarOption, view]);
 
   if (!area && !isLoading) {
     return (
@@ -177,6 +198,23 @@ export default function AreaPage() {
               </Badge>
             )}
           </Group>
+          <SegmentedControl
+            mt="sm"
+            value={view}
+            onChange={(value) => setView(value as "list" | "gantt" | "calendar")}
+            data={
+              showCalendarOption
+                ? [
+                    { label: "List", value: "list" },
+                    { label: "Gantt", value: "gantt" },
+                    { label: "Calendar", value: "calendar" },
+                  ]
+                : [
+                    { label: "List", value: "list" },
+                    { label: "Calendar", value: "calendar" },
+                  ]
+            }
+          />
         </Box>
 
         <Box>
@@ -190,6 +228,10 @@ export default function AreaPage() {
               <Skeleton h={40} radius="sm" />
               <Skeleton h={40} radius="sm" />
             </Stack>
+          ) : view === "gantt" ? (
+            <ProjectGantt tasks={tasks} />
+          ) : view === "calendar" ? (
+            <TaskCalendar tasks={tasks} />
           ) : (
             <TaskList
               tasks={tasks}

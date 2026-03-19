@@ -20,6 +20,7 @@ const InboxPage = lazy(() => import("./pages/InboxPage.js"));
 const TodayPage = lazy(() => import("./pages/TodayPage.js"));
 const BrainPage = lazy(() => import("./pages/BrainPage.js"));
 const UpcomingPage = lazy(() => import("./pages/UpcomingPage.js"));
+const SchedulePage = lazy(() => import("./pages/SchedulePage.js"));
 const CompletedPage = lazy(() => import("./pages/CompletedPage.js"));
 const ProjectPage = lazy(() => import("./pages/ProjectPage.js"));
 const AreaPage = lazy(() => import("./pages/AreaPage.js"));
@@ -131,6 +132,7 @@ export default function App() {
               <Route path="/today" element={<TodayPage />} />
               <Route path="/brain/page/:id" element={<BrainPage />} />
               <Route path="/upcoming" element={<UpcomingPage />} />
+              <Route path="/schedule" element={<SchedulePage />} />
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/completed" element={<CompletedPage />} />
               <Route path="/project/:id" element={<ProjectPage />} />
