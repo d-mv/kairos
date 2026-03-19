@@ -1,13 +1,20 @@
 import checkIsMobile from "is-mobile";
-import { Box, Button, Group, Stack, Text, TextInput, Title } from "@mantine/core";
+import { ActionIcon, Box, Button, Group, Stack, Text, TextInput, Title } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { brainPagesAtom } from "../atoms/brain.js";
 import { projectsAtom } from "../atoms/projects.js";
 import { selectedTaskIdAtom, tasksAtom } from "../atoms/tasks.js";
+import {
+  addSavedSearch,
+  loadSavedSearches,
+  removeSavedSearch,
+  saveSavedSearches,
+} from "../lib/saved-searches.js";
 import { searchWorkspace } from "../lib/search.js";
+import { TrashIcon } from "../components/ui/icons.js";
 
 export default function SearchPage() {
   const tasks = useAtomValue(tasksAtom);
@@ -18,6 +25,15 @@ export default function SearchPage() {
   const navigate = useNavigate();
   const isMobile = checkIsMobile();
   const [query, setQuery] = useState("");
+  const [savedSearches, setSavedSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSavedSearches(loadSavedSearches());
+  }, []);
+
+  useEffect(() => {
+    saveSavedSearches(savedSearches);
+  }, [savedSearches]);
 
   const results = useMemo(
     () => searchWorkspace(query, { tasks, projects, areas, brainPages }),
@@ -35,12 +51,44 @@ export default function SearchPage() {
         </Box>
 
         <Stack gap="md">
-          <TextInput
-            value={query}
-            onChange={(event) => setQuery(event.currentTarget.value)}
-            placeholder="Search tasks, projects, areas, and brain pages"
-            autoFocus
-          />
+          <Group align="end" wrap="nowrap">
+            <TextInput
+              value={query}
+              onChange={(event) => setQuery(event.currentTarget.value)}
+              placeholder="Search tasks, projects, areas, and brain pages"
+              autoFocus
+              style={{ flex: 1 }}
+            />
+            <Button onClick={() => setSavedSearches((prev) => addSavedSearch(prev, query))}>
+              Save search
+            </Button>
+          </Group>
+
+          {savedSearches.length > 0 ? (
+            <Stack gap="xs">
+              <Text size="sm" c="dimmed" fw={500}>
+                Saved searches
+              </Text>
+              {savedSearches.map((savedSearch) => (
+                <Group key={savedSearch} gap="xs" wrap="nowrap">
+                  <Button
+                    variant="light"
+                    onClick={() => setQuery(savedSearch)}
+                    style={{ flex: 1, justifyContent: "flex-start" }}
+                  >
+                    {savedSearch}
+                  </Button>
+                  <ActionIcon
+                    variant="subtle"
+                    aria-label={`Remove saved search ${savedSearch}`}
+                    onClick={() => setSavedSearches((prev) => removeSavedSearch(prev, savedSearch))}
+                  >
+                    <TrashIcon />
+                  </ActionIcon>
+                </Group>
+              ))}
+            </Stack>
+          ) : null}
 
           {!query.trim() ? (
             <Text c="dimmed">Type to search across your loaded workspace.</Text>
