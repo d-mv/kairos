@@ -30,6 +30,7 @@ CREATE TABLE projects (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name        TEXT NOT NULL,
   area_id     UUID REFERENCES areas(id) ON DELETE SET NULL,
+  completed_at TIMESTAMPTZ,
   user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
