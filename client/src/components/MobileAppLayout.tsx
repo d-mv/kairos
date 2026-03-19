@@ -1,6 +1,6 @@
 import { Box, Drawer, Menu as MantineMenu, NavLink, Stack, Text } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
-import { type PropsWithChildren, useEffect, useMemo, useState } from "react";
+import { type PropsWithChildren, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addEntityAtom } from "../atoms/addEntity.atom.js";
 import { areasAtom } from "../atoms/areas.js";
@@ -13,10 +13,8 @@ import {
   sortedBrainFoldersAtom,
 } from "../atoms/brain.js";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
-import { projectsByAreaAtom } from "../atoms/projects.js";
 import { shareDialogAtom } from "../atoms/shareDialog.js";
 import { api } from "../lib/api.js";
-import { loadSidebarOpenState, saveSidebarOpenState } from "../lib/sidebar-open-state.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { Menu, type MenuItem } from "../shared/ui/Menu.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
@@ -34,6 +32,7 @@ const SYSTEM_ITEMS = [
   { path: "/inbox", label: "Inbox", Icon: InboxIcon },
   { path: "/today", label: "Today", Icon: SunSmallIcon },
   { path: "/upcoming", label: "Upcoming", Icon: CalendarIcon },
+  { path: "/projects", label: "Projects", Icon: CalendarIcon },
   { path: "/completed", label: "Completed", Icon: CheckCircleIcon },
 ] as const;
 
@@ -51,22 +50,14 @@ export function MobileAppLayout({ children, menuItems }: Props) {
   const rootBrainPages = useAtomValue(rootBrainPagesAtom);
   const brainPagesByFolder = useAtomValue(brainPagesByFolderAtom);
   const currentUser = useAtomValue(userAtom);
-  const projectsByArea = useAtomValue(projectsByAreaAtom);
   const pageMenuItems = useAtomValue(pageMenuAtom);
   const setAddEntity = useSetAtom(addEntityAtom);
   const setBrainFolders = useSetAtom(brainFoldersAtom);
   const setBrainPages = useSetAtom(brainPagesAtom);
   const setShareDialog = useSetAtom(shareDialogAtom);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [openAreas, setOpenAreas] = useState<Record<string, boolean>>(loadSidebarOpenState);
   const [openBrainFolders, setOpenBrainFolders] = useState<Record<string, boolean>>({});
   const isActive = useIsActive();
-
-  const unassignedProjects = projectsByArea.get(null) ?? [];
-  const projectsByAreaEntries = useMemo(
-    () => areas.map((area) => ({ area, projects: projectsByArea.get(area.id) ?? [] })),
-    [areas, projectsByArea],
-  );
 
   useEffect(() => {
     setDrawerOpen(false);
@@ -77,14 +68,6 @@ export function MobileAppLayout({ children, menuItems }: Props) {
       setOpenBrainFolders({});
     }
   }, [drawerOpen]);
-
-  const setAreaOpen = (areaId: string, open: boolean) => {
-    setOpenAreas((prev) => {
-      const next = { ...prev, [areaId]: open };
-      saveSidebarOpenState(next);
-      return next;
-    });
-  };
 
   const createBrainFolder = async () => {
     const name = window.prompt("Folder name");
@@ -234,95 +217,15 @@ export function MobileAppLayout({ children, menuItems }: Props) {
             </Box>
           </Box>
 
-          {projectsByAreaEntries.map(({ area, projects }) => {
-            if (projects.length === 0) {
-              return (
-                <NavLink
-                  key={area.id}
-                  label={area.name}
-                  active={isActive(`/area/${area.id}`)}
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    navigate(`/area/${area.id}`);
-                  }}
-                  style={{ borderRadius: 6 }}
-                  styles={{ label: { fontSize: "16px" } }}
-                />
-              );
-            }
-            const expanded = openAreas[area.id] ?? false;
-            return (
-              <NavLink
-                key={area.id}
-                label={area.name}
-                active={isActive(`/area/${area.id}`)}
-                opened={expanded}
-                onClick={() => {
-                  if (expanded) {
-                    setDrawerOpen(false);
-                    navigate(`/area/${area.id}`);
-                  } else {
-                    setAreaOpen(area.id, true);
-                  }
-                }}
-                onChange={(open) => setAreaOpen(area.id, open)}
-                style={{ borderRadius: 6 }}
-                childrenOffset={12}
-                styles={{ label: { fontSize: "16px" } }}
-              >
-                {projects.map((project) => (
-                  <NavLink
-                    key={project.id}
-                    label={
-                      <SharedItemLabel
-                        label={project.name}
-                        shared={project.userId !== currentUser?.id}
-                      />
-                    }
-                    active={isActive(`/project/${project.id}`)}
-                    onClick={() => navigate(`/project/${project.id}`)}
-                    style={{ borderRadius: 6 }}
-                    styles={{ label: { fontSize: "16px" } }}
-                  />
-                ))}
-              </NavLink>
-            );
-          })}
-
-          <Box
-            px={8}
-            pt={12}
-            pb={2}
-            style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
-          >
-            <Text size="14px" c="dimmed" tt="uppercase" fw={600}>
-              Projects
-            </Text>
-            <Box
-              component="button"
-              onClick={() => setAddEntity({ type: "project", entityLabel: "Project" })}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "2px 4px",
-                borderRadius: 4,
-                color: "var(--mantine-color-dimmed)",
-                fontSize: "14px",
-              }}
-            >
-              + New Project
-            </Box>
-          </Box>
-
-          {unassignedProjects.map((project) => (
+          {areas.map((area) => (
             <NavLink
-              key={project.id}
-              label={
-                <SharedItemLabel label={project.name} shared={project.userId !== currentUser?.id} />
-              }
-              active={isActive(`/project/${project.id}`)}
-              onClick={() => navigate(`/project/${project.id}`)}
+              key={area.id}
+              label={area.name}
+              active={isActive(`/area/${area.id}`)}
+              onClick={() => {
+                setDrawerOpen(false);
+                navigate(`/area/${area.id}`);
+              }}
               style={{ borderRadius: 6 }}
               styles={{ label: { fontSize: "16px" } }}
             />

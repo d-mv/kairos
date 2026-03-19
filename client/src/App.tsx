@@ -23,6 +23,7 @@ const UpcomingPage = lazy(() => import("./pages/UpcomingPage.js"));
 const CompletedPage = lazy(() => import("./pages/CompletedPage.js"));
 const ProjectPage = lazy(() => import("./pages/ProjectPage.js"));
 const AreaPage = lazy(() => import("./pages/AreaPage.js"));
+const ProjectsPage = lazy(() => import("./pages/ProjectsPage.js"));
 
 function RouteFallback() {
   return (
@@ -130,6 +131,7 @@ export default function App() {
               <Route path="/today" element={<TodayPage />} />
               <Route path="/brain/page/:id" element={<BrainPage />} />
               <Route path="/upcoming" element={<UpcomingPage />} />
+              <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/completed" element={<CompletedPage />} />
               <Route path="/project/:id" element={<ProjectPage />} />
               <Route path="/area/:id" element={<AreaPage />} />

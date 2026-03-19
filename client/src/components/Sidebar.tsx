@@ -1,13 +1,4 @@
-import {
-  ActionIcon,
-  Box,
-  Menu as MantineMenu,
-  NavLink,
-  Paper,
-  Stack,
-  Text,
-  Tooltip,
-} from "@mantine/core";
+import { Box, Menu as MantineMenu, NavLink, Paper, Stack, Text } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -21,9 +12,7 @@ import {
   rootBrainPagesAtom,
   sortedBrainFoldersAtom,
 } from "../atoms/brain.js";
-import { projectsByAreaAtom } from "../atoms/projects.js";
 import { shareDialogAtom } from "../atoms/shareDialog.js";
-import { loadSidebarOpenState, saveSidebarOpenState } from "../lib/sidebar-open-state.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { api } from "../lib/api.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
@@ -121,7 +110,6 @@ function SectionHeader({ label, actions = [], menuActions = [] }: SectionHeaderP
 
 export function Sidebar() {
   const areas = useAtomValue(areasAtom);
-  const projectsByArea = useAtomValue(projectsByAreaAtom);
   const currentUser = useAtomValue(userAtom);
   const navigate = useNavigate();
   const isActive = useIsActive();
@@ -133,8 +121,6 @@ export function Sidebar() {
   const rootBrainPages = useAtomValue(rootBrainPagesAtom);
   const brainPagesByFolder = useAtomValue(brainPagesByFolderAtom);
 
-  const unassignedProjects = projectsByArea.get(null) ?? [];
-  const [openAreas, setOpenAreas] = useState<Record<string, boolean>>(loadSidebarOpenState);
   const [openBrainFolders, setOpenBrainFolders] = useState<Record<string, boolean>>({});
 
   const createBrainFolder = async () => {
@@ -154,14 +140,6 @@ export function Sidebar() {
     });
     setBrainPages((prev) => [...prev, page]);
     navigate(`/brain/page/${page.id}`);
-  };
-
-  const setAreaOpen = (areaId: string, open: boolean) => {
-    setOpenAreas((prev) => {
-      const next = { ...prev, [areaId]: open };
-      saveSidebarOpenState(next);
-      return next;
-    });
   };
 
   return (
@@ -194,56 +172,12 @@ export function Sidebar() {
             ]}
           />
 
-          {areas.map((area) => {
-            const areaProjects = projectsByArea.get(area.id) ?? [];
-            return (
-              <NavLink
-                key={area.id}
-                label={area.name}
-                active={isActive(`/area/${area.id}`)}
-                onClick={() => navigate(`/area/${area.id}`)}
-                style={{ borderRadius: 6 }}
-                styles={{ label: { fontSize: "16px" } }}
-                opened={openAreas[area.id] ?? true}
-                onChange={(open) => setAreaOpen(area.id, open)}
-                childrenOffset={12}
-              >
-                {areaProjects.map((project) => (
-                  <NavLink
-                    key={project.id}
-                    label={
-                      <SharedItemLabel
-                        label={project.name}
-                        shared={project.userId !== currentUser?.id}
-                      />
-                    }
-                    active={isActive(`/project/${project.id}`)}
-                    onClick={() => navigate(`/project/${project.id}`)}
-                    style={{ borderRadius: 6 }}
-                    styles={{ label: { fontSize: "16px" } }}
-                  />
-                ))}
-              </NavLink>
-            );
-          })}
-
-          <SectionHeader
-            label="Projects"
-            actions={[
-              {
-                label: "New Project",
-                onClick: () => setAddEntity({ type: "project", entityLabel: "Project" }),
-              },
-            ]}
-          />
-          {unassignedProjects.map((project) => (
+          {areas.map((area) => (
             <NavLink
-              key={project.id}
-              label={
-                <SharedItemLabel label={project.name} shared={project.userId !== currentUser?.id} />
-              }
-              active={isActive(`/project/${project.id}`)}
-              onClick={() => navigate(`/project/${project.id}`)}
+              key={area.id}
+              label={area.name}
+              active={isActive(`/area/${area.id}`)}
+              onClick={() => navigate(`/area/${area.id}`)}
               style={{ borderRadius: 6 }}
               styles={{ label: { fontSize: "16px" } }}
             />
