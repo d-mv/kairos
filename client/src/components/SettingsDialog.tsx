@@ -1,17 +1,9 @@
-import type {
-  ApiKeyCreatedDTO,
-  ApiKeyDTO,
-  IntegrationProvider,
-  IntegrationStatusDTO,
-} from "@kairos/shared";
+import type { ApiKeyDTO, IntegrationProvider, IntegrationStatusDTO } from "@kairos/shared";
 import {
   Alert,
-  ActionIcon,
   Badge,
   Box,
   Button,
-  Code,
-  CopyButton,
   Group,
   Modal,
   PasswordInput,
@@ -21,7 +13,6 @@ import {
   Text,
   TextInput,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import { useAtom } from "jotai";
 import { useEffect, useMemo, useState } from "react";
@@ -57,12 +48,12 @@ export function SettingsDialog() {
   const [weatherSuggestions, setWeatherSuggestions] = useState<WeatherLocationOption[]>([]);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createNotice, setCreateNotice] = useState<string | null>(null);
 
   const [apiTokens, setApiTokens] = useState<ApiKeyDTO[]>([]);
   const [apiTokensLoading, setApiTokensLoading] = useState(false);
   const [newTokenName, setNewTokenName] = useState("");
   const [creatingToken, setCreatingToken] = useState(false);
-  const [createdToken, setCreatedToken] = useState<ApiKeyCreatedDTO | null>(null);
   const [deletingTokenId, setDeletingTokenId] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -150,7 +141,7 @@ export function SettingsDialog() {
     setActiveProvider(null);
     setWeatherSuggestions([]);
     setWeatherLoading(false);
-    setCreatedToken(null);
+    setCreateNotice(null);
     setNewTokenName("");
     setApiError(null);
   };
@@ -160,9 +151,23 @@ export function SettingsDialog() {
     try {
       setCreatingToken(true);
       setApiError(null);
+      setCreateNotice(null);
       const created = await api.auth.createApiKey(newTokenName.trim());
-      setCreatedToken(created);
       setNewTokenName("");
+      let copied = false;
+      if (typeof navigator?.clipboard?.writeText === "function") {
+        try {
+          await navigator.clipboard.writeText(created.apiKey);
+          copied = true;
+        } catch {
+          copied = false;
+        }
+      }
+      if (copied) {
+        setCreateNotice("Token created and copied to clipboard.");
+      } else {
+        setCreateNotice("Token created. Copy failed in this browser; please try again.");
+      }
       setApiTokens((prev) => [
         ...prev,
         {
@@ -186,7 +191,6 @@ export function SettingsDialog() {
       setApiError(null);
       await api.auth.deleteApiKey(id);
       setApiTokens((prev) => prev.filter((t) => t.id !== id));
-      if (createdToken?.id === id) setCreatedToken(null);
     } catch (err) {
       setApiError(err instanceof Error ? err.message : "Failed to delete API token");
     } finally {
@@ -439,33 +443,15 @@ export function SettingsDialog() {
             <Box>
               <Title order={4}>API Tokens</Title>
               <Text c="dimmed" size="sm" mb="xs">
-                Use API tokens to access Kairos programmatically or via the MCP server with Claude.
+                Use API tokens to access Kairos programmatically.
               </Text>
             </Box>
 
             {apiError ? <Alert color="red">{apiError}</Alert> : null}
 
-            {createdToken ? (
-              <Alert color="green" title="Token created — copy it now">
-                <Text size="sm" mb="xs">
-                  This is the only time the full token will be shown.
-                </Text>
-                <Group gap="xs" wrap="nowrap">
-                  <Code style={{ flex: 1, wordBreak: "break-all" }}>{createdToken.apiKey}</Code>
-                  <CopyButton value={createdToken.apiKey}>
-                    {({ copied, copy }) => (
-                      <Tooltip label={copied ? "Copied" : "Copy"}>
-                        <ActionIcon
-                          onClick={copy}
-                          variant="light"
-                          color={copied ? "green" : "blue"}
-                        >
-                          {copied ? "✓" : "⎘"}
-                        </ActionIcon>
-                      </Tooltip>
-                    )}
-                  </CopyButton>
-                </Group>
+            {createNotice ? (
+              <Alert color="green" title="Token created">
+                {createNotice}
               </Alert>
             ) : null}
 
@@ -476,7 +462,6 @@ export function SettingsDialog() {
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>Name</Table.Th>
-                    <Table.Th>Token</Table.Th>
                     <Table.Th>Created</Table.Th>
                     <Table.Th />
                   </Table.Tr>
@@ -485,9 +470,6 @@ export function SettingsDialog() {
                   {apiTokens.map((token) => (
                     <Table.Tr key={token.id}>
                       <Table.Td>{token.name}</Table.Td>
-                      <Table.Td>
-                        <Code>{token.keyPreview}</Code>
-                      </Table.Td>
                       <Table.Td>
                         <Text size="sm" c="dimmed">
                           {new Date(token.createdAt).toLocaleDateString()}
@@ -520,7 +502,7 @@ export function SettingsDialog() {
               </Text>
               <Group gap="sm">
                 <TextInput
-                  placeholder="Token name (e.g. Claude MCP)"
+                  placeholder="Token name"
                   value={newTokenName}
                   onChange={(e) => setNewTokenName(e.currentTarget.value)}
                   onKeyDown={(e) => {

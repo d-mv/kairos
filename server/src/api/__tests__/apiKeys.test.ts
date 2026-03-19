@@ -28,7 +28,6 @@ vi.mock("../container.js", () => ({
   listAreas: { execute: vi.fn() },
   createArea: { execute: vi.fn() },
   updateArea: { execute: vi.fn() },
-  updateArea: { execute: vi.fn() },
   deleteArea: { execute: vi.fn() },
   listProjects: { execute: vi.fn() },
   createProject: { execute: vi.fn() },
@@ -108,6 +107,7 @@ describe("API key routes", () => {
     expect(response.statusCode).toBe(200);
     const body = response.json() as unknown[];
     expect(body).toHaveLength(1);
+    expect((body[0] as { apiKey?: string }).apiKey).toBeUndefined();
     expect(listForUserMock).toHaveBeenCalledWith("auth-user-123");
   });
 

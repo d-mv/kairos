@@ -62,12 +62,6 @@ async function main() {
       beforeDarkMode,
     );
 
-    await page.getByRole("button", { name: "Open workspace menu" }).click();
-    await page.locator("button").filter({ hasText: "MCP API key..." }).first().click();
-    await page.getByRole("heading", { name: "MCP API key" }).waitFor({ timeout: 10000 });
-    await page.getByText("Current key", { exact: true }).waitFor({ timeout: 10000 });
-    await page.keyboard.press("Escape");
-
     const newTaskTitle = `Smoke inbox task ${Date.now()}`;
     await page.getByPlaceholder("Add a task...").first().fill(newTaskTitle);
     await page.keyboard.press("Enter");
