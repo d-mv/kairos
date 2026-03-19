@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { TaskDTO } from "@kairos/shared";
-import { getProjectGanttData, getTaskSpanDays } from "./project-gantt.js";
+import { canShowProjectGantt, getProjectGanttData, getTaskSpanDays } from "./project-gantt.js";
 
 function buildTask(overrides: Partial<TaskDTO>): TaskDTO {
   return {
@@ -91,4 +91,9 @@ test("getProjectGanttData ignores tasks without due dates", () => {
   assert.deepEqual(gantt.columns, ["2026-03-20"]);
   assert.equal(gantt.items.length, 1);
   assert.equal(gantt.items[0]?.task.id, "dated");
+});
+
+test("canShowProjectGantt returns true only when at least one task has a due date", () => {
+  assert.equal(canShowProjectGantt([buildTask({ id: "undated", dueDate: null })]), false);
+  assert.equal(canShowProjectGantt([buildTask({ id: "dated", dueDate: "2026-03-20" })]), true);
 });

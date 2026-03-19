@@ -14,6 +14,7 @@ import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.j
 import { ProjectGantt } from "../components/ProjectGantt.js";
 import { TaskList } from "../components/TaskList.js";
 import { api } from "../lib/api.js";
+import { canShowProjectGantt } from "../lib/project-gantt.js";
 import {
   Box,
   Button,
@@ -74,6 +75,7 @@ export default function ProjectPage() {
   const project = projects.find((p) => p.id === id);
   const tasks = id ? (tasksByProject.get(id) ?? []) : [];
   const visibleTasks = showCompleted ? tasks : tasks.filter((task) => task.status !== "done");
+  const showGanttOption = canShowProjectGantt(visibleTasks);
   const projectName = project?.name ?? "Project";
 
   // Refs to always call latest handlers from stable menu closures
@@ -139,6 +141,12 @@ export default function ProjectPage() {
     setPageMenu,
     showCompleted,
   ]);
+
+  useEffect(() => {
+    if (!showGanttOption && view === "gantt") {
+      setView("list");
+    }
+  }, [showGanttOption, view]);
 
   if (!project && !isLoading) {
     return (
@@ -315,10 +323,14 @@ export default function ProjectPage() {
             mt="sm"
             value={view}
             onChange={(value) => setView(value as "list" | "gantt")}
-            data={[
-              { label: "List", value: "list" },
-              { label: "Gantt", value: "gantt" },
-            ]}
+            data={
+              showGanttOption
+                ? [
+                    { label: "List", value: "list" },
+                    { label: "Gantt", value: "gantt" },
+                  ]
+                : [{ label: "List", value: "list" }]
+            }
           />
         </Box>
         {isLoading ? (

@@ -26,6 +26,10 @@ export function getTaskSpanDays(duration: number | null, unit: TaskDurationUnit 
   return duration * 30;
 }
 
+export function canShowProjectGantt(tasks: TaskDTO[]) {
+  return tasks.some((task) => task.dueDate !== null);
+}
+
 export function getProjectGanttData(tasks: TaskDTO[]): ProjectGanttData {
   const datedItems = tasks
     .filter((task): task is TaskDTO & { dueDate: string } => task.dueDate !== null)
