@@ -68,11 +68,6 @@ export function AppLayout() {
         setDialogs((s) => (s.includes("settingsDialog") ? s : [...s, "settingsDialog"])),
     },
     { label: "Toggle theme", shortcut: "T", onClick: toggleTheme },
-    {
-      label: "MCP API Key",
-      shortcut: "K",
-      onClick: () => setDialogs((s) => (s.includes("apiKeyDialog") ? s : [...s, "apiKeyDialog"])),
-    },
     { label: "Sign out", onClick: () => supabase.auth.signOut() },
   ];
 
