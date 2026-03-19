@@ -114,8 +114,8 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
               onChange={(e) => {
                 const nextPriority = Number(e.target.value) as TaskPriority;
                 setPriority(nextPriority);
-                void persistTaskChanges({ priority: nextPriority });
               }}
+              onBlur={handleSave}
               data={[
                 { value: "1", label: "1" },
                 { value: "2", label: "2" },
@@ -131,8 +131,8 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
                 onChange={(e) => {
                   const nextDueDate = e.target.value;
                   setDueDate(nextDueDate);
-                  void persistTaskChanges({ dueDate: nextDueDate });
                 }}
+                onBlur={handleSave}
               />
             </Box>
             <Box w={120}>
@@ -145,7 +145,6 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
                 }}
                 onUnitChange={(unit) => {
                   setDurationUnit(unit);
-                  void persistTaskChanges({ durationUnit: unit });
                 }}
                 onBlur={handleSave}
               />

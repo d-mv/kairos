@@ -51,7 +51,6 @@ export function TaskDetailPanel() {
     durationUnit: TaskDurationUnit | "";
   } | null>(null);
   const savedIndicatorTimeoutRef = useRef<number | null>(null);
-  const autosaveTimeoutRef = useRef<number | null>(null);
   const selectedTaskIdRef = useRef<string | null>(null);
   const latestDraftRef = useRef<{
     title: string;
@@ -208,19 +207,8 @@ export function TaskDetailPanel() {
   const handleSave = async () => persistTaskChanges();
 
   useEffect(() => {
-    if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
-    autosaveTimeoutRef.current = window.setTimeout(() => {
-      void persistTaskChanges({ title, description, duration, silentValidation: true });
-    }, 500);
-    return () => {
-      if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
-    };
-  }, [description, duration, title]);
-
-  useEffect(() => {
     return () => {
       if (savedIndicatorTimeoutRef.current) window.clearTimeout(savedIndicatorTimeoutRef.current);
-      if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
       if (!latestDraftRef.current) return;
       void persistTaskChanges({ ...latestDraftRef.current, silentValidation: true });
     };
@@ -290,7 +278,6 @@ export function TaskDetailPanel() {
   };
 
   const handleClose = async () => {
-    if (autosaveTimeoutRef.current) window.clearTimeout(autosaveTimeoutRef.current);
     if (latestDraftRef.current) {
       await persistTaskChanges({ ...latestDraftRef.current, silentValidation: true });
     }
@@ -373,8 +360,8 @@ export function TaskDetailPanel() {
             onChange={(e) => {
               const nextPriority = Number(e.target.value) as TaskPriority;
               setPriority(nextPriority);
-              void persistTaskChanges({ priority: nextPriority });
             }}
+            onBlur={handleSave}
             data={[
               { value: "1", label: "1" },
               { value: "2", label: "2" },
@@ -390,8 +377,8 @@ export function TaskDetailPanel() {
               onChange={(e) => {
                 const nextDueDate = e.target.value;
                 setDueDate(nextDueDate);
-                void persistTaskChanges({ dueDate: nextDueDate });
               }}
+              onBlur={handleSave}
             />
           </Box>
           <Box w={120}>
@@ -404,7 +391,6 @@ export function TaskDetailPanel() {
               }}
               onUnitChange={(unit) => {
                 setDurationUnit(unit);
-                void persistTaskChanges({ durationUnit: unit });
               }}
               onBlur={handleSave}
             />
