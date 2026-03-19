@@ -22,6 +22,7 @@ interface TaskProps {
   dueDate: Date | null;
   duration: number | null;
   durationUnit: TaskDurationUnit | null;
+  tags: string[];
   position: number;
   createdAt: Date;
   updatedAt: Date;
@@ -44,6 +45,7 @@ export class Task extends Entity<TaskProps> {
       dueDate?: Date;
       duration?: number;
       durationUnit?: TaskDurationUnit;
+      tags?: string[];
       id?: string;
     } = {},
   ): Result<Task, string> {
@@ -79,6 +81,7 @@ export class Task extends Entity<TaskProps> {
         dueDate: opts.dueDate ?? null,
         duration: opts.duration ?? null,
         durationUnit: opts.durationUnit ?? null,
+        tags: opts.tags ? [...opts.tags] : [],
         position: Date.now() / 1000,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -126,6 +129,9 @@ export class Task extends Entity<TaskProps> {
   }
   get durationUnit(): TaskDurationUnit | null {
     return this.props.durationUnit;
+  }
+  get tags(): string[] {
+    return this.props.tags;
   }
   get position(): number {
     return this.props.position;
@@ -216,6 +222,12 @@ export class Task extends Entity<TaskProps> {
     this.props.updatedAt = new Date();
     this.addDomainEvent(new TaskUpdated(this.id));
     return Result.ok(undefined);
+  }
+
+  updateTags(tags: string[]): void {
+    this.props.tags = [...tags];
+    this.props.updatedAt = new Date();
+    this.addDomainEvent(new TaskUpdated(this.id));
   }
 
   assignToProject(projectId: string): Result<void, string> {

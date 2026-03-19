@@ -34,6 +34,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       dueDate?: string;
       duration?: number;
       durationUnit?: TaskDurationUnit;
+      tags?: string[];
     };
   }>("/", async (req, reply) => {
     try {
@@ -71,6 +72,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       dueDate?: string | null;
       duration?: number | null;
       durationUnit?: TaskDurationUnit | null;
+      tags?: string[];
     };
   }>("/:id", async (req, reply) => {
     const result = await container.updateTask.execute({

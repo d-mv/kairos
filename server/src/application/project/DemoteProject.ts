@@ -48,6 +48,7 @@ export class DemoteProject {
         dueDate: t.dueDate ?? undefined,
         duration: t.duration ?? undefined,
         durationUnit: t.durationUnit ?? undefined,
+        tags: t.tags,
       });
       if (subtaskResult.isErr) return Result.fail(subtaskResult.error);
       newSubtasks.push(subtaskResult.value);

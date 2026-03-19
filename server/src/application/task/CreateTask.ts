@@ -18,6 +18,7 @@ export interface CreateTaskInput {
   dueDate?: string;
   duration?: number;
   durationUnit?: TaskDurationUnit;
+  tags?: string[];
 }
 
 export class CreateTask {
@@ -58,6 +59,7 @@ export class CreateTask {
       dueDate: input.dueDate ? new Date(input.dueDate) : undefined,
       duration: input.duration,
       durationUnit: input.durationUnit,
+      tags: input.tags,
     });
     if (result.isErr) return Result.fail(result.error);
 

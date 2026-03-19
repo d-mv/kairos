@@ -35,6 +35,16 @@ describe("CreateTask use case", () => {
     expect(result.value.durationUnit).toBe("h");
   });
 
+  it("creates a task with tags", async () => {
+    const result = await createTask.execute({
+      title: "Tagged",
+      userId: "u1",
+      tags: ["home", "work"],
+    });
+    expect(result.isOk).toBe(true);
+    expect(result.value.tags).toEqual(["home", "work"]);
+  });
+
   it("persists the task", async () => {
     const result = await createTask.execute({ title: "T", userId: "u1" });
     const stored = taskRepo.store.get(result.value.id);

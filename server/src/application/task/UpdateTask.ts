@@ -16,6 +16,7 @@ export interface UpdateTaskInput {
   dueDate?: string | null;
   duration?: number | null;
   durationUnit?: TaskDurationUnit | null;
+  tags?: string[];
 }
 
 export class UpdateTask {
@@ -52,6 +53,10 @@ export class UpdateTask {
       const unit = "durationUnit" in input ? (input.durationUnit ?? null) : task.durationUnit;
       const r = task.updateDuration(duration, unit);
       if (r.isErr) return Result.fail(r.error);
+    }
+
+    if ("tags" in input && input.tags !== undefined) {
+      task.updateTags(input.tags);
     }
 
     if (input.projectId !== undefined && input.projectId !== null) {

@@ -74,6 +74,7 @@ export function NewTaskInput({
       dueDate: null,
       duration: null,
       durationUnit: null,
+      tags: [],
       position: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

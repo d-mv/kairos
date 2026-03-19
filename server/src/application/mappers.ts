@@ -49,6 +49,7 @@ export function toTaskDTO(task: Task): TaskDTO {
     dueDate: task.dueDate?.toISOString().split("T")[0] ?? null,
     duration: task.duration,
     durationUnit: task.durationUnit,
+    tags: task.tags,
     position: task.position,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),

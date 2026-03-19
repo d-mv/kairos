@@ -32,4 +32,17 @@ describe("UpdateTask use case", () => {
     expect(updated.isOk).toBe(true);
     expect(updated.value.title).toBe("Open [Kairos](https://kairos-web.fly.dev/inbox)");
   });
+
+  it("updates task tags", async () => {
+    const created = await createTask.execute({ title: "Draft", userId: "u1" });
+    const updateTask = new UpdateTask(taskRepo, eventBus);
+    const updated = await updateTask.execute({
+      id: created.value.id,
+      userId: "u1",
+      tags: ["urgent", "backend"],
+    });
+
+    expect(updated.isOk).toBe(true);
+    expect(updated.value.tags).toEqual(["urgent", "backend"]);
+  });
 });

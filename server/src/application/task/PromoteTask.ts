@@ -35,6 +35,7 @@ export class PromoteTask {
         dueDate: subtask.dueDate ?? undefined,
         duration: subtask.duration ?? undefined,
         durationUnit: subtask.durationUnit ?? undefined,
+        tags: subtask.tags,
       });
       if (newTaskResult.isErr) return Result.fail(newTaskResult.error);
       newTasks.push(newTaskResult.value);

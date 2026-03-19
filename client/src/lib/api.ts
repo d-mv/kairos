@@ -146,6 +146,7 @@ export const api = {
       dueDate?: string;
       duration?: number;
       durationUnit?: TaskDurationUnit;
+      tags?: string[];
     }) => request<TaskDTO>("POST", "/tasks", data),
     update: (id: string, data: Partial<TaskDTO>) => request<TaskDTO>("PUT", `/tasks/${id}`, data),
     delete: (id: string) => request<void>("DELETE", `/tasks/${id}`),

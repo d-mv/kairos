@@ -17,6 +17,7 @@ interface TaskRow {
   due_date: string | null;
   duration: number | null;
   duration_unit: TaskDurationUnit | null;
+  tags: string[] | null;
   position: number;
   created_at: string;
   updated_at: string;
@@ -35,6 +36,7 @@ function toTask(row: TaskRow): Task {
     dueDate: row.due_date ? new Date(row.due_date) : null,
     duration: row.duration,
     durationUnit: row.duration_unit,
+    tags: row.tags ?? [],
     position: row.position ?? 0,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
@@ -215,6 +217,7 @@ export class SupabaseTaskRepository implements TaskRepository {
       due_date: task.dueDate?.toISOString().split("T")[0] ?? null,
       duration: task.duration,
       duration_unit: task.durationUnit,
+      tags: task.tags,
       position: task.position,
       created_at: task.createdAt.toISOString(),
       updated_at: task.updatedAt.toISOString(),

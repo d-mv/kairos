@@ -40,6 +40,7 @@ export function createKairosMcpServer({ getUserId }: KairosMcpServerOptions) {
             dueDate: { type: "string" },
             duration: { type: "number" },
             durationUnit: { type: "string", enum: ["h", "d", "w", "m"] },
+            tags: { type: "array", items: { type: "string" } },
           },
           required: ["title"],
         },
@@ -59,6 +60,7 @@ export function createKairosMcpServer({ getUserId }: KairosMcpServerOptions) {
             dueDate: { type: "string" },
             duration: { type: "number" },
             durationUnit: { type: "string", enum: ["h", "d", "w", "m"] },
+            tags: { type: "array", items: { type: "string" } },
           },
           required: ["id"],
         },
@@ -181,6 +183,7 @@ export function createKairosMcpServer({ getUserId }: KairosMcpServerOptions) {
             dueDate: a["dueDate"] as string | undefined,
             duration: a["duration"] as number | undefined,
             durationUnit: a["durationUnit"] as "h" | "d" | "w" | "m" | undefined,
+            tags: a["tags"] as string[] | undefined,
           });
           break;
 
@@ -196,6 +199,7 @@ export function createKairosMcpServer({ getUserId }: KairosMcpServerOptions) {
             dueDate: a["dueDate"] as string | null | undefined,
             duration: a["duration"] as number | null | undefined,
             durationUnit: a["durationUnit"] as "h" | "d" | "w" | "m" | null | undefined,
+            tags: a["tags"] as string[] | undefined,
           });
           break;
 

@@ -165,6 +165,19 @@ describe("Task", () => {
     });
   });
 
+  describe("tags", () => {
+    it("defaults to empty tags", () => {
+      const task = Task.create("Tag task", "u").value;
+      expect(task.tags).toEqual([]);
+    });
+
+    it("updates tags", () => {
+      const task = Task.create("Tag task", "u").value;
+      task.updateTags(["a", "b"]);
+      expect(task.tags).toEqual(["a", "b"]);
+    });
+  });
+
   describe("canHaveSubtask", () => {
     it("returns ok for a top-level task", () => {
       const task = Task.create("T", "u").value;

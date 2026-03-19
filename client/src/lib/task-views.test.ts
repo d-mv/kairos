@@ -17,6 +17,7 @@ function buildTask(overrides: Partial<TaskDTO>): TaskDTO {
     dueDate: overrides.dueDate ?? null,
     duration: overrides.duration ?? null,
     durationUnit: overrides.durationUnit ?? null,
+    tags: overrides.tags ?? [],
     createdAt: overrides.createdAt ?? "2026-03-01T10:00:00.000Z",
     updatedAt: overrides.updatedAt ?? "2026-03-01T10:00:00.000Z",
   };

@@ -22,6 +22,7 @@ export interface TaskDTO {
   dueDate: string | null;
   duration: number | null;
   durationUnit: TaskDurationUnit | null;
+  tags: string[];
   position: number;
   createdAt: string;
   updatedAt: string;
