@@ -17,7 +17,7 @@ export function UpcomingPageDesktopView({
 }: UpcomingPageDesktopViewProps) {
   return (
     <Box flex={1} style={{ overflowY: "auto" }} p="xl">
-      <Box maw={760}>
+      <Box>
         <Box mb="lg">
           <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
             Planning

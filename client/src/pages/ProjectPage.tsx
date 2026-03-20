@@ -298,7 +298,7 @@ export default function ProjectPage() {
 
   return (
     <Box flex={1} style={{ overflowY: "auto" }} p={isMobile ? "md" : "xl"}>
-      <Box maw={760}>
+      <Box>
         <Box mb="lg">
           <Group gap="xs" align="center">
             <Title order={2}>

@@ -42,7 +42,7 @@ export default function SearchPage() {
 
   return (
     <Box flex={1} style={{ overflowY: "auto" }} p={isMobile ? "md" : "xl"}>
-      <Box maw={760}>
+      <Box>
         <Box mb="xl">
           <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
             Workspace
