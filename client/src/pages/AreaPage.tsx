@@ -73,19 +73,27 @@ export default function AreaPage() {
 
   useEffect(() => {
     setPageMenu([
-      { label: "View", disabled: true, onClick: () => {} },
       {
-        label: view === "list" ? "List · selected" : "List",
+        label: "List",
+        section: "View",
+        shortcut: "L",
+        selected: view === "list",
         onClick: () => setView("list"),
       },
       {
-        label: view === "calendar" ? "Schedule · selected" : "Schedule",
+        label: "Schedule",
+        section: "View",
+        shortcut: "S",
+        selected: view === "calendar",
         onClick: () => setView("calendar"),
       },
       ...(showCalendarOption
         ? [
             {
-              label: view === "gantt" ? "Gantt · selected" : "Gantt",
+              label: "Gantt",
+              section: "View",
+              shortcut: "G",
+              selected: view === "gantt",
               onClick: () => setView("gantt"),
             },
           ]

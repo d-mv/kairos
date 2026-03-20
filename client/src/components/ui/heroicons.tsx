@@ -102,6 +102,30 @@ export const CheckCircleIcon = forwardRef<SVGSVGElement, HeroIconProps>(
 CheckCircleIcon.displayName = "CheckCircleIcon";
 
 // Copied from Heroicons v2.2.0 (MIT).
+export const CheckIcon = forwardRef<SVGSVGElement, HeroIconProps>(
+  ({ title, titleId, ...props }, ref) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+      data-slot="icon"
+      ref={ref}
+      aria-labelledby={titleId}
+      {...props}
+    >
+      {title ? <title id={titleId}>{title}</title> : null}
+      <path
+        fillRule="evenodd"
+        d="M16.704 5.29a.75.75 0 0 1 .006 1.06l-8 8.091a.75.75 0 0 1-1.074 0l-4-4.046a.75.75 0 0 1 1.068-1.054l3.466 3.505 7.467-7.55a.75.75 0 0 1 1.06-.006Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  ),
+);
+CheckIcon.displayName = "CheckIcon";
+
+// Copied from Heroicons v2.2.0 (MIT).
 export const EllipsisVerticalIcon = forwardRef<SVGSVGElement, HeroIconProps>(
   ({ title, titleId, ...props }, ref) => (
     <svg
