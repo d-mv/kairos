@@ -13,9 +13,11 @@ import {
   sortedBrainFoldersAtom,
 } from "../atoms/brain.js";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
+import { projectsByAreaAtom } from "../atoms/projects.js";
 import { shareDialogAtom } from "../atoms/shareDialog.js";
 import { api } from "../lib/api.js";
 import { buildBrainTemplateContent, type BrainTemplateType } from "../lib/brain-templates.js";
+import { loadSidebarOpenState, saveSidebarOpenState } from "../lib/sidebar-open-state.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { Menu, type MenuItem } from "../shared/ui/Menu.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
@@ -53,6 +55,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
   const brainFolders = useAtomValue(sortedBrainFoldersAtom);
   const rootBrainPages = useAtomValue(rootBrainPagesAtom);
   const brainPagesByFolder = useAtomValue(brainPagesByFolderAtom);
+  const projectsByArea = useAtomValue(projectsByAreaAtom);
   const currentUser = useAtomValue(userAtom);
   const pageMenuItems = useAtomValue(pageMenuAtom);
   const setAddEntity = useSetAtom(addEntityAtom);
@@ -60,6 +63,7 @@ export function MobileAppLayout({ children, menuItems }: Props) {
   const setBrainPages = useSetAtom(brainPagesAtom);
   const setShareDialog = useSetAtom(shareDialogAtom);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [openAreas, setOpenAreas] = useState<Record<string, boolean>>(() => loadSidebarOpenState());
   const [openBrainFolders, setOpenBrainFolders] = useState<Record<string, boolean>>({});
   const isActive = useIsActive();
 
@@ -72,6 +76,10 @@ export function MobileAppLayout({ children, menuItems }: Props) {
       setOpenBrainFolders({});
     }
   }, [drawerOpen]);
+
+  useEffect(() => {
+    saveSidebarOpenState(openAreas);
+  }, [openAreas]);
 
   const createBrainFolder = async () => {
     const name = window.prompt("Folder name");
@@ -243,13 +251,30 @@ export function MobileAppLayout({ children, menuItems }: Props) {
               key={area.id}
               label={area.name}
               active={isActive(`/area/${area.id}`)}
+              opened={openAreas[area.id] ?? true}
+              onChange={(open) => setOpenAreas((prev) => ({ ...prev, [area.id]: open }))}
+              childrenOffset={12}
               onClick={() => {
                 setDrawerOpen(false);
                 navigate(`/area/${area.id}`);
               }}
               style={{ borderRadius: 6 }}
               styles={{ label: { fontSize: "16px" } }}
-            />
+            >
+              {(projectsByArea.get(area.id) ?? []).map((project) => (
+                <NavLink
+                  key={project.id}
+                  label={project.name}
+                  active={isActive(`/project/${project.id}`)}
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigate(`/project/${project.id}`);
+                  }}
+                  style={{ borderRadius: 6 }}
+                  styles={{ label: { fontSize: "15px" } }}
+                />
+              ))}
+            </NavLink>
           ))}
 
           <Box
