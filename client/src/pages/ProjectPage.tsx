@@ -28,7 +28,6 @@ import {
   TextInput,
   Title,
   Badge,
-  SegmentedControl,
 } from "@mantine/core";
 
 export default function ProjectPage() {
@@ -85,6 +84,19 @@ export default function ProjectPage() {
 
   useEffect(() => {
     setPageMenu([
+      { label: "View", disabled: true, onClick: () => {} },
+      {
+        label: view === "list" ? "List · selected" : "List",
+        onClick: () => setView("list"),
+      },
+      ...(showGanttOption
+        ? [
+            {
+              label: view === "gantt" ? "Gantt · selected" : "Gantt",
+              onClick: () => setView("gantt"),
+            },
+          ]
+        : []),
       {
         label: showCompleted ? "Hide Completed" : "Show Completed",
         onClick: () => setShowCompleted((c) => !c),
@@ -140,6 +152,8 @@ export default function ProjectPage() {
     project?.name,
     setPageMenu,
     showCompleted,
+    showGanttOption,
+    view,
   ]);
 
   useEffect(() => {
@@ -319,19 +333,6 @@ export default function ProjectPage() {
               </Badge>
             )}
           </Group>
-          <SegmentedControl
-            mt="sm"
-            value={view}
-            onChange={(value) => setView(value as "list" | "gantt")}
-            data={
-              showGanttOption
-                ? [
-                    { label: "List", value: "list" },
-                    { label: "Gantt", value: "gantt" },
-                  ]
-                : [{ label: "List", value: "list" }]
-            }
-          />
         </Box>
         {isLoading ? (
           <Stack gap="sm">

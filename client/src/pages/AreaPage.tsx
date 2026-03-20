@@ -16,17 +16,7 @@ import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.j
 import { TaskList } from "../components/TaskList.js";
 import { api } from "../lib/api.js";
 import { canShowProjectGantt } from "../lib/project-gantt.js";
-import {
-  Badge,
-  Box,
-  Flex,
-  Group,
-  SegmentedControl,
-  Skeleton,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Badge, Box, Flex, Group, Skeleton, Stack, Text, Title } from "@mantine/core";
 
 export default function AreaPage() {
   const { id } = useParams<{ id: string }>();
@@ -83,6 +73,23 @@ export default function AreaPage() {
 
   useEffect(() => {
     setPageMenu([
+      { label: "View", disabled: true, onClick: () => {} },
+      {
+        label: view === "list" ? "List · selected" : "List",
+        onClick: () => setView("list"),
+      },
+      {
+        label: view === "calendar" ? "Schedule · selected" : "Schedule",
+        onClick: () => setView("calendar"),
+      },
+      ...(showCalendarOption
+        ? [
+            {
+              label: view === "gantt" ? "Gantt · selected" : "Gantt",
+              onClick: () => setView("gantt"),
+            },
+          ]
+        : []),
       {
         label: "New Project",
         onClick: () => setAddEntity({ type: "project", entityLabel: "Project", areaId: id }),
@@ -96,7 +103,7 @@ export default function AreaPage() {
       },
     ]);
     return () => setPageMenu([]);
-  }, [setPageMenu, deleteLoading, setAddEntity]);
+  }, [deleteLoading, id, setAddEntity, setPageMenu, showCalendarOption, view]);
 
   useEffect(() => {
     if (!showCalendarOption && view !== "list") {
@@ -198,23 +205,6 @@ export default function AreaPage() {
               </Badge>
             )}
           </Group>
-          <SegmentedControl
-            mt="sm"
-            value={view}
-            onChange={(value) => setView(value as "list" | "gantt" | "calendar")}
-            data={
-              showCalendarOption
-                ? [
-                    { label: "List", value: "list" },
-                    { label: "Gantt", value: "gantt" },
-                    { label: "Calendar", value: "calendar" },
-                  ]
-                : [
-                    { label: "List", value: "list" },
-                    { label: "Calendar", value: "calendar" },
-                  ]
-            }
-          />
         </Box>
 
         <Box>
