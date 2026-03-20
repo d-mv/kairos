@@ -70,6 +70,12 @@ export function getTaskCalendarData(
   };
 }
 
+export function getTaskCalendarAgendaTasks(tasks: TaskDTO[], date: string): TaskDTO[] {
+  return tasks
+    .filter((task): task is TaskDTO & { dueDate: string } => task.dueDate === date)
+    .sort((left, right) => left.priority - right.priority || left.title.localeCompare(right.title));
+}
+
 export function getNextTaskCalendarMonth(monthLabel: string) {
   return toIsoDate(startOfMonth(addDays(new Date(monthLabel), 32)));
 }

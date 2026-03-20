@@ -216,9 +216,11 @@ export default function AreaPage() {
         </Box>
 
         <Box>
-          <Title order={4} mb="md">
-            Tasks
-          </Title>
+          {view !== "calendar" ? (
+            <Title order={4} mb="md">
+              Tasks
+            </Title>
+          ) : null}
           {isLoading ? (
             <Stack gap="sm">
               <Skeleton h={40} radius="sm" />

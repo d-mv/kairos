@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { TaskDTO } from "@kairos/shared";
 import {
+  getTaskCalendarAgendaTasks,
   getNextTaskCalendarMonth,
   getPreviousTaskCalendarMonth,
   getTaskCalendarData,
@@ -65,4 +66,20 @@ test("getTaskCalendarData builds a monday-first month grid and places tasks on d
 test("task calendar month helpers move between adjacent months", () => {
   assert.equal(getPreviousTaskCalendarMonth("2026-03-01"), "2026-02-01");
   assert.equal(getNextTaskCalendarMonth("2026-03-01"), "2026-04-01");
+});
+
+test("getTaskCalendarAgendaTasks returns tasks for a day sorted by priority", () => {
+  const tasks = getTaskCalendarAgendaTasks(
+    [
+      buildTask({ id: "b", title: "Beta", dueDate: "2026-03-18", priority: 3 }),
+      buildTask({ id: "a", title: "Alpha", dueDate: "2026-03-18", priority: 1 }),
+      buildTask({ id: "c", title: "Gamma", dueDate: "2026-03-19", priority: 2 }),
+    ],
+    "2026-03-18",
+  );
+
+  assert.deepEqual(
+    tasks.map((task) => task.id),
+    ["a", "b"],
+  );
 });
