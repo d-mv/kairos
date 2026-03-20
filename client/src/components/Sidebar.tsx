@@ -1,6 +1,6 @@
 import { Box, Menu as MantineMenu, NavLink, Paper, Stack, Text } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { areasAtom } from "../atoms/areas.js";
 import { addEntityAtom } from "../atoms/addEntity.atom.js";
@@ -12,10 +12,12 @@ import {
   rootBrainPagesAtom,
   sortedBrainFoldersAtom,
 } from "../atoms/brain.js";
+import { projectsByAreaAtom } from "../atoms/projects.js";
 import { shareDialogAtom } from "../atoms/shareDialog.js";
 import { useIsActive } from "../lib/useIsActive.js";
 import { api } from "../lib/api.js";
 import { buildBrainTemplateContent, type BrainTemplateType } from "../lib/brain-templates.js";
+import { loadSidebarOpenState, saveSidebarOpenState } from "../lib/sidebar-open-state.js";
 import { AddNewEntityDialog } from "./AddEntityDialog.js";
 import { SharedItemLabel } from "./SharedItemLabel.js";
 import { SYSTEM_SIDEBAR_ITEMS } from "./data.js";
@@ -121,8 +123,14 @@ export function Sidebar() {
   const brainFolders = useAtomValue(sortedBrainFoldersAtom);
   const rootBrainPages = useAtomValue(rootBrainPagesAtom);
   const brainPagesByFolder = useAtomValue(brainPagesByFolderAtom);
+  const projectsByArea = useAtomValue(projectsByAreaAtom);
 
+  const [openAreas, setOpenAreas] = useState<Record<string, boolean>>(() => loadSidebarOpenState());
   const [openBrainFolders, setOpenBrainFolders] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    saveSidebarOpenState(openAreas);
+  }, [openAreas]);
 
   const createBrainFolder = async () => {
     const name = window.prompt("Folder name");
@@ -196,9 +204,23 @@ export function Sidebar() {
               label={area.name}
               active={isActive(`/area/${area.id}`)}
               onClick={() => navigate(`/area/${area.id}`)}
+              opened={openAreas[area.id] ?? true}
+              onChange={(open) => setOpenAreas((prev) => ({ ...prev, [area.id]: open }))}
+              childrenOffset={12}
               style={{ borderRadius: 6 }}
               styles={{ label: { fontSize: "16px" } }}
-            />
+            >
+              {(projectsByArea.get(area.id) ?? []).map((project) => (
+                <NavLink
+                  key={project.id}
+                  label={project.name}
+                  active={isActive(`/project/${project.id}`)}
+                  onClick={() => navigate(`/project/${project.id}`)}
+                  style={{ borderRadius: 6 }}
+                  styles={{ label: { fontSize: "15px" } }}
+                />
+              ))}
+            </NavLink>
           ))}
 
           <SectionHeader
