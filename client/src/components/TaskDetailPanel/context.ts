@@ -6,12 +6,15 @@ export type TaskDetailPanelController = {
   saveError: string | null;
   title: string;
   description: string;
+  tags: string[];
+  tagOptions: string[];
   priority: TaskPriority;
   dueDate: string;
   duration: string;
   durationUnit: TaskDurationUnit | "";
   setTitle: (value: string) => void;
   setDescription: (value: string) => void;
+  setTags: (value: string[]) => void;
   setPriority: (value: TaskPriority) => void;
   setDueDate: (value: string) => void;
   setDuration: (value: string) => void;
@@ -24,6 +27,7 @@ export type TaskDetailPanelController = {
   persistTaskChanges: (overrides?: {
     title?: string;
     description?: string;
+    tags?: string[];
     priority?: TaskPriority;
     dueDate?: string;
     duration?: string;

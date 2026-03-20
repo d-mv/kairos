@@ -3,6 +3,7 @@ import type { TaskDurationUnit, TaskPriority } from "@kairos/shared";
 type TaskDetailDraft = {
   title: string;
   description: string;
+  tags: string[];
   priority: TaskPriority;
   dueDate: string;
   duration: string;
@@ -12,6 +13,7 @@ type TaskDetailDraft = {
 type TaskDetailSavedState = TaskDetailDraft & {
   savedTitle: string;
   savedDescription: string;
+  savedTags: string[];
   savedPriority: TaskPriority;
   savedDueDate: string;
   savedDuration: string;
@@ -23,6 +25,7 @@ export function hasTaskDetailDraftChanges(state: TaskDetailSavedState): boolean 
     JSON.stringify({
       title: state.savedTitle.trim(),
       description: state.savedDescription,
+      tags: state.savedTags,
       priority: state.savedPriority,
       dueDate: state.savedDueDate,
       duration: state.savedDuration,
@@ -31,6 +34,7 @@ export function hasTaskDetailDraftChanges(state: TaskDetailSavedState): boolean 
     JSON.stringify({
       title: state.title.trim(),
       description: state.description,
+      tags: state.tags,
       priority: state.priority,
       dueDate: state.dueDate,
       duration: state.duration,
@@ -45,6 +49,7 @@ export function getTaskDetailSavePayload(draft: TaskDetailDraft):
       payload: {
         title: string;
         description: string | null;
+        tags: string[];
         priority: TaskPriority;
         dueDate: string | null;
         duration: number | null;
@@ -70,11 +75,16 @@ export function getTaskDetailSavePayload(draft: TaskDetailDraft):
     return { ok: false, error: "Set both duration and duration unit, or leave both empty" };
   }
 
+  const tags = Array.from(
+    new Set(draft.tags.map((tag) => tag.trim()).filter((tag) => tag.length > 0)),
+  );
+
   return {
     ok: true,
     payload: {
       title,
       description: draft.description || null,
+      tags,
       priority: draft.priority,
       dueDate: draft.dueDate || null,
       duration,

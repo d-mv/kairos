@@ -8,6 +8,7 @@ import {
   Modal,
   NativeSelect,
   Stack,
+  TagsInput,
   Text,
   TextInput,
   Textarea,
@@ -34,12 +35,15 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
     task,
     title,
     description,
+    tags,
+    tagOptions,
     priority,
     dueDate,
     duration,
     durationUnit,
     setTitle,
     setDescription,
+    setTags,
     setPriority,
     setDueDate,
     setDuration,
@@ -105,6 +109,19 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
             autosize
             minRows={3}
           />
+
+          {!task.parentTaskId ? (
+            <TagsInput
+              label="Tags"
+              value={tags}
+              onChange={setTags}
+              onBlur={handleSave}
+              data={tagOptions}
+              placeholder="Add tags"
+              clearable
+              splitChars={[","]}
+            />
+          ) : null}
 
           <Group gap="sm" align="flex-end" style={{ flexWrap: "nowrap" }}>
             <NativeSelect

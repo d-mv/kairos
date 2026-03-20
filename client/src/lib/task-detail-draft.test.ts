@@ -7,12 +7,14 @@ test("hasTaskDetailDraftChanges detects title edits", () => {
     hasTaskDetailDraftChanges({
       savedTitle: "Write docs",
       savedDescription: "draft",
+      savedTags: [],
       savedPriority: 4,
       savedDueDate: "",
       savedDuration: "",
       savedDurationUnit: "",
       title: "Write tests",
       description: "draft",
+      tags: [],
       priority: 4,
       dueDate: "",
       duration: "",
@@ -27,12 +29,14 @@ test("hasTaskDetailDraftChanges ignores identical state", () => {
     hasTaskDetailDraftChanges({
       savedTitle: "Write docs",
       savedDescription: "draft",
+      savedTags: ["backend"],
       savedPriority: 4,
       savedDueDate: "",
       savedDuration: "2",
       savedDurationUnit: "d",
       title: "Write docs",
       description: "draft",
+      tags: ["backend"],
       priority: 4,
       dueDate: "",
       duration: "2",
@@ -47,6 +51,7 @@ test("getTaskDetailSavePayload trims title and parses duration", () => {
     getTaskDetailSavePayload({
       title: "  Write docs  ",
       description: "",
+      tags: [" ops ", "backend", "ops"],
       priority: 3,
       dueDate: "",
       duration: "2",
@@ -57,6 +62,7 @@ test("getTaskDetailSavePayload trims title and parses duration", () => {
       payload: {
         title: "Write docs",
         description: null,
+        tags: ["ops", "backend"],
         priority: 3,
         dueDate: null,
         duration: 2,
@@ -71,6 +77,7 @@ test("getTaskDetailSavePayload rejects partial duration", () => {
     getTaskDetailSavePayload({
       title: "Write docs",
       description: "",
+      tags: [],
       priority: 4,
       dueDate: "",
       duration: "2",
@@ -80,5 +87,27 @@ test("getTaskDetailSavePayload rejects partial duration", () => {
       ok: false,
       error: "Set both duration and duration unit, or leave both empty",
     },
+  );
+});
+
+test("hasTaskDetailDraftChanges detects tag edits", () => {
+  assert.equal(
+    hasTaskDetailDraftChanges({
+      savedTitle: "Write docs",
+      savedDescription: "draft",
+      savedTags: ["backend"],
+      savedPriority: 4,
+      savedDueDate: "",
+      savedDuration: "",
+      savedDurationUnit: "",
+      title: "Write docs",
+      description: "draft",
+      tags: ["backend", "urgent"],
+      priority: 4,
+      dueDate: "",
+      duration: "",
+      durationUnit: "",
+    }),
+    true,
   );
 });

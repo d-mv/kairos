@@ -36,7 +36,7 @@ const SYSTEM_ITEMS = [
   { path: "/inbox", label: "Inbox", Icon: InboxIcon },
   { path: "/today", label: "Today", Icon: SunSmallIcon },
   { path: "/upcoming", label: "Upcoming", Icon: CalendarIcon },
-  { path: "/search", label: "Search", Icon: SearchIcon },
+  { path: "/search", label: "Query", Icon: SearchIcon },
   { path: "/schedule", label: "Schedule", Icon: CalendarIcon },
   { path: "/projects", label: "Projects", Icon: CalendarIcon },
   { path: "/completed", label: "Completed", Icon: CheckCircleIcon },

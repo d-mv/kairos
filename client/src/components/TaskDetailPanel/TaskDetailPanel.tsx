@@ -7,6 +7,7 @@ import {
   Modal,
   NativeSelect,
   Stack,
+  TagsInput,
   Text,
   TextInput,
   Textarea,
@@ -32,10 +33,12 @@ import type { TaskDetailPanelController } from "./context.js";
 export function TaskDetailPanel() {
   const setSelectedTaskId = useSetAtom(selectedTaskIdAtom);
   const task = useAtomValue(selectedTaskAtom);
+  const tasks = useAtomValue(tasksAtom);
   const setTasks = useSetAtom(tasksAtom);
   const setShareDialog = useSetAtom(shareDialogAtom);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [priority, setPriority] = useState<TaskPriority>(4);
   const [dueDate, setDueDate] = useState("");
   const [duration, setDuration] = useState("");
@@ -45,6 +48,7 @@ export function TaskDetailPanel() {
   const lastSyncedRef = useRef<{
     title: string;
     description: string;
+    tags: string[];
     priority: TaskPriority;
     dueDate: string;
     duration: string;
@@ -55,6 +59,7 @@ export function TaskDetailPanel() {
   const latestDraftRef = useRef<{
     title: string;
     description: string;
+    tags: string[];
     priority: TaskPriority;
     dueDate: string;
     duration: string;
@@ -67,6 +72,7 @@ export function TaskDetailPanel() {
       selectedTaskIdRef.current = task.id;
       setTitle(task.title);
       setDescription(task.description ?? "");
+      setTags(task.parentTaskId ? [] : task.tags);
       setPriority(task.priority);
       setDueDate(task.dueDate ?? "");
       setDuration(task.duration ? String(task.duration) : "");
@@ -78,6 +84,7 @@ export function TaskDetailPanel() {
       lastSyncedRef.current = {
         title: task.title,
         description: task.description ?? "",
+        tags: task.parentTaskId ? [] : task.tags,
         priority: task.priority,
         dueDate: task.dueDate ?? "",
         duration: task.duration ? String(task.duration) : "",
@@ -86,6 +93,7 @@ export function TaskDetailPanel() {
       latestDraftRef.current = {
         title: task.title,
         description: task.description ?? "",
+        tags: task.parentTaskId ? [] : task.tags,
         priority: task.priority,
         dueDate: task.dueDate ?? "",
         duration: task.duration ? String(task.duration) : "",
@@ -100,16 +108,18 @@ export function TaskDetailPanel() {
     latestDraftRef.current = {
       title,
       description,
+      tags,
       priority,
       dueDate,
       duration,
       durationUnit,
     };
-  }, [description, dueDate, duration, durationUnit, priority, title]);
+  }, [description, dueDate, duration, durationUnit, priority, tags, title]);
 
   const persistTaskChanges = async (overrides?: {
     title?: string;
     description?: string;
+    tags?: string[];
     priority?: TaskPriority;
     dueDate?: string;
     duration?: string;
@@ -119,6 +129,7 @@ export function TaskDetailPanel() {
     if (!task) return;
     const nextTitle = overrides?.title ?? title;
     const nextDescription = overrides?.description ?? description;
+    const nextTags = task.parentTaskId ? [] : (overrides?.tags ?? tags);
     const nextPriority = overrides?.priority ?? priority;
     const nextDueDate = overrides?.dueDate ?? dueDate;
     const nextDuration = overrides?.duration ?? duration;
@@ -130,12 +141,14 @@ export function TaskDetailPanel() {
       !hasTaskDetailDraftChanges({
         savedTitle: savedState.title,
         savedDescription: savedState.description,
+        savedTags: savedState.tags,
         savedPriority: savedState.priority,
         savedDueDate: savedState.dueDate,
         savedDuration: savedState.duration,
         savedDurationUnit: savedState.durationUnit,
         title: nextTitle,
         description: nextDescription,
+        tags: nextTags,
         priority: nextPriority,
         dueDate: nextDueDate,
         duration: nextDuration,
@@ -148,6 +161,7 @@ export function TaskDetailPanel() {
     const savePayload = getTaskDetailSavePayload({
       title: nextTitle,
       description: nextDescription,
+      tags: nextTags,
       priority: nextPriority,
       dueDate: nextDueDate,
       duration: nextDuration,
@@ -172,6 +186,7 @@ export function TaskDetailPanel() {
     lastSyncedRef.current = {
       title: savePayload.payload.title,
       description: savePayload.payload.description ?? "",
+      tags: savePayload.payload.tags,
       priority: savePayload.payload.priority,
       dueDate: savePayload.payload.dueDate ?? "",
       duration: savePayload.payload.duration ? String(savePayload.payload.duration) : "",
@@ -290,12 +305,23 @@ export function TaskDetailPanel() {
     task,
     title,
     description,
+    tags,
+    tagOptions: Array.from(
+      new Set(
+        tasks
+          .filter((item) => item.id !== task.id && item.parentTaskId === null)
+          .flatMap((item) => item.tags)
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0),
+      ),
+    ).sort((a, b) => a.localeCompare(b)),
     priority,
     dueDate,
     duration,
     durationUnit,
     setTitle,
     setDescription,
+    setTags,
     setPriority,
     setDueDate,
     setDuration,
@@ -351,6 +377,19 @@ export function TaskDetailPanel() {
           autosize
           minRows={3}
         />
+
+        {!task.parentTaskId ? (
+          <TagsInput
+            label="Tags"
+            value={tags}
+            onChange={setTags}
+            onBlur={handleSave}
+            data={controller.tagOptions}
+            placeholder="Add tags"
+            clearable
+            splitChars={[","]}
+          />
+        ) : null}
 
         <Group gap="sm" align="flex-end" style={{ flexWrap: "nowrap" }}>
           <NativeSelect

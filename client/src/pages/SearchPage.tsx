@@ -1,5 +1,15 @@
 import checkIsMobile from "is-mobile";
-import { ActionIcon, Box, Button, Group, Stack, Text, TextInput, Title } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Checkbox,
+  Group,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +35,7 @@ export default function SearchPage() {
   const navigate = useNavigate();
   const isMobile = checkIsMobile();
   const [query, setQuery] = useState("");
+  const [showCompleted, setShowCompleted] = useState(false);
   const [savedSearches, setSavedSearches] = useState<string[]>([]);
 
   useEffect(() => {
@@ -36,8 +47,8 @@ export default function SearchPage() {
   }, [savedSearches]);
 
   const results = useMemo(
-    () => searchWorkspace(query, { tasks, projects, areas, brainPages }),
-    [areas, brainPages, projects, query, tasks],
+    () => searchWorkspace(query, { tasks, projects, areas, brainPages }, { showCompleted }),
+    [areas, brainPages, projects, query, showCompleted, tasks],
   );
 
   return (
@@ -47,7 +58,7 @@ export default function SearchPage() {
           <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
             Workspace
           </Text>
-          <Title order={2}>Search</Title>
+          <Title order={2}>Query</Title>
         </Box>
 
         <Stack gap="md">
@@ -63,6 +74,12 @@ export default function SearchPage() {
               Save search
             </Button>
           </Group>
+
+          <Checkbox
+            label="Show completed"
+            checked={showCompleted}
+            onChange={(event) => setShowCompleted(event.currentTarget.checked)}
+          />
 
           {savedSearches.length > 0 ? (
             <Stack gap="xs">
@@ -91,7 +108,7 @@ export default function SearchPage() {
           ) : null}
 
           {!query.trim() ? (
-            <Text c="dimmed">Type to search across your loaded workspace.</Text>
+            <Text c="dimmed">Type to query across your loaded workspace.</Text>
           ) : results.length === 0 ? (
             <Text c="dimmed">No results for “{query.trim()}”.</Text>
           ) : (

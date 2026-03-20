@@ -69,7 +69,7 @@ test("searchWorkspace matches tasks, projects, areas, and brain pages case-insen
       }),
       buildTask({ id: "task-2", title: "Inbox item", tags: ["finance"] }),
     ],
-    projects: [buildProject({ id: "project-1", name: "Roadmap" })],
+    projects: [buildProject({ id: "project-1", name: "Roadmap", areaId: "area-1" })],
     areas: [buildArea({ id: "area-1", name: "Road Operations" })],
     brainPages: [buildBrainPage({ id: "page-1", title: "Road trip notes" })],
   });
@@ -82,6 +82,11 @@ test("searchWorkspace matches tasks, projects, areas, and brain pages case-insen
       { kind: "area", id: "area-1", route: "/area/area-1" },
       { kind: "brain_page", id: "page-1", route: "/brain/page/page-1" },
     ],
+  );
+
+  assert.deepEqual(
+    results.map((result) => result.subtitle),
+    ["Task - Road Operations - Roadmap", "Project - Road Operations", "Area", "Brain page"],
   );
 });
 
@@ -111,5 +116,41 @@ test("searchWorkspace matches task descriptions and tags and ignores blank queri
       brainPages: [],
     }),
     [],
+  );
+});
+
+test("searchWorkspace ignores completed tasks by default and can include them explicitly", () => {
+  const completedTask = buildTask({
+    id: "task-done",
+    title: "Archive roadmap",
+    status: "done",
+  });
+
+  assert.deepEqual(
+    searchWorkspace(
+      "archive",
+      {
+        tasks: [completedTask],
+        projects: [],
+        areas: [],
+        brainPages: [],
+      },
+      { showCompleted: false },
+    ),
+    [],
+  );
+
+  assert.deepEqual(
+    searchWorkspace(
+      "archive",
+      {
+        tasks: [completedTask],
+        projects: [],
+        areas: [],
+        brainPages: [],
+      },
+      { showCompleted: true },
+    ).map((result) => result.id),
+    ["task-done"],
   );
 });
