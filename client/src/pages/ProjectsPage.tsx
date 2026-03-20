@@ -1,23 +1,33 @@
 import checkIsMobile from "is-mobile";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { addEntityAtom } from "../atoms/addEntity.atom.js";
 import { activeProjectsAtom } from "../atoms/projects.js";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
+import { tasksAtom } from "../atoms/tasks.js";
 import { userAtom } from "../atoms/auth.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { SharedItemLabel } from "../components/SharedItemLabel.js";
-import { Box, Button, Skeleton, Stack, Text, Title } from "@mantine/core";
+import { Box, Button, Group, Skeleton, Stack, Text, Title } from "@mantine/core";
+import { getProjectListItems } from "../lib/project-views.js";
+
+const PRIORITY_COLOR: Record<number, string> = {
+  1: "var(--mantine-color-red-6)",
+  2: "var(--mantine-color-orange-6)",
+  3: "var(--mantine-color-teal-6)",
+};
 
 export default function ProjectsPage() {
   const projects = useAtomValue(activeProjectsAtom);
+  const tasks = useAtomValue(tasksAtom);
   const isLoading = useAtomValue(workspaceLoadingAtom);
   const currentUser = useAtomValue(userAtom);
   const setPageMenu = useSetAtom(pageMenuAtom);
   const setAddEntity = useSetAtom(addEntityAtom);
   const navigate = useNavigate();
   const isMobile = checkIsMobile();
+  const projectItems = useMemo(() => getProjectListItems(projects, tasks), [projects, tasks]);
 
   useEffect(() => {
     setPageMenu([
@@ -50,7 +60,7 @@ export default function ProjectsPage() {
             {projects.length === 0 ? (
               <Text c="dimmed">No projects</Text>
             ) : (
-              projects.map((project) => (
+              projectItems.map(({ project, openTaskCount, highestPriority }) => (
                 <Button
                   key={project.id}
                   variant="subtle"
@@ -58,10 +68,28 @@ export default function ProjectsPage() {
                   onClick={() => navigate(`/project/${project.id}`)}
                   fullWidth
                 >
-                  <SharedItemLabel
-                    label={project.name}
-                    shared={project.userId !== currentUser?.id}
-                  />
+                  <Group justify="space-between" w="100%" wrap="nowrap">
+                    <Group gap="xs" wrap="nowrap">
+                      {highestPriority && PRIORITY_COLOR[highestPriority] ? (
+                        <Box
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            background: PRIORITY_COLOR[highestPriority],
+                            flexShrink: 0,
+                          }}
+                        />
+                      ) : null}
+                      <SharedItemLabel
+                        label={project.name}
+                        shared={project.userId !== currentUser?.id}
+                      />
+                    </Group>
+                    <Text size="sm" c="dimmed" style={{ flexShrink: 0 }}>
+                      {openTaskCount}
+                    </Text>
+                  </Group>
                 </Button>
               ))
             )}
