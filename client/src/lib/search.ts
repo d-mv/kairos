@@ -39,36 +39,38 @@ export function searchWorkspace(
   if (!query) return [];
   const projectsById = new Map(projects.map((project) => [project.id, project]));
   const areasById = new Map(areas.map((area) => [area.id, area]));
+  const taskResults = tasks
+    .filter(
+      (task) =>
+        (showCompleted || task.status !== "done") &&
+        (includesQuery(task.title, query) ||
+          includesQuery(task.description, query) ||
+          task.tags.some((tag) => includesQuery(tag, query))),
+    )
+    .sort((left, right) => left.priority - right.priority)
+    .map((task) => {
+      const project = task.projectId ? projectsById.get(task.projectId) : undefined;
+      const area =
+        (project?.areaId ? areasById.get(project.areaId) : undefined) ??
+        (task.areaId ? areasById.get(task.areaId) : undefined);
+
+      return {
+        id: task.id,
+        kind: "task" as const,
+        label: task.title,
+        route: task.projectId
+          ? `/project/${task.projectId}`
+          : task.areaId
+            ? `/area/${task.areaId}`
+            : task.status === "done"
+              ? "/completed"
+              : "/inbox",
+        subtitle: buildSubtitle("Task", [area?.name, project?.name]),
+      };
+    });
 
   return [
-    ...tasks
-      .filter(
-        (task) =>
-          (showCompleted || task.status !== "done") &&
-          (includesQuery(task.title, query) ||
-            includesQuery(task.description, query) ||
-            task.tags.some((tag) => includesQuery(tag, query))),
-      )
-      .map((task) => {
-        const project = task.projectId ? projectsById.get(task.projectId) : undefined;
-        const area =
-          (project?.areaId ? areasById.get(project.areaId) : undefined) ??
-          (task.areaId ? areasById.get(task.areaId) : undefined);
-
-        return {
-          id: task.id,
-          kind: "task" as const,
-          label: task.title,
-          route: task.projectId
-            ? `/project/${task.projectId}`
-            : task.areaId
-              ? `/area/${task.areaId}`
-              : task.status === "done"
-                ? "/completed"
-                : "/inbox",
-          subtitle: buildSubtitle("Task", [area?.name, project?.name]),
-        };
-      }),
+    ...taskResults,
     ...projects
       .filter((project) => includesQuery(project.name, query))
       .map((project) => {

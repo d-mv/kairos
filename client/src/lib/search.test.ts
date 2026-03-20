@@ -66,8 +66,14 @@ test("searchWorkspace matches tasks, projects, areas, and brain pages case-insen
         title: "Roadmap review",
         description: "Check launch blockers",
         projectId: "project-1",
+        priority: 3,
       }),
-      buildTask({ id: "task-2", title: "Inbox item", tags: ["finance"] }),
+      buildTask({
+        id: "task-2",
+        title: "Road closure",
+        tags: ["finance"],
+        priority: 1,
+      }),
     ],
     projects: [buildProject({ id: "project-1", name: "Roadmap", areaId: "area-1" })],
     areas: [buildArea({ id: "area-1", name: "Road Operations" })],
@@ -77,6 +83,7 @@ test("searchWorkspace matches tasks, projects, areas, and brain pages case-insen
   assert.deepEqual(
     results.map((result) => ({ kind: result.kind, id: result.id, route: result.route })),
     [
+      { kind: "task", id: "task-2", route: "/inbox" },
       { kind: "task", id: "task-1", route: "/project/project-1" },
       { kind: "project", id: "project-1", route: "/project/project-1" },
       { kind: "area", id: "area-1", route: "/area/area-1" },
@@ -86,7 +93,7 @@ test("searchWorkspace matches tasks, projects, areas, and brain pages case-insen
 
   assert.deepEqual(
     results.map((result) => result.subtitle),
-    ["Task - Road Operations - Roadmap", "Project - Road Operations", "Area", "Brain page"],
+    ["Task", "Task - Road Operations - Roadmap", "Project - Road Operations", "Area", "Brain page"],
   );
 });
 
