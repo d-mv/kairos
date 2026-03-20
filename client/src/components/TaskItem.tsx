@@ -1,5 +1,5 @@
 import type { TaskDTO } from "@kairos/shared";
-import { Box, Group, Text } from "@mantine/core";
+import { Box, Group, Stack, Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { type MouseEvent } from "react";
 import type React from "react";
@@ -54,6 +54,10 @@ export function TaskItem({
   const priorityColor = PRIORITY_COLOR[task.priority];
   const due = task.dueDate ? formatDueDate(task.dueDate) : null;
   const isMobile = appearance === "mobile";
+  const contextLabel =
+    showContext && (contextProject ?? contextArea)
+      ? `${contextProject ? contextProject.name : ""}${contextProject && contextArea ? " " : ""}${contextArea ? `@${contextArea.name}` : ""}`
+      : null;
 
   return (
     <Group
@@ -81,40 +85,48 @@ export function TaskItem({
           }}
         />
       )}
-      <Text
-        size="16px"
+      <Box
         style={{
           flex: 1,
           minWidth: 0,
         }}
       >
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            maxWidth: "100%",
-            minWidth: 0,
-            textDecoration: isDone ? "line-through" : "none",
-          }}
-        >
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {renderTaskTitleMarkdown(task.title)}
-          </span>
-          {task.userId !== currentUser?.id ? (
-            <UserGroupIcon
-              width={14}
-              height={14}
-              style={{ flexShrink: 0, color: "var(--mantine-color-dimmed)" }}
-            />
+        <Stack gap={isMobile && contextLabel ? 2 : 0}>
+          <Text size="16px" style={{ minWidth: 0 }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                maxWidth: "100%",
+                minWidth: 0,
+                textDecoration: isDone ? "line-through" : "none",
+              }}
+            >
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {renderTaskTitleMarkdown(task.title)}
+              </span>
+              {task.userId !== currentUser?.id ? (
+                <UserGroupIcon
+                  width={14}
+                  height={14}
+                  style={{ flexShrink: 0, color: "var(--mantine-color-dimmed)" }}
+                />
+              ) : null}
+            </span>
+          </Text>
+          {isMobile && contextLabel ? (
+            <Text size="xs" c="dimmed" style={{ minWidth: 0 }}>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {contextLabel}
+              </span>
+            </Text>
           ) : null}
-        </span>
-      </Text>
-      {showContext && (contextProject ?? contextArea) ? (
+        </Stack>
+      </Box>
+      {!isMobile && contextLabel ? (
         <Text size="xs" c="dimmed" style={{ flexShrink: 0, whiteSpace: "nowrap" }}>
-          {contextProject ? contextProject.name : ""}
-          {contextProject && contextArea ? " " : ""}
-          {contextArea ? `@${contextArea.name}` : ""}
+          {contextLabel}
         </Text>
       ) : null}
       {due &&
