@@ -15,6 +15,7 @@ import { ProjectGantt } from "../components/ProjectGantt.js";
 import { TaskList } from "../components/TaskList.js";
 import { api } from "../lib/api.js";
 import { canShowProjectGantt } from "../lib/project-gantt.js";
+import { getProjectPageViewMenuItems } from "../lib/project-page-menu.js";
 import {
   Box,
   Button,
@@ -84,24 +85,12 @@ export default function ProjectPage() {
 
   useEffect(() => {
     setPageMenu([
-      {
-        label: "List",
-        section: "View",
-        shortcut: "L",
-        selected: view === "list",
-        onClick: () => setView("list"),
-      },
-      ...(showGanttOption
-        ? [
-            {
-              label: "Gantt",
-              section: "View",
-              shortcut: "G",
-              selected: view === "gantt",
-              onClick: () => setView("gantt"),
-            },
-          ]
-        : []),
+      ...getProjectPageViewMenuItems(
+        showGanttOption,
+        view,
+        () => setView("list"),
+        () => setView("gantt"),
+      ),
       {
         label: showCompleted ? "Hide Completed" : "Show Completed",
         onClick: () => setShowCompleted((c) => !c),
