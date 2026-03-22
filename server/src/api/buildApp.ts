@@ -1,6 +1,7 @@
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import Fastify from "fastify";
+import type { FastifyError } from "fastify";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 import { apiKeyRepo, eventBus } from "./container.js";
@@ -16,6 +17,7 @@ import { notificationRoutes } from "./routes/notifications.js";
 import { projectRoutes } from "./routes/projects.js";
 import { taskRoutes } from "./routes/tasks.js";
 import { resolveUserIdFromToken } from "../auth/tokenAuth.js";
+import { captureServerException } from "../observability/sentry.js";
 
 export async function buildApp() {
   const fastify = Fastify({ logger: true });
@@ -93,6 +95,19 @@ export async function buildApp() {
   );
 
   await fastify.register(authPlugin);
+
+  fastify.setErrorHandler((error: FastifyError, request, reply) => {
+    if ((error.statusCode ?? 500) >= 500) {
+      captureServerException(error, {
+        method: request.method,
+        requestId: request.id,
+        url: request.url,
+        userId: request.userId,
+      });
+    }
+
+    return reply.send(error instanceof Error ? error : new Error(String(error)));
+  });
 
   fastify.post("/mcp", async (request, reply) => {
     const server = createKairosMcpServer({ getUserId: () => request.userId });

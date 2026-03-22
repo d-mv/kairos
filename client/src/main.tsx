@@ -5,10 +5,13 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.js";
 import { recoverFromChunkLoadError } from "./lib/chunk-load-recovery.js";
+import { initSentry } from "./lib/sentry.js";
 
 window.addEventListener("vite:preloadError", (event) => {
   recoverFromChunkLoadError(event, window.sessionStorage, () => window.location.reload());
 });
+
+initSentry();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
