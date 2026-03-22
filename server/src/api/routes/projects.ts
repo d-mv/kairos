@@ -1,5 +1,17 @@
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 import * as container from "../container.js";
+
+const createProjectSchema = z.object({
+  name: z.string().trim().min(1, "Project name is required"),
+  areaId: z.string().optional(),
+});
+
+const updateProjectSchema = z.object({
+  name: z.string().trim().min(1, "Project name is required").optional(),
+  areaId: z.union([z.string(), z.null()]).optional(),
+  completedAt: z.union([z.string(), z.null()]).optional(),
+});
 
 export async function projectRoutes(fastify: FastifyInstance) {
   // GET /api/v1/projects
@@ -10,10 +22,15 @@ export async function projectRoutes(fastify: FastifyInstance) {
 
   // POST /api/v1/projects
   fastify.post<{ Body: { name: string; areaId?: string } }>("/", async (req, reply) => {
+    const parsed = createProjectSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid project payload" });
+    }
+
     const result = await container.createProject.execute({
-      name: req.body.name,
+      name: parsed.data.name,
       userId: req.userId,
-      areaId: req.body.areaId,
+      areaId: parsed.data.areaId,
     });
     if (result.isErr) return reply.status(400).send({ error: result.error });
     return reply.status(201).send(result.value);
@@ -33,10 +50,15 @@ export async function projectRoutes(fastify: FastifyInstance) {
     Params: { id: string };
     Body: { name?: string; areaId?: string | null; completedAt?: string | null };
   }>("/:id", async (req, reply) => {
+    const parsed = updateProjectSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: "Invalid project update payload" });
+    }
+
     const result = await container.updateProject.execute({
       id: req.params.id,
       userId: req.userId,
-      ...req.body,
+      ...parsed.data,
     });
     if (result.isErr) return reply.status(400).send({ error: result.error });
     return result.value;

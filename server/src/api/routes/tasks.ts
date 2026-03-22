@@ -1,6 +1,47 @@
 import type { TaskDurationUnit, TaskPriority } from "@kairos/shared";
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 import * as container from "../container.js";
+
+const taskPrioritySchema = z
+  .number()
+  .refine((value): value is TaskPriority => [1, 2, 3, 4].includes(value), "Invalid task priority");
+const taskDurationUnitSchema = z.union([
+  z.literal("h"),
+  z.literal("d"),
+  z.literal("w"),
+  z.literal("m"),
+]);
+const taskTagsSchema = z.array(z.string());
+
+const createTaskSchema = z.object({
+  title: z.string().trim().min(1, "Task title is required"),
+  description: z.string().optional(),
+  priority: taskPrioritySchema.optional(),
+  projectId: z.string().optional(),
+  areaId: z.string().optional(),
+  parentTaskId: z.string().optional(),
+  dueDate: z.string().optional(),
+  duration: z.number().optional(),
+  durationUnit: taskDurationUnitSchema.optional(),
+  tags: taskTagsSchema.optional(),
+});
+
+const updateTaskSchema = z.object({
+  title: z.string().trim().min(1, "Task title is required").optional(),
+  description: z.union([z.string(), z.null()]).optional(),
+  priority: taskPrioritySchema.optional(),
+  projectId: z.union([z.string(), z.null()]).optional(),
+  areaId: z.union([z.string(), z.null()]).optional(),
+  dueDate: z.union([z.string(), z.null()]).optional(),
+  duration: z.union([z.number(), z.null()]).optional(),
+  durationUnit: z.union([taskDurationUnitSchema, z.null()]).optional(),
+  tags: taskTagsSchema.optional(),
+});
+
+const moveTaskSchema = z.object({
+  afterId: z.union([z.string(), z.null()]),
+});
 
 export async function taskRoutes(fastify: FastifyInstance) {
   // GET /api/v1/tasks
@@ -37,9 +78,15 @@ export async function taskRoutes(fastify: FastifyInstance) {
       tags?: string[];
     };
   }>("/", async (req, reply) => {
+    const parsed = createTaskSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      return reply.status(400).send({ error: issue?.message ?? "Invalid task payload" });
+    }
+
     try {
       const result = await container.createTask.execute({
-        ...req.body,
+        ...parsed.data,
         userId: req.userId,
       });
       if (result.isErr) return reply.status(400).send({ error: result.error });
@@ -75,10 +122,16 @@ export async function taskRoutes(fastify: FastifyInstance) {
       tags?: string[];
     };
   }>("/:id", async (req, reply) => {
+    const parsed = updateTaskSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      return reply.status(400).send({ error: issue?.message ?? "Invalid task update payload" });
+    }
+
     const result = await container.updateTask.execute({
       id: req.params.id,
       userId: req.userId,
-      ...req.body,
+      ...parsed.data,
     });
     if (result.isErr) return reply.status(400).send({ error: result.error });
     return result.value;
@@ -109,9 +162,14 @@ export async function taskRoutes(fastify: FastifyInstance) {
   fastify.put<{ Params: { id: string }; Body: { afterId: string | null } }>(
     "/:id/move",
     async (req, reply) => {
+      const parsed = moveTaskSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return reply.status(400).send({ error: "Invalid task move target" });
+      }
+
       const result = await container.reorderTask.execute({
         taskId: req.params.id,
-        afterId: req.body.afterId,
+        afterId: parsed.data.afterId,
         userId: req.userId,
       });
       if (result.isErr) return reply.status(400).send({ error: result.error });
