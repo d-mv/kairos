@@ -2,9 +2,8 @@ import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import Fastify from "fastify";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { createClient } from "@supabase/supabase-js";
 
-import { eventBus } from "./container.js";
+import { apiKeyRepo, eventBus } from "./container.js";
 import authPlugin from "./plugins/auth.js";
 import { authRoutes } from "./routes/auth.js";
 import { areaRoutes } from "./routes/areas.js";
@@ -16,14 +15,14 @@ import { createKairosMcpServer } from "../mcp/kairosMcpServer.js";
 import { notificationRoutes } from "./routes/notifications.js";
 import { projectRoutes } from "./routes/projects.js";
 import { taskRoutes } from "./routes/tasks.js";
+import { resolveUserIdFromToken } from "../auth/tokenAuth.js";
 
 export async function buildApp() {
   const fastify = Fastify({ logger: true });
-  const supabaseUrl = process.env["SUPABASE_URL"]!;
-  const supabaseKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
-  const supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
+  const jwtSecret = process.env["JWT_SECRET"];
+  if (!jwtSecret) {
+    throw new Error("Missing JWT_SECRET environment variable");
+  }
 
   await fastify.register(cors, {
     origin: process.env["CLIENT_URL"] ?? "http://localhost:5173",
@@ -34,28 +33,43 @@ export async function buildApp() {
   await fastify.register(websocket);
 
   fastify.get("/ws", { websocket: true, config: { skipAuth: true } }, async (socket, req) => {
-    const query =
-      req.query && typeof req.query === "object"
-        ? (req.query as Record<string, unknown>)
-        : undefined;
-    const token = typeof query?.["token"] === "string" ? query["token"] : null;
-    if (!token) {
-      socket.close();
-      return;
-    }
+    let authenticated = false;
+    const closeTimer = setTimeout(() => {
+      if (!authenticated) socket.close();
+    }, 5000);
 
-    const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data.user) {
-      socket.close();
-      return;
-    }
+    socket.on("message", async (rawMessage) => {
+      if (authenticated) return;
 
-    eventBus.addClient(
-      data.user.id,
-      socket as unknown as { readyState: number; send(data: string): void },
-    );
+      let token: string | null = null;
+      try {
+        const message = JSON.parse(String(rawMessage)) as { type?: string; token?: string };
+        token = message.type === "auth" && typeof message.token === "string" ? message.token : null;
+      } catch {
+        token = null;
+      }
+
+      if (!token) {
+        socket.close();
+        return;
+      }
+
+      const userId = await resolveUserIdFromToken(token, jwtSecret, apiKeyRepo);
+      if (!userId) {
+        socket.close();
+        return;
+      }
+
+      authenticated = true;
+      clearTimeout(closeTimer);
+      eventBus.addClient(
+        userId,
+        socket as unknown as { readyState: number; send(data: string): void },
+      );
+    });
 
     socket.on("close", () => {
+      clearTimeout(closeTimer);
       eventBus.removeClient(socket as unknown as { readyState: number; send(data: string): void });
     });
   });

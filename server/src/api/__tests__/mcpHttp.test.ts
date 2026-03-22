@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LATEST_PROTOCOL_VERSION } from "@modelcontextprotocol/sdk/types.js";
+import { createSignedJwt } from "./jwtTest.js";
 
 const getUserMock = vi.fn();
 const listProjectsExecuteMock = vi.fn();
@@ -39,17 +40,16 @@ vi.mock("../container.js", () => ({
 
 describe("MCP HTTP endpoint", () => {
   const apps: Array<{ close: () => Promise<void> }> = [];
+  const authToken = createSignedJwt({ sub: "auth-user-123", exp: 4102444800 });
 
   beforeEach(() => {
     vi.resetModules();
     getUserMock.mockReset();
     listProjectsExecuteMock.mockReset();
     findUserIdByTokenHashMock.mockReset();
-    getUserMock.mockImplementation(async (token: string) => {
-      if (token === "valid-token") {
-        return { data: { user: { id: "auth-user-123" } }, error: null };
-      }
-      return { data: { user: null }, error: new Error("Invalid token") };
+    getUserMock.mockResolvedValue({
+      data: { user: null },
+      error: new Error("Disabled in local JWT mode"),
     });
     findUserIdByTokenHashMock.mockResolvedValue(null);
     listProjectsExecuteMock.mockResolvedValue({ isErr: false, value: [] });
@@ -62,6 +62,7 @@ describe("MCP HTTP endpoint", () => {
   it("requires auth for MCP and derives the user from the bearer token", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();
@@ -94,7 +95,7 @@ describe("MCP HTTP endpoint", () => {
       headers: {
         accept: "application/json, text/event-stream",
         "content-type": "application/json",
-        authorization: "Bearer valid-token",
+        authorization: `Bearer ${authToken}`,
       },
       payload: {
         jsonrpc: "2.0",
@@ -124,7 +125,7 @@ describe("MCP HTTP endpoint", () => {
         accept: "application/json, text/event-stream",
         "content-type": "application/json",
         "mcp-protocol-version": initializeBody.result.protocolVersion,
-        authorization: "Bearer valid-token",
+        authorization: `Bearer ${authToken}`,
       },
       payload: {
         jsonrpc: "2.0",
@@ -154,7 +155,7 @@ describe("MCP HTTP endpoint", () => {
         accept: "application/json, text/event-stream",
         "content-type": "application/json",
         "mcp-protocol-version": initializeBody.result.protocolVersion,
-        authorization: "Bearer valid-token",
+        authorization: `Bearer ${authToken}`,
       },
       payload: {
         jsonrpc: "2.0",
@@ -174,6 +175,7 @@ describe("MCP HTTP endpoint", () => {
   it("accepts a stored API key bearer token for MCP auth", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     findUserIdByTokenHashMock.mockResolvedValue("api-key-user-456");
 
@@ -233,6 +235,7 @@ describe("MCP HTTP endpoint", () => {
   it("returns 404 for oauth discovery routes instead of requiring auth", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();

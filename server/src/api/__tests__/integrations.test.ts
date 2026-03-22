@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createSignedJwt } from "./jwtTest.js";
 
 const getUserMock = vi.fn();
 const findUserIdByTokenHashMock = vi.fn();
@@ -60,6 +61,7 @@ vi.mock("../container.js", () => ({
 
 describe("integration routes", () => {
   const apps: Array<{ close: () => Promise<void> }> = [];
+  const authToken = createSignedJwt({ sub: "auth-user-123", exp: 4102444800 });
 
   beforeEach(() => {
     vi.resetModules();
@@ -71,12 +73,9 @@ describe("integration routes", () => {
     saveTodoistTokenExecuteMock.mockReset();
     disconnectIntegrationExecuteMock.mockReset();
 
-    getUserMock.mockImplementation(async (token: string) => {
-      if (token === "valid-token") {
-        return { data: { user: { id: "auth-user-123" } }, error: null };
-      }
-
-      return { data: { user: null }, error: new Error("Invalid token") };
+    getUserMock.mockResolvedValue({
+      data: { user: null },
+      error: new Error("Disabled in local JWT mode"),
     });
 
     findUserIdByTokenHashMock.mockResolvedValue(null);
@@ -102,6 +101,7 @@ describe("integration routes", () => {
   it("lists integration statuses for the authenticated user", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();
@@ -111,7 +111,7 @@ describe("integration routes", () => {
       method: "GET",
       url: "/api/v1/integrations",
       headers: {
-        authorization: "Bearer valid-token",
+        authorization: `Bearer ${authToken}`,
       },
     });
 
@@ -127,6 +127,7 @@ describe("integration routes", () => {
   it("returns a Google auth url for the authenticated user", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();
@@ -136,7 +137,7 @@ describe("integration routes", () => {
       method: "POST",
       url: "/api/v1/integrations/google/start",
       headers: {
-        authorization: "Bearer valid-token",
+        authorization: `Bearer ${authToken}`,
       },
     });
 
@@ -150,6 +151,7 @@ describe("integration routes", () => {
   it("stores a user-provided Todoist token", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();
@@ -159,7 +161,7 @@ describe("integration routes", () => {
       method: "PUT",
       url: "/api/v1/integrations/todoist/token",
       headers: {
-        authorization: "Bearer valid-token",
+        authorization: `Bearer ${authToken}`,
       },
       payload: {
         token: "todoist-api-token",
@@ -173,6 +175,7 @@ describe("integration routes", () => {
   it("disconnects an integration for the authenticated user", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();
@@ -182,7 +185,7 @@ describe("integration routes", () => {
       method: "DELETE",
       url: "/api/v1/integrations/google",
       headers: {
-        authorization: "Bearer valid-token",
+        authorization: `Bearer ${authToken}`,
       },
     });
 
@@ -193,6 +196,7 @@ describe("integration routes", () => {
   it("handles the Google callback without bearer auth and redirects back to the client", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();

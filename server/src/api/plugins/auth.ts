@@ -1,8 +1,7 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import fp from "fastify-plugin";
 import Fastify from "fastify";
-import { createClient } from "@supabase/supabase-js";
-import { hashApiKey } from "../../auth/apiKeys.js";
+import { resolveUserIdFromToken } from "../../auth/tokenAuth.js";
 import * as container from "../container.js";
 
 declare module "fastify" {
@@ -11,14 +10,13 @@ declare module "fastify" {
   }
 }
 
-const supabaseUrl = process.env["SUPABASE_URL"]!;
-const supabaseKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
+const jwtSecret =
+  process.env["JWT_SECRET"] ??
+  (() => {
+    throw new Error("Missing JWT_SECRET environment variable");
+  })();
 
 async function authPlugin(fastify: ReturnType<typeof Fastify>) {
-  const client = createClient(supabaseUrl, supabaseKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-
   fastify.addHook("preHandler", async (request: FastifyRequest, reply: FastifyReply) => {
     const routeConfig = request.routeOptions.config as unknown as
       | { skipAuth?: boolean }
@@ -31,13 +29,7 @@ async function authPlugin(fastify: ReturnType<typeof Fastify>) {
       return reply.status(401).send({ error: "Missing or invalid Authorization header" });
     }
     const token = auth.slice(7);
-    const { data, error } = await client.auth.getUser(token);
-    if (!error && data.user) {
-      request.userId = data.user.id;
-      return;
-    }
-
-    const userId = await container.apiKeyRepo.findUserIdByTokenHash(hashApiKey(token));
+    const userId = await resolveUserIdFromToken(token, jwtSecret, container.apiKeyRepo);
     if (!userId) {
       return reply.status(401).send({ error: "Invalid token" });
     }

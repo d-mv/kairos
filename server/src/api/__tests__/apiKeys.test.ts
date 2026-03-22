@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createSignedJwt } from "./jwtTest.js";
 
 const getUserMock = vi.fn();
 const findUserIdByTokenHashMock = vi.fn();
@@ -48,6 +49,7 @@ const CREATED_AT = "2026-03-02T00:00:00.000Z";
 
 describe("API key routes", () => {
   const apps: Array<{ close: () => Promise<void> }> = [];
+  const authToken = createSignedJwt({ sub: "auth-user-123", exp: 4102444800 });
 
   beforeEach(() => {
     vi.resetModules();
@@ -57,11 +59,9 @@ describe("API key routes", () => {
     createForUserMock.mockReset();
     deleteForUserMock.mockReset();
 
-    getUserMock.mockImplementation(async (token: string) => {
-      if (token === "valid-token") {
-        return { data: { user: { id: "auth-user-123" } }, error: null };
-      }
-      return { data: { user: null }, error: new Error("Invalid token") };
+    getUserMock.mockResolvedValue({
+      data: { user: null },
+      error: new Error("Disabled in local JWT mode"),
     });
 
     findUserIdByTokenHashMock.mockResolvedValue(null);
@@ -83,6 +83,7 @@ describe("API key routes", () => {
   it("lists API keys for the authenticated user", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     listForUserMock.mockResolvedValue([
       {
@@ -101,7 +102,7 @@ describe("API key routes", () => {
     const response = await app.inject({
       method: "GET",
       url: "/api/v1/auth/api-keys",
-      headers: { authorization: "Bearer valid-token" },
+      headers: { authorization: `Bearer ${authToken}` },
     });
 
     expect(response.statusCode).toBe(200);
@@ -114,6 +115,7 @@ describe("API key routes", () => {
   it("creates a named API key for the authenticated user", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();
@@ -122,7 +124,7 @@ describe("API key routes", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/auth/api-keys",
-      headers: { authorization: "Bearer valid-token" },
+      headers: { authorization: `Bearer ${authToken}` },
       body: { name: "Claude MCP" },
     });
 
@@ -146,6 +148,7 @@ describe("API key routes", () => {
   it("rejects creation when name is missing", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();
@@ -154,7 +157,7 @@ describe("API key routes", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/auth/api-keys",
-      headers: { authorization: "Bearer valid-token" },
+      headers: { authorization: `Bearer ${authToken}` },
       body: { name: "  " },
     });
 
@@ -164,6 +167,7 @@ describe("API key routes", () => {
   it("deletes an API key for the authenticated user", async () => {
     process.env["SUPABASE_URL"] ??= "https://example.supabase.co";
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ??= "test-service-role-key";
+    process.env["JWT_SECRET"] ??= "test-jwt-secret";
 
     const { buildApp } = await import("../buildApp.js");
     const app = await buildApp();
@@ -172,7 +176,7 @@ describe("API key routes", () => {
     const response = await app.inject({
       method: "DELETE",
       url: "/api/v1/auth/api-keys/token-uuid-1",
-      headers: { authorization: "Bearer valid-token" },
+      headers: { authorization: `Bearer ${authToken}` },
     });
 
     expect(response.statusCode).toBe(204);

@@ -24,11 +24,11 @@ export class WsClient {
       prev.close();
     }
 
-    const wsUrl = `${this.url}?token=${token}`;
-    this.ws = new WebSocket(wsUrl);
+    this.ws = new WebSocket(this.url);
 
     this.ws.onopen = () => {
       this.reconnectAttempts = 0;
+      this.ws?.send(JSON.stringify({ type: "auth", token }));
     };
 
     this.ws.onmessage = (msg) => {
@@ -84,6 +84,11 @@ export class WsClient {
   }
 }
 
-const fallbackWsUrl = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:3000/ws`;
-const WS_URL = import.meta.env["VITE_WS_URL"] ?? fallbackWsUrl;
+const fallbackWsUrl =
+  typeof window === "undefined"
+    ? "ws://localhost:3000/ws"
+    : `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:3000/ws`;
+const WS_URL =
+  (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.["VITE_WS_URL"] ??
+  fallbackWsUrl;
 export const wsClient = new WsClient(WS_URL);
