@@ -3,9 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "db:baseline": "pnpm --filter server db:baseline",
     "dev:server": "pnpm --filter server dev",
     "dev:client": "pnpm --filter client dev",
     "db:init": "node scripts/db-init.mjs",
+    "db:migrate": "pnpm --filter server db:migrate",
+    "db:status": "pnpm --filter server db:status",
     "db:migrate-duration": "node scripts/db-migrate-duration.mjs",
     "db:fix-permissions": "node scripts/db-fix-permissions.mjs",
     "build": "pnpm --filter shared build && pnpm --filter server build && pnpm --filter client build",

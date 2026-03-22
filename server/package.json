@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "predev": "pnpm --filter @kairos/shared build",
+    "db:baseline": "tsx scripts/db-baseline.ts",
+    "db:migrate": "tsx scripts/db-migrate.ts",
+    "db:status": "tsx scripts/db-status.ts",
     "dev": "tsx watch src/api/server.ts",
     "prebuild": "pnpm --filter @kairos/shared build",
     "build": "tsc",

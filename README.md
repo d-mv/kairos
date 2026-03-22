@@ -31,6 +31,20 @@ pnpm dev:server
 pnpm dev:client
 ```
 
+Database migrations:
+
+```bash
+pnpm db:status
+pnpm db:migrate
+```
+
+For an existing database that predates migration tracking, baseline the already-present historical migrations once, then run normal migrations:
+
+```bash
+pnpm db:baseline -- 001_initial.sql 002_task_duration.sql 003_api_keys.sql 003_task_position.sql 004_brain.sql 005_integrations.sql 006_project_completion.sql 008_api_keys_named.sql 009_task_tags.sql
+pnpm db:migrate
+```
+
 ## Deploy
 
 Backend:
