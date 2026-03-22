@@ -15,6 +15,11 @@ const jwtSecret =
   (() => {
     throw new Error("Missing JWT_SECRET environment variable");
   })();
+const supabaseUrl =
+  process.env["SUPABASE_URL"] ??
+  (() => {
+    throw new Error("Missing SUPABASE_URL environment variable");
+  })();
 
 async function authPlugin(fastify: ReturnType<typeof Fastify>) {
   fastify.addHook("preHandler", async (request: FastifyRequest, reply: FastifyReply) => {
@@ -29,7 +34,12 @@ async function authPlugin(fastify: ReturnType<typeof Fastify>) {
       return reply.status(401).send({ error: "Missing or invalid Authorization header" });
     }
     const token = auth.slice(7);
-    const userId = await resolveUserIdFromToken(token, jwtSecret, container.apiKeyRepo);
+    const userId = await resolveUserIdFromToken(
+      token,
+      jwtSecret,
+      supabaseUrl,
+      container.apiKeyRepo,
+    );
     if (!userId) {
       return reply.status(401).send({ error: "Invalid token" });
     }

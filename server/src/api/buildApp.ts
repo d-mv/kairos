@@ -56,7 +56,12 @@ export async function buildApp() {
         return;
       }
 
-      const userId = await resolveUserIdFromToken(token, jwtSecret, apiKeyRepo);
+      const userId = await resolveUserIdFromToken(
+        token,
+        jwtSecret,
+        process.env["SUPABASE_URL"] ?? "",
+        apiKeyRepo,
+      );
       if (!userId) {
         socket.close();
         return;

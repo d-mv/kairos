@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { createRemoteJWKSet, decodeProtectedHeader, jwtVerify } from "jose";
 import { hashApiKey } from "./apiKeys.js";
 
 type ApiKeyLookup = {
@@ -18,6 +19,8 @@ function decodeBase64UrlJson<T>(value: string): T | null {
     return null;
   }
 }
+
+const jwksCache = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
 
 function verifyHs256Jwt(token: string, secret: string): JwtPayload | null {
   const parts = token.split(".");
@@ -52,12 +55,41 @@ export function resolveUserIdFromJwt(token: string, secret: string): string | nu
   return typeof payload?.sub === "string" ? payload.sub : null;
 }
 
+async function resolveUserIdFromAsymmetricJwt(
+  token: string,
+  supabaseUrl: string,
+): Promise<string | null> {
+  const issuer = `${supabaseUrl.replace(/\/+$/, "")}/auth/v1`;
+  const jwksUrl = `${issuer}/.well-known/jwks.json`;
+  const jwks = jwksCache.get(jwksUrl) ?? createRemoteJWKSet(new URL(jwksUrl));
+  jwksCache.set(jwksUrl, jwks);
+
+  try {
+    const { payload } = await jwtVerify(token, jwks, { issuer });
+    return typeof payload.sub === "string" ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function resolveUserIdFromToken(
   token: string,
   jwtSecret: string,
+  supabaseUrl: string,
   apiKeyLookup: ApiKeyLookup,
 ): Promise<string | null> {
-  const jwtUserId = resolveUserIdFromJwt(token, jwtSecret);
+  let alg: string | undefined;
+  try {
+    alg = decodeProtectedHeader(token).alg;
+  } catch {
+    alg = undefined;
+  }
+  const jwtUserId =
+    alg === "HS256"
+      ? resolveUserIdFromJwt(token, jwtSecret)
+      : alg
+        ? await resolveUserIdFromAsymmetricJwt(token, supabaseUrl)
+        : null;
   if (jwtUserId) return jwtUserId;
   return apiKeyLookup.findUserIdByTokenHash(hashApiKey(token));
 }
