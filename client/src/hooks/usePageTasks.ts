@@ -2,12 +2,16 @@ import { useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
 import { tasksAtom } from "../atoms/tasks.js";
 import { api } from "../lib/api.js";
-import { getPageTaskListParams, type PageTaskScope } from "../lib/page-tasks.js";
+import {
+  getPageTaskListParams,
+  getPageTaskScopeKey,
+  type PageTaskScope,
+} from "../lib/page-tasks.js";
 
 export function usePageTasks(scope: PageTaskScope | null): boolean {
   const setTasks = useSetAtom(tasksAtom);
   const [isLoading, setIsLoading] = useState(scope !== null);
-  const scopeKey = scope ? JSON.stringify(scope) : "";
+  const scopeKey = getPageTaskScopeKey(scope);
 
   useEffect(() => {
     if (!scope) {
@@ -38,7 +42,7 @@ export function usePageTasks(scope: PageTaskScope | null): boolean {
     return () => {
       cancelled = true;
     };
-  }, [scope, scopeKey, setTasks]);
+  }, [scopeKey, setTasks]);
 
   return isLoading;
 }
