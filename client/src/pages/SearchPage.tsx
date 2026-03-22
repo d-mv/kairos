@@ -17,6 +17,8 @@ import { areasAtom } from "../atoms/areas.js";
 import { brainPagesAtom } from "../atoms/brain.js";
 import { projectsAtom } from "../atoms/projects.js";
 import { selectedTaskIdAtom, tasksAtom } from "../atoms/tasks.js";
+import { workspaceLoadingAtom } from "../atoms/workspace.js";
+import { usePageTasks } from "../hooks/usePageTasks.js";
 import {
   addSavedSearch,
   loadSavedSearches,
@@ -31,9 +33,12 @@ export default function SearchPage() {
   const projects = useAtomValue(projectsAtom);
   const areas = useAtomValue(areasAtom);
   const brainPages = useAtomValue(brainPagesAtom);
+  const isWorkspaceLoading = useAtomValue(workspaceLoadingAtom);
   const setSelectedTaskId = useSetAtom(selectedTaskIdAtom);
   const navigate = useNavigate();
   const isMobile = checkIsMobile();
+  const isPageLoading = usePageTasks({ kind: "search" });
+  const isLoading = isWorkspaceLoading || isPageLoading;
   const [query, setQuery] = useState("");
   const [showCompleted, setShowCompleted] = useState(false);
   const [savedSearches, setSavedSearches] = useState<string[]>([]);
@@ -108,7 +113,9 @@ export default function SearchPage() {
           ) : null}
 
           {!query.trim() ? (
-            <Text c="dimmed">Type to query across your loaded workspace.</Text>
+            <Text c="dimmed">Type to query across your workspace.</Text>
+          ) : isLoading ? (
+            <Text c="dimmed">Loading tasks…</Text>
           ) : results.length === 0 ? (
             <Text c="dimmed">No results for “{query.trim()}”.</Text>
           ) : (

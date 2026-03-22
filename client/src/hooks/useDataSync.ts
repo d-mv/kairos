@@ -1,5 +1,5 @@
+import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect } from "react";
-import { useSetAtom, useAtomValue } from "jotai";
 import { areasAtom } from "../atoms/areas.js";
 import { brainFoldersAtom, brainPagesAtom } from "../atoms/brain.js";
 import { notificationsAtom } from "../atoms/notifications.js";
@@ -16,7 +16,7 @@ import { api } from "../lib/api.js";
 import { loadWorkspaceCache, saveWorkspaceCache } from "../lib/cache.js";
 
 /**
- * Loads initial data and applies WebSocket patches.
+ * Loads initial shell data and applies WebSocket patches.
  * Used once in the top-level AppLayout.
  */
 export function useDataSync() {
@@ -40,25 +40,22 @@ export function useDataSync() {
       setWorkspaceReady(false);
       setWorkspaceError(null);
 
-      // Hydrate from cache immediately so UI is responsive before the API responds
       const cached = loadWorkspaceCache();
       if (cached && !cancelled) {
         setAreas(cached.areas);
         setBrainFolders(cached.brainFolders);
         setBrainPages(cached.brainPages);
         setProjects(cached.projects);
-        setTasks(cached.tasks);
         setWorkspaceReady(true);
         setWorkspaceLoading(false);
       }
 
       try {
-        const [areas, brain, notifications, projects, tasks] = await Promise.all([
+        const [areas, brain, notifications, projects] = await Promise.all([
           api.areas.list(),
           api.brain.list(),
           api.notifications.list(),
           api.projects.list(),
-          api.tasks.list(),
         ]);
 
         if (cancelled) return;
@@ -68,19 +65,16 @@ export function useDataSync() {
         setBrainPages(brain.pages);
         setNotifications(notifications);
         setProjects(projects);
-        setTasks(tasks);
         setWorkspaceReady(true);
         saveWorkspaceCache({
           areas,
           brainFolders: brain.folders,
           brainPages: brain.pages,
           projects,
-          tasks,
         });
       } catch (error) {
         if (!cancelled) {
           console.error(error);
-          // If we already hydrated from cache, don't show an error
           if (!cached) {
             setWorkspaceError(error instanceof Error ? error.message : "Failed to load workspace");
           }
@@ -104,7 +98,6 @@ export function useDataSync() {
     setBrainPages,
     setNotifications,
     setProjects,
-    setTasks,
     setWorkspaceError,
     setWorkspaceLoading,
     setWorkspaceReady,
@@ -113,27 +106,11 @@ export function useDataSync() {
   useEffect(() => {
     const poll = async () => {
       if (document.visibilityState !== "visible") return;
+
       try {
-        const [areas, brain, notifications, projects, tasks] = await Promise.all([
-          api.areas.list(),
-          api.brain.list(),
-          api.notifications.list(),
-          api.projects.list(),
-          api.tasks.list(),
-        ]);
-        setAreas(areas);
-        setBrainFolders(brain.folders);
-        setBrainPages(brain.pages);
+        const notifications = await api.notifications.list();
+        if (document.visibilityState !== "visible") return;
         setNotifications(notifications);
-        setProjects(projects);
-        setTasks(tasks);
-        saveWorkspaceCache({
-          areas,
-          brainFolders: brain.folders,
-          brainPages: brain.pages,
-          projects,
-          tasks,
-        });
       } catch {
         // silent — don't surface polling errors
       }
@@ -141,7 +118,7 @@ export function useDataSync() {
 
     const id = window.setInterval(() => void poll(), 30_000);
     return () => window.clearInterval(id);
-  }, [setAreas, setBrainFolders, setBrainPages, setNotifications, setProjects, setTasks]);
+  }, [setNotifications]);
 
   useEffect(() => {
     if (!lastEvent) return;
@@ -149,47 +126,47 @@ export function useDataSync() {
     switch (lastEvent.type) {
       case "task:created":
         setTasks((prev) => {
-          if (prev.some((t) => t.id === lastEvent.payload.id)) return prev;
+          if (prev.some((task) => task.id === lastEvent.payload.id)) return prev;
           return [...prev, lastEvent.payload];
         });
         break;
       case "task:updated":
         setTasks((prev) =>
-          prev.map((t) => (t.id === lastEvent.payload.id ? lastEvent.payload : t)),
+          prev.map((task) => (task.id === lastEvent.payload.id ? lastEvent.payload : task)),
         );
         break;
       case "task:deleted":
-        setTasks((prev) => prev.filter((t) => t.id !== lastEvent.payload.id));
+        setTasks((prev) => prev.filter((task) => task.id !== lastEvent.payload.id));
         break;
-
       case "project:created":
         setProjects((prev) => {
-          if (prev.some((p) => p.id === lastEvent.payload.id)) return prev;
+          if (prev.some((project) => project.id === lastEvent.payload.id)) return prev;
           return [...prev, lastEvent.payload];
         });
         break;
       case "project:updated":
         setProjects((prev) =>
-          prev.map((p) => (p.id === lastEvent.payload.id ? lastEvent.payload : p)),
+          prev.map((project) =>
+            project.id === lastEvent.payload.id ? lastEvent.payload : project,
+          ),
         );
         break;
       case "project:deleted":
-        setProjects((prev) => prev.filter((p) => p.id !== lastEvent.payload.id));
+        setProjects((prev) => prev.filter((project) => project.id !== lastEvent.payload.id));
         break;
-
       case "area:created":
         setAreas((prev) => {
-          if (prev.some((a) => a.id === lastEvent.payload.id)) return prev;
+          if (prev.some((area) => area.id === lastEvent.payload.id)) return prev;
           return [...prev, lastEvent.payload];
         });
         break;
       case "area:updated":
         setAreas((prev) =>
-          prev.map((a) => (a.id === lastEvent.payload.id ? lastEvent.payload : a)),
+          prev.map((area) => (area.id === lastEvent.payload.id ? lastEvent.payload : area)),
         );
         break;
       case "area:deleted":
-        setAreas((prev) => prev.filter((a) => a.id !== lastEvent.payload.id));
+        setAreas((prev) => prev.filter((area) => area.id !== lastEvent.payload.id));
         break;
       case "notification:created":
         setNotifications((prev) => {

@@ -9,6 +9,7 @@ import { tasksAtom } from "../atoms/tasks.js";
 import { userAtom } from "../atoms/auth.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { SharedItemLabel } from "../components/SharedItemLabel.js";
+import { usePageTasks } from "../hooks/usePageTasks.js";
 import { Box, Button, Group, Skeleton, Stack, Text, Title } from "@mantine/core";
 import { getProjectListItems } from "../lib/project-views.js";
 
@@ -21,12 +22,14 @@ const PRIORITY_COLOR: Record<number, string> = {
 export default function ProjectsPage() {
   const projects = useAtomValue(activeProjectsAtom);
   const tasks = useAtomValue(tasksAtom);
-  const isLoading = useAtomValue(workspaceLoadingAtom);
+  const isWorkspaceLoading = useAtomValue(workspaceLoadingAtom);
   const currentUser = useAtomValue(userAtom);
   const setPageMenu = useSetAtom(pageMenuAtom);
   const setAddEntity = useSetAtom(addEntityAtom);
   const navigate = useNavigate();
   const isMobile = checkIsMobile();
+  const isPageLoading = usePageTasks({ kind: "projects" });
+  const isLoading = isWorkspaceLoading || isPageLoading;
   const projectItems = useMemo(() => getProjectListItems(projects, tasks), [projects, tasks]);
 
   useEffect(() => {

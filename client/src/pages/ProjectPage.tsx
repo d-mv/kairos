@@ -13,6 +13,7 @@ import { SharedItemLabel } from "../components/SharedItemLabel.js";
 import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.js";
 import { ProjectGantt } from "../components/ProjectGantt.js";
 import { TaskList } from "../components/TaskList.js";
+import { usePageTasks } from "../hooks/usePageTasks.js";
 import { api } from "../lib/api.js";
 import { canShowProjectGantt } from "../lib/project-gantt.js";
 import { getProjectPageViewMenuItems } from "../lib/project-page-menu.js";
@@ -38,7 +39,7 @@ export default function ProjectPage() {
   const currentUser = useAtomValue(userAtom);
   const areas = useAtomValue(areasAtom);
   const tasksByProject = useAtomValue(tasksByProjectAtom);
-  const isLoading = useAtomValue(workspaceLoadingAtom);
+  const isWorkspaceLoading = useAtomValue(workspaceLoadingAtom);
   const setProjects = useSetAtom(projAtom);
   const setTasks = useSetAtom(tasksAtom);
   const setPageMenu = useSetAtom(pageMenuAtom);
@@ -57,6 +58,8 @@ export default function ProjectPage() {
   const [renameError, setRenameError] = useState<string | null>(null);
   const [areaOpen, setAreaOpen] = useState(false);
   const [areaValue, setAreaValue] = useState("");
+  const isPageLoading = usePageTasks(id ? { kind: "project", id } : null);
+  const isLoading = isWorkspaceLoading || isPageLoading;
 
   const scheduleActionReset = () => {
     if (actionResetTimeoutRef.current) window.clearTimeout(actionResetTimeoutRef.current);

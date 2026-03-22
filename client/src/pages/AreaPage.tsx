@@ -14,6 +14,7 @@ import { ProjectGantt } from "../components/ProjectGantt.js";
 import { TaskCalendar } from "../components/TaskCalendar.js";
 import { TaskDetailPanel } from "../components/TaskDetailPanel/TaskDetailPanel.js";
 import { TaskList } from "../components/TaskList.js";
+import { usePageTasks } from "../hooks/usePageTasks.js";
 import { api } from "../lib/api.js";
 import { canShowProjectGantt } from "../lib/project-gantt.js";
 import { Badge, Box, Flex, Group, Skeleton, Stack, Text, Title } from "@mantine/core";
@@ -23,7 +24,7 @@ export default function AreaPage() {
   const navigate = useNavigate();
   const areas = useAtomValue(areasAtom);
   const tasksByArea = useAtomValue(tasksByAreaAtom);
-  const isLoading = useAtomValue(workspaceLoadingAtom);
+  const isWorkspaceLoading = useAtomValue(workspaceLoadingAtom);
   const setAreas = useSetAtom(areasAtom);
   const setProjects = useSetAtom(projectsAtom);
   const setTasks = useSetAtom(tasksAtom);
@@ -34,6 +35,8 @@ export default function AreaPage() {
   const [view, setView] = useState<"list" | "gantt" | "calendar">("list");
   const [actionState, setActionState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const actionResetTimeoutRef = useRef<number | null>(null);
+  const isPageLoading = usePageTasks(id ? { kind: "area", id } : null);
+  const isLoading = isWorkspaceLoading || isPageLoading;
 
   const scheduleActionReset = () => {
     if (actionResetTimeoutRef.current) window.clearTimeout(actionResetTimeoutRef.current);

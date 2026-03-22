@@ -3,12 +3,15 @@ import { useAtomValue } from "jotai";
 import { tasksAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { TaskCalendar } from "../components/TaskCalendar.js";
+import { usePageTasks } from "../hooks/usePageTasks.js";
 import { Box, Skeleton, Stack, Text, Title } from "@mantine/core";
 
 export default function SchedulePage() {
   const tasks = useAtomValue(tasksAtom);
-  const isLoading = useAtomValue(workspaceLoadingAtom);
+  const isWorkspaceLoading = useAtomValue(workspaceLoadingAtom);
   const isMobile = checkIsMobile();
+  const isPageLoading = usePageTasks({ kind: "schedule" });
+  const isLoading = isWorkspaceLoading || isPageLoading;
   const openTasks = tasks.filter((task) => task.status !== "done");
   const hasDatedOpenTasks = openTasks.some((task) => task.dueDate !== null);
 

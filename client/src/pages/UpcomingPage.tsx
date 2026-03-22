@@ -5,16 +5,19 @@ import { useEffect, useMemo, useState } from "react";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { tasksAtom } from "../atoms/tasks.js";
 import { workspaceLoadingAtom } from "../atoms/workspace.js";
+import { usePageTasks } from "../hooks/usePageTasks.js";
 import { getUpcomingTasks } from "../lib/task-views.js";
 import { UpcomingPageDesktopView } from "./views/UpcomingPageDesktopView.js";
 import { UpcomingPageMobileView } from "./views/UpcomingPageMobileView.js";
 
 export default function UpcomingPage() {
   const allTasks = useAtomValue(tasksAtom);
-  const isLoading = useAtomValue(workspaceLoadingAtom);
+  const isWorkspaceLoading = useAtomValue(workspaceLoadingAtom);
   const setPageMenu = useSetAtom(pageMenuAtom);
   const [showCompleted, setShowCompleted] = useState(false);
   const isMobile = checkIsMobile();
+  const isPageLoading = usePageTasks({ kind: "upcoming" });
+  const isLoading = isWorkspaceLoading || isPageLoading;
 
   useEffect(() => {
     setPageMenu([

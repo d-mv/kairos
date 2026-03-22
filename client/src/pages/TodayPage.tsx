@@ -3,12 +3,13 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import { pageMenuAtom } from "../atoms/pageMenu.atom.js";
 import { tasksAtom } from "../atoms/tasks.js";
+import { workspaceLoadingAtom } from "../atoms/workspace.js";
+import { usePageTasks } from "../hooks/usePageTasks.js";
 import {
   fetchTodayWeather,
   getTodayWeatherSummary,
   type TodayWeatherSummary,
 } from "../lib/today-weather.js";
-import { workspaceLoadingAtom } from "../atoms/workspace.js";
 import { getTodayTasks } from "../lib/task-views.js";
 import {
   loadWeatherLocationSetting,
@@ -19,12 +20,14 @@ import { TodayPageMobileView } from "./views/TodayPageMobileView.js";
 
 export default function TodayPage() {
   const allTasks = useAtomValue(tasksAtom);
-  const isLoading = useAtomValue(workspaceLoadingAtom);
+  const isWorkspaceLoading = useAtomValue(workspaceLoadingAtom);
   const setPageMenu = useSetAtom(pageMenuAtom);
   const [showCompleted, setShowCompleted] = useState(false);
   const [weatherSummary, setWeatherSummary] = useState<TodayWeatherSummary | null>(null);
   const [weatherError, setWeatherError] = useState(false);
   const isMobile = useMemo(() => checkIsMobile(), []);
+  const isPageLoading = usePageTasks({ kind: "today" });
+  const isLoading = isWorkspaceLoading || isPageLoading;
 
   useEffect(() => {
     setPageMenu([
