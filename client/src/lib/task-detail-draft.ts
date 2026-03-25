@@ -1,5 +1,5 @@
 import type { TaskDurationUnit, TaskPriority } from "@kairos/shared";
-import { fromInputDateTime } from "./utils.js";
+import { fromSplitDateTime } from "./utils.js";
 
 type TaskDetailDraft = {
   title: string;
@@ -7,6 +7,7 @@ type TaskDetailDraft = {
   tags: string[];
   priority: TaskPriority;
   dueDate: string;
+  dueTime: string;
   duration: string;
   durationUnit: TaskDurationUnit | "";
 };
@@ -17,6 +18,7 @@ type TaskDetailSavedState = TaskDetailDraft & {
   savedTags: string[];
   savedPriority: TaskPriority;
   savedDueDate: string;
+  savedDueTime: string;
   savedDuration: string;
   savedDurationUnit: TaskDurationUnit | "";
 };
@@ -29,6 +31,7 @@ export function hasTaskDetailDraftChanges(state: TaskDetailSavedState): boolean 
       tags: state.savedTags,
       priority: state.savedPriority,
       dueDate: state.savedDueDate,
+      dueTime: state.savedDueTime,
       duration: state.savedDuration,
       durationUnit: state.savedDurationUnit,
     }) !==
@@ -38,6 +41,7 @@ export function hasTaskDetailDraftChanges(state: TaskDetailSavedState): boolean 
       tags: state.tags,
       priority: state.priority,
       dueDate: state.dueDate,
+      dueTime: state.dueTime,
       duration: state.duration,
       durationUnit: state.durationUnit,
     })
@@ -87,7 +91,7 @@ export function getTaskDetailSavePayload(draft: TaskDetailDraft):
       description: draft.description || null,
       tags,
       priority: draft.priority,
-      dueDate: fromInputDateTime(draft.dueDate),
+      dueDate: fromSplitDateTime(draft.dueDate, draft.dueTime),
       duration,
       durationUnit,
     },

@@ -5,29 +5,37 @@ export const toDistance = (v: string) => formatDistance(v, new Date(), { addSuff
 export const toFormat = (v: string) => format(v, "EEEE, MMM d");
 
 /**
- * Formats an ISO date string to YYYY-MM-DDTHH:mm for datetime-local input.
- * If only a date is provided, it returns YYYY-MM-DD.
+ * Formats an ISO date string to YYYY-MM-DD for date input.
  */
-export function toInputDateTime(isoString: string | null): string {
+export function toInputDate(isoString: string | null): string {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return "";
+  return format(date, "yyyy-MM-dd");
+}
+
+/**
+ * Formats an ISO date string to HH:mm for time input.
+ */
+export function toInputTime(isoString: string | null): string {
   if (!isoString) return "";
   const date = new Date(isoString);
   if (isNaN(date.getTime())) return "";
 
-  // Check if it's just a date (00:00:00.000)
+  // If it's just a date (00:00:00.000), return empty time
   const isDateOnly = isoString.length <= 10 || isoString.includes("T00:00:00");
-  if (isDateOnly) {
-    return format(date, "yyyy-MM-dd");
-  }
+  if (isDateOnly) return "";
 
-  return format(date, "yyyy-MM-dd'T'HH:mm");
+  return format(date, "HH:mm");
 }
 
 /**
- * Parses a value from datetime-local input into an ISO string.
+ * Combines date and time values from separate inputs into an ISO string.
  */
-export function fromInputDateTime(value: string | null): string | null {
-  if (!value) return null;
-  const date = new Date(value);
+export function fromSplitDateTime(dateValue: string, timeValue: string): string | null {
+  if (!dateValue) return null;
+  const combined = timeValue ? `${dateValue}T${timeValue}` : dateValue;
+  const date = new Date(combined);
   if (isNaN(date.getTime())) return null;
   return date.toISOString();
 }

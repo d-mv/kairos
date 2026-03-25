@@ -23,7 +23,7 @@ import {
   hasTaskDetailDraftChanges,
 } from "../../lib/task-detail-draft.js";
 import { getTaskErrorMessage } from "../../lib/task-errors.js";
-import { toInputDateTime } from "../../lib/utils.js";
+import { toInputDate, toInputTime } from "../../lib/utils.js";
 import { SubtaskList } from "../SubtaskList.js";
 import { TrashIcon } from "../ui/icons.js";
 import { DurationInput } from "./DurationInput.js";
@@ -42,6 +42,7 @@ export function TaskDetailPanel() {
   const [tags, setTags] = useState<string[]>([]);
   const [priority, setPriority] = useState<TaskPriority>(4);
   const [dueDate, setDueDate] = useState("");
+  const [dueTime, setDueTime] = useState("");
   const [duration, setDuration] = useState("");
   const [durationUnit, setDurationUnit] = useState<TaskDurationUnit | "">("");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -52,6 +53,7 @@ export function TaskDetailPanel() {
     tags: string[];
     priority: TaskPriority;
     dueDate: string;
+    dueTime: string;
     duration: string;
     durationUnit: TaskDurationUnit | "";
   } | null>(null);
@@ -63,6 +65,7 @@ export function TaskDetailPanel() {
     tags: string[];
     priority: TaskPriority;
     dueDate: string;
+    dueTime: string;
     duration: string;
     durationUnit: TaskDurationUnit | "";
   } | null>(null);
@@ -75,7 +78,8 @@ export function TaskDetailPanel() {
       setDescription(task.description ?? "");
       setTags(task.parentTaskId ? [] : task.tags);
       setPriority(task.priority);
-      setDueDate(toInputDateTime(task.dueDate));
+      setDueDate(toInputDate(task.dueDate));
+      setDueTime(toInputTime(task.dueDate));
       setDuration(task.duration ? String(task.duration) : "");
       setDurationUnit(task.durationUnit ?? "");
       if (taskChanged) {
@@ -87,7 +91,8 @@ export function TaskDetailPanel() {
         description: task.description ?? "",
         tags: task.parentTaskId ? [] : task.tags,
         priority: task.priority,
-        dueDate: toInputDateTime(task.dueDate),
+        dueDate: toInputDate(task.dueDate),
+        dueTime: toInputTime(task.dueDate),
         duration: task.duration ? String(task.duration) : "",
         durationUnit: task.durationUnit ?? "",
       };
@@ -96,7 +101,8 @@ export function TaskDetailPanel() {
         description: task.description ?? "",
         tags: task.parentTaskId ? [] : task.tags,
         priority: task.priority,
-        dueDate: toInputDateTime(task.dueDate),
+        dueDate: toInputDate(task.dueDate),
+        dueTime: toInputTime(task.dueDate),
         duration: task.duration ? String(task.duration) : "",
         durationUnit: task.durationUnit ?? "",
       };
@@ -112,10 +118,11 @@ export function TaskDetailPanel() {
       tags,
       priority,
       dueDate,
+      dueTime,
       duration,
       durationUnit,
     };
-  }, [description, dueDate, duration, durationUnit, priority, tags, title]);
+  }, [description, dueDate, dueTime, duration, durationUnit, priority, tags, title]);
 
   const persistTaskChanges = async (overrides?: {
     title?: string;
@@ -123,6 +130,7 @@ export function TaskDetailPanel() {
     tags?: string[];
     priority?: TaskPriority;
     dueDate?: string;
+    dueTime?: string;
     duration?: string;
     durationUnit?: TaskDurationUnit | "";
     silentValidation?: boolean;
@@ -133,6 +141,7 @@ export function TaskDetailPanel() {
     const nextTags = task.parentTaskId ? [] : (overrides?.tags ?? tags);
     const nextPriority = overrides?.priority ?? priority;
     const nextDueDate = overrides?.dueDate ?? dueDate;
+    const nextDueTime = overrides?.dueTime ?? dueTime;
     const nextDuration = overrides?.duration ?? duration;
     const nextDurationUnit = overrides?.durationUnit ?? durationUnit;
     const savedState = lastSyncedRef.current;
@@ -145,6 +154,7 @@ export function TaskDetailPanel() {
         savedTags: savedState.tags,
         savedPriority: savedState.priority,
         savedDueDate: savedState.dueDate,
+        savedDueTime: savedState.dueTime,
         savedDuration: savedState.duration,
         savedDurationUnit: savedState.durationUnit,
         title: nextTitle,
@@ -152,6 +162,7 @@ export function TaskDetailPanel() {
         tags: nextTags,
         priority: nextPriority,
         dueDate: nextDueDate,
+        dueTime: nextDueTime,
         duration: nextDuration,
         durationUnit: nextDurationUnit,
       })
@@ -165,6 +176,7 @@ export function TaskDetailPanel() {
       tags: nextTags,
       priority: nextPriority,
       dueDate: nextDueDate,
+      dueTime: nextDueTime,
       duration: nextDuration,
       durationUnit: nextDurationUnit,
     });
@@ -189,7 +201,8 @@ export function TaskDetailPanel() {
       description: savePayload.payload.description ?? "",
       tags: savePayload.payload.tags,
       priority: savePayload.payload.priority,
-      dueDate: toInputDateTime(savePayload.payload.dueDate),
+      dueDate: toInputDate(savePayload.payload.dueDate),
+      dueTime: toInputTime(savePayload.payload.dueDate),
       duration: savePayload.payload.duration ? String(savePayload.payload.duration) : "",
       durationUnit: savePayload.payload.durationUnit ?? "",
     };
@@ -318,6 +331,7 @@ export function TaskDetailPanel() {
     ).sort((a, b) => a.localeCompare(b)),
     priority,
     dueDate,
+    dueTime,
     duration,
     durationUnit,
     setTitle,
@@ -325,6 +339,7 @@ export function TaskDetailPanel() {
     setTags,
     setPriority,
     setDueDate,
+    setDueTime,
     setDuration,
     setDurationUnit,
     handleSave,
@@ -409,18 +424,30 @@ export function TaskDetailPanel() {
               { value: "4", label: "4" },
             ]}
           />
-          <Box style={{ flex: 1 }}>
+          <Group gap="xs" style={{ flex: 1 }}>
             <TextInput
               label="Due date"
-              type="datetime-local"
+              type="date"
               value={dueDate}
               onChange={(e) => {
                 const nextDueDate = e.target.value;
                 setDueDate(nextDueDate);
               }}
               onBlur={handleSave}
+              style={{ flex: 1 }}
             />
-          </Box>
+            <TextInput
+              label="Time"
+              type="time"
+              value={dueTime}
+              onChange={(e) => {
+                const nextDueTime = e.target.value;
+                setDueTime(nextDueTime);
+              }}
+              onBlur={handleSave}
+              w={100}
+            />
+          </Group>
           <Box w={120}>
             <DurationInput
               duration={duration}

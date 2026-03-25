@@ -39,6 +39,7 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
     tagOptions,
     priority,
     dueDate,
+    dueTime,
     duration,
     durationUnit,
     setTitle,
@@ -46,6 +47,7 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
     setTags,
     setPriority,
     setDueDate,
+    setDueTime,
     setDuration,
     setDurationUnit,
     handleToggleComplete,
@@ -140,18 +142,30 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
                 { value: "4", label: "4" },
               ]}
             />
-            <Box style={{ flex: 1 }}>
+            <Group gap="xs" style={{ flex: 1 }}>
               <TextInput
                 label="Due date"
-                type="datetime-local"
+                type="date"
                 value={dueDate}
                 onChange={(e) => {
                   const nextDueDate = e.target.value;
                   setDueDate(nextDueDate);
                 }}
                 onBlur={handleSave}
+                style={{ flex: 1 }}
               />
-            </Box>
+              <TextInput
+                label="Time"
+                type="time"
+                value={dueTime}
+                onChange={(e) => {
+                  const nextDueTime = e.target.value;
+                  setDueTime(nextDueTime);
+                }}
+                onBlur={handleSave}
+                w={100}
+              />
+            </Group>
             <Box w={120}>
               <DurationInput
                 duration={duration}

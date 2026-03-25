@@ -10,6 +10,7 @@ export type TaskDetailPanelController = {
   tagOptions: string[];
   priority: TaskPriority;
   dueDate: string;
+  dueTime: string;
   duration: string;
   durationUnit: TaskDurationUnit | "";
   setTitle: (value: string) => void;
@@ -17,6 +18,7 @@ export type TaskDetailPanelController = {
   setTags: (value: string[]) => void;
   setPriority: (value: TaskPriority) => void;
   setDueDate: (value: string) => void;
+  setDueTime: (value: string) => void;
   setDuration: (value: string) => void;
   setDurationUnit: (value: TaskDurationUnit | "") => void;
   handleSave: () => Promise<void>;
