@@ -214,7 +214,7 @@ export class SupabaseTaskRepository implements TaskRepository {
       project_id: task.projectId,
       area_id: task.areaId,
       user_id: task.userId,
-      due_date: task.dueDate?.toISOString().split("T")[0] ?? null,
+      due_date: task.dueDate?.toISOString() ?? null,
       duration: task.duration,
       duration_unit: task.durationUnit,
       tags: task.tags,

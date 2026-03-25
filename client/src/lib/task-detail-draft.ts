@@ -1,4 +1,5 @@
 import type { TaskDurationUnit, TaskPriority } from "@kairos/shared";
+import { fromInputDateTime } from "./utils.js";
 
 type TaskDetailDraft = {
   title: string;
@@ -86,7 +87,7 @@ export function getTaskDetailSavePayload(draft: TaskDetailDraft):
       description: draft.description || null,
       tags,
       priority: draft.priority,
-      dueDate: draft.dueDate || null,
+      dueDate: fromInputDateTime(draft.dueDate),
       duration,
       durationUnit,
     },

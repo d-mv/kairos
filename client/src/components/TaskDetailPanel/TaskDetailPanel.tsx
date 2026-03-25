@@ -23,6 +23,7 @@ import {
   hasTaskDetailDraftChanges,
 } from "../../lib/task-detail-draft.js";
 import { getTaskErrorMessage } from "../../lib/task-errors.js";
+import { toInputDateTime } from "../../lib/utils.js";
 import { SubtaskList } from "../SubtaskList.js";
 import { TrashIcon } from "../ui/icons.js";
 import { DurationInput } from "./DurationInput.js";
@@ -74,7 +75,7 @@ export function TaskDetailPanel() {
       setDescription(task.description ?? "");
       setTags(task.parentTaskId ? [] : task.tags);
       setPriority(task.priority);
-      setDueDate(task.dueDate ?? "");
+      setDueDate(toInputDateTime(task.dueDate));
       setDuration(task.duration ? String(task.duration) : "");
       setDurationUnit(task.durationUnit ?? "");
       if (taskChanged) {
@@ -86,7 +87,7 @@ export function TaskDetailPanel() {
         description: task.description ?? "",
         tags: task.parentTaskId ? [] : task.tags,
         priority: task.priority,
-        dueDate: task.dueDate ?? "",
+        dueDate: toInputDateTime(task.dueDate),
         duration: task.duration ? String(task.duration) : "",
         durationUnit: task.durationUnit ?? "",
       };
@@ -95,7 +96,7 @@ export function TaskDetailPanel() {
         description: task.description ?? "",
         tags: task.parentTaskId ? [] : task.tags,
         priority: task.priority,
-        dueDate: task.dueDate ?? "",
+        dueDate: toInputDateTime(task.dueDate),
         duration: task.duration ? String(task.duration) : "",
         durationUnit: task.durationUnit ?? "",
       };
@@ -188,7 +189,7 @@ export function TaskDetailPanel() {
       description: savePayload.payload.description ?? "",
       tags: savePayload.payload.tags,
       priority: savePayload.payload.priority,
-      dueDate: savePayload.payload.dueDate ?? "",
+      dueDate: toInputDateTime(savePayload.payload.dueDate),
       duration: savePayload.payload.duration ? String(savePayload.payload.duration) : "",
       durationUnit: savePayload.payload.durationUnit ?? "",
     };
@@ -411,7 +412,7 @@ export function TaskDetailPanel() {
           <Box style={{ flex: 1 }}>
             <TextInput
               label="Due date"
-              type="date"
+              type="datetime-local"
               value={dueDate}
               onChange={(e) => {
                 const nextDueDate = e.target.value;

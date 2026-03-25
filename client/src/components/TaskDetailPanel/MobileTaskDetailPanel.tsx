@@ -143,7 +143,7 @@ export function MobileTaskDetailPanel({ controller }: MobileTaskDetailPanelProps
             <Box style={{ flex: 1 }}>
               <TextInput
                 label="Due date"
-                type="date"
+                type="datetime-local"
                 value={dueDate}
                 onChange={(e) => {
                   const nextDueDate = e.target.value;

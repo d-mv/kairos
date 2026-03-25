@@ -35,7 +35,7 @@ export default function UpcomingPage() {
     () =>
       tasks.reduce(
         (acc, task) => {
-          const date = task.dueDate ?? "";
+          const date = task.dueDate ? task.dueDate.split("T")[0]! : "";
           if (!acc[date]) {
             acc[date] = [];
           }

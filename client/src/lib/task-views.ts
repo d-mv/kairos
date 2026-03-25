@@ -31,7 +31,7 @@ export function getTodayTasks(
 
   return tasks
     .filter(baseFilter)
-    .filter((task) => task.dueDate <= todayKey)
+    .filter((task) => toDateKey(task.dueDate) <= todayKey)
     .sort(compareDueDates);
 }
 
@@ -45,7 +45,7 @@ export function getUpcomingTasks(
 
   return tasks
     .filter(baseFilter)
-    .filter((task) => task.dueDate >= todayKey)
+    .filter((task) => toDateKey(task.dueDate) >= todayKey)
     .sort(compareDueDates);
 }
 

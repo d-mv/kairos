@@ -44,7 +44,7 @@ export function getTaskCalendarData(
   const taskMap = new Map<string, TaskDTO[]>();
 
   for (const task of datedTasks) {
-    const key = task.dueDate;
+    const key = task.dueDate.split("T")[0]!;
     const existing = taskMap.get(key) ?? [];
     existing.push(task);
     taskMap.set(key, existing);
@@ -72,7 +72,10 @@ export function getTaskCalendarData(
 
 export function getTaskCalendarAgendaTasks(tasks: TaskDTO[], date: string): TaskDTO[] {
   return tasks
-    .filter((task): task is TaskDTO & { dueDate: string } => task.dueDate === date)
+    .filter(
+      (task): task is TaskDTO & { dueDate: string } =>
+        task.dueDate !== null && task.dueDate.split("T")[0] === date,
+    )
     .sort((left, right) => left.priority - right.priority || left.title.localeCompare(right.title));
 }
 
