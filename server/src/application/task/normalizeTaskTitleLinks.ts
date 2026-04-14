@@ -191,8 +191,12 @@ async function resolveUrlLabel(url: string, fetchLike: FetchLike): Promise<strin
         const descriptionCaption = extractInstagramCaptionFromDescription(descriptionMatch);
         if (descriptionCaption) return descriptionCaption;
 
+        const normalizedDescription = normalizeHtmlTitle(descriptionMatch);
+        const fromFullDescription = extractFromInstagramFullTitle(normalizedDescription);
+        if (fromFullDescription) return fromFullDescription;
+
         const excerpt = excerptFromText(descriptionMatch, 100);
-        if (excerpt) return excerpt;
+        if (excerpt && !isInstagramStatsTitle(excerpt)) return excerpt;
       }
 
       if (ogTitleMatch) {

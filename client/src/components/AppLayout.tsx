@@ -100,7 +100,7 @@ export function AppLayout() {
           <NotificationsMenu />
           <Menu items={items} topSection={pageMenuItems} />
         </Box>
-        <Box h="100%" style={{ overflow: "hidden" }}>
+        <Box h="100%" style={{ overflow: "hidden", display: "flex", flexDirection: "column" }}>
           {error ? errorPanel : <Outlet />}
         </Box>
         <SettingsDialog />
