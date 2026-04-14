@@ -158,6 +158,22 @@ describe("normalizeTaskTitleLinks", () => {
       expect(result).toBe("See [Instagram](https://www.instagram.com/p/example)");
     });
 
+    it("parses stats-author-date-caption og:title into author: caption", async () => {
+      const fetchLike = vi.fn(async () => ({
+        text: async () =>
+          '<html><head><title>Instagram</title><meta property="og:title" content="15K likes, 33 comments - billionaireunions on March 28, 2026: \u201CThese study habits are banned in school\u201D" /></head></html>',
+      }));
+
+      const result = await normalizeTaskTitleLinks(
+        "See https://www.instagram.com/p/example",
+        fetchLike,
+      );
+
+      expect(result).toBe(
+        "See [billionaireunions: These study habits are banned in school](https://www.instagram.com/p/example)",
+      );
+    });
+
     it("leaves existing markdown labels unchanged", async () => {
       const fetchLike = vi.fn(async () => ({
         text: async () =>

@@ -28,6 +28,8 @@ const YOUTUBE_DOMAINS = new Set([
 ]);
 const INSTAGRAM_STATS_TITLE_PATTERN =
   /^\s*[\d.,\s]+[kKmMbB]?\s+likes?[,;]?\s*[\d.,\s]+[kKmMbB]?\s+comments?(?:\u2026|\.{3})?\s*$/i;
+const INSTAGRAM_FULL_TITLE_PATTERN =
+  /^[\d.,]+[kKmMbB]?\s+likes?[,;]?\s*[\d.,]+[kKmMbB]?\s+comments?\s*-\s*(.+?)\s+on\s+.+:\s*[\u201C\u201D"']?([\s\S]+?)[\u201C\u201D"']?\s*$/i;
 
 type FetchResponseLike = {
   text(): Promise<string>;
@@ -100,6 +102,15 @@ function extractInstagramCaptionFromDescription(raw: string): string {
 
 function isInstagramStatsTitle(title: string): boolean {
   return INSTAGRAM_STATS_TITLE_PATTERN.test(title);
+}
+
+function extractFromInstagramFullTitle(title: string): string | null {
+  const match = title.match(INSTAGRAM_FULL_TITLE_PATTERN);
+  if (!match) return null;
+  const author = match[1]?.trim();
+  const caption = match[2]?.trim();
+  if (!author || !caption) return null;
+  return `${author}: ${caption}`;
 }
 
 function normalizeHtmlTitle(raw: string): string {
@@ -185,7 +196,10 @@ async function resolveUrlLabel(url: string, fetchLike: FetchLike): Promise<strin
       }
 
       if (ogTitleMatch) {
-        const excerpt = excerptFromText(ogTitleMatch, 100);
+        const normalized = normalizeHtmlTitle(ogTitleMatch);
+        const fromFullTitle = extractFromInstagramFullTitle(normalized);
+        if (fromFullTitle) return fromFullTitle;
+        const excerpt = excerptFromText(normalized, 100);
         if (excerpt && !isInstagramStatsTitle(excerpt)) return excerpt;
       }
     }
