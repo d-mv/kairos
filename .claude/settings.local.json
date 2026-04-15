@@ -58,7 +58,8 @@
       "Bash(git -C /Users/dmelnikov/code/kairos add -A)",
       "Bash(git -C /Users/dmelnikov/code/kairos status --short)",
       "Bash(git *)",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(ls Dockerfile* *)"
     ]
   }
 }

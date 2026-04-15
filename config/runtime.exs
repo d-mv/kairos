@@ -100,6 +100,15 @@ if config_env() == :prod do
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
 
+  # MCP server config
+  config :kairos, :mcp_api_token, System.get_env("KAIROS_MCP_TOKEN")
+
+  config :kairos, :mcp_user_id,
+    case System.get_env("KAIROS_MCP_USER_ID") do
+      nil -> nil
+      id -> String.to_integer(id)
+    end
+
   # ## Configuring the mailer
   #
   # In production you need to configure the mailer to use a different adapter.
