@@ -1,10 +1,39 @@
-**/node_modules/
-**/dist/
-**/.env
-**/.env.local
-**/*.js.map
-**/*.d.ts.map
-**/.DS_Store
-**/coverage/
-**/.turbo/
-**/_temp
+# Elixir / Mix
+/_build/
+/cover/
+/deps/
+/doc/
+/.fetch
+erl_crash.dump
+*.ez
+*.beam
+/config/*.secret.exs
+.elixir_ls/
+
+# Phoenix
+/priv/static/assets/
+
+# Node / assets
+/assets/node_modules/
+
+# Test
+/cover/
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Env
+.env
+.env.local
+
+# Fly.io
+.fly/
+
+# Temp
+_temp/

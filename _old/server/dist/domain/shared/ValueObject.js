@@ -1,0 +1,14 @@
+export class ValueObject {
+    props;
+    constructor(props) {
+        this.props = Object.freeze({ ...props });
+    }
+    equals(other) {
+        if (other == null)
+            return false;
+        if (other.constructor !== this.constructor)
+            return false;
+        return JSON.stringify(this.props) === JSON.stringify(other.props);
+    }
+}
+//# sourceMappingURL=ValueObject.js.map
