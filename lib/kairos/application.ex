@@ -8,15 +8,13 @@ defmodule Kairos.Application do
   @impl true
   def start(_type, _args) do
     children = [
-# Start TwMerge cache
-TwMerge.Cache, 
+      TwMerge.Cache,
       KairosWeb.Telemetry,
       Kairos.Repo,
       {DNSCluster, query: Application.get_env(:kairos, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Kairos.PubSub},
-      # Start a worker by calling: Kairos.Worker.start_link(arg)
-      # {Kairos.Worker, arg},
-      # Start to serve requests, typically the last entry
+      Hermes.Server.Registry,
+      {Kairos.MCP.Server, transport: :streamable_http},
       KairosWeb.Endpoint
     ]
 

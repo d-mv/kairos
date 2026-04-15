@@ -17,6 +17,10 @@ defmodule KairosWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :mcp do
+    plug Kairos.MCP.AuthPlug
+  end
+
   # Redirect root to inbox (authenticated) or login
   scope "/", KairosWeb do
     pipe_through :browser
@@ -57,6 +61,12 @@ defmodule KairosWeb.Router do
 
     post "/users/log-in", UserSessionController, :create
     delete "/users/log-out", UserSessionController, :delete
+  end
+
+  # MCP server endpoint — requires Bearer token auth
+  scope "/mcp" do
+    pipe_through :mcp
+    forward "/", Hermes.Server.Transport.StreamableHTTP.Plug, server: Kairos.MCP.Server
   end
 
   if Application.compile_env(:kairos, :dev_routes) do
