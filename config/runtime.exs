@@ -103,11 +103,8 @@ if config_env() == :prod do
   # MCP server config
   config :kairos, :mcp_api_token, System.get_env("KAIROS_MCP_TOKEN")
 
-  config :kairos, :mcp_user_id,
-    case System.get_env("KAIROS_MCP_USER_ID") do
-      nil -> nil
-      id -> String.to_integer(id)
-    end
+  mcp_user_id_env = System.get_env("KAIROS_MCP_USER_ID")
+  config :kairos, :mcp_user_id, if(mcp_user_id_env, do: String.to_integer(mcp_user_id_env))
 
   # ## Configuring the mailer
   #
