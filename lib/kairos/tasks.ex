@@ -92,6 +92,10 @@ defmodule Kairos.Tasks do
     end
   end
 
+  def change_task(%Task{} = task, attrs \\ %{}) do
+    Task.changeset(task, attrs)
+  end
+
   def update_task(%Task{} = task, attrs) do
     task
     |> Task.changeset(attrs)

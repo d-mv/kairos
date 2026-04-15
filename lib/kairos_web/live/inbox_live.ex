@@ -13,7 +13,7 @@ defmodule KairosWeb.InboxLive do
 
     tasks = Tasks.list_inbox(user_id)
 
-    {:ok, assign(socket, tasks: tasks, new_task_title: "", page_title: "Inbox")}
+    {:ok, assign(socket, tasks: tasks, new_task_title: "", selected_task: nil, page_title: "Inbox")}
   end
 
   @impl true
@@ -32,6 +32,13 @@ defmodule KairosWeb.InboxLive do
   end
 
   def handle_event("create_task", _params, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_event("select_task", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    task = Tasks.get_task!(id, user_id)
+    {:noreply, assign(socket, :selected_task, task)}
+  end
 
   @impl true
   def handle_event("complete_task", %{"id" => id}, socket) do
@@ -73,7 +80,19 @@ defmodule KairosWeb.InboxLive do
   def handle_info({:tasks_changed, _}, socket) do
     user_id = socket.assigns.current_scope.user.id
     tasks = Tasks.list_inbox(user_id)
-    {:noreply, assign(socket, tasks: tasks)}
+
+    selected_task =
+      case socket.assigns.selected_task do
+        nil -> nil
+        task -> Enum.find(tasks, &(&1.id == task.id))
+      end
+
+    {:noreply, assign(socket, tasks: tasks, selected_task: selected_task)}
+  end
+
+  @impl true
+  def handle_info({:close_task_detail}, socket) do
+    {:noreply, assign(socket, :selected_task, nil)}
   end
 
   defp broadcast_tasks_changed(user_id) do
@@ -84,54 +103,70 @@ defmodule KairosWeb.InboxLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-    <div class="max-w-2xl mx-auto py-8 px-4">
-      <h1 class="text-2xl font-semibold mb-6">Inbox</h1>
+      <div class="max-w-2xl mx-auto py-8 px-4">
+        <h1 class="text-2xl font-semibold mb-6">Inbox</h1>
 
-      <form phx-submit="create_task" class="flex gap-2 mb-6">
-        <input
-          type="text"
-          name="title"
-          value={@new_task_title}
-          placeholder="Add a task…"
-          class="flex-1 border rounded px-3 py-2 text-sm"
-          autocomplete="off"
-        />
-        <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">
-          Add
-        </button>
-      </form>
+        <form phx-submit="create_task" class="flex gap-2 mb-6">
+          <input
+            type="text"
+            name="title"
+            value={@new_task_title}
+            placeholder="Add a task…"
+            class="flex-1 border rounded px-3 py-2 text-sm"
+            autocomplete="off"
+          />
+          <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">
+            Add
+          </button>
+        </form>
 
-      <ul class="space-y-1">
-        <%= for task <- @tasks do %>
-          <li class="flex items-center gap-3 p-2 rounded hover:bg-muted group">
-            <input
-              type="checkbox"
-              checked={task.status == "completed"}
-              phx-click={if task.status == "completed", do: "reopen_task", else: "complete_task"}
-              phx-value-id={task.id}
-              class="w-4 h-4 cursor-pointer"
-            />
-            <span class={["flex-1 text-sm", task.status == "completed" && "line-through text-muted-foreground"]}>
-              <%= task.title %>
-            </span>
-            <%= if task.due_date do %>
-              <span class="text-xs text-muted-foreground"><%= task.due_date %></span>
-            <% end %>
-            <button
-              phx-click="delete_task"
-              phx-value-id={task.id}
-              class="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive text-xs"
-            >
-              <.icon name="hero-x-mark" class="w-4 h-4" />
-            </button>
-          </li>
+        <ul class="space-y-1">
+          <%= for task <- @tasks do %>
+            <li class={[
+              "flex items-center gap-3 p-2 rounded hover:bg-muted group",
+              @selected_task && @selected_task.id == task.id && "bg-muted"
+            ]}>
+              <input
+                type="checkbox"
+                checked={task.status == "completed"}
+                phx-click={if task.status == "completed", do: "reopen_task", else: "complete_task"}
+                phx-value-id={task.id}
+                class="w-4 h-4 cursor-pointer"
+              />
+              <button
+                phx-click="select_task"
+                phx-value-id={task.id}
+                class={["flex-1 text-left text-sm", task.status == "completed" && "line-through text-muted-foreground"]}
+              >
+                <%= task.title %>
+              </button>
+              <%= if task.due_date do %>
+                <span class="text-xs text-muted-foreground"><%= task.due_date %></span>
+              <% end %>
+              <button
+                phx-click="delete_task"
+                phx-value-id={task.id}
+                class="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive text-xs"
+              >
+                <.icon name="hero-x-mark" class="w-4 h-4" />
+              </button>
+            </li>
+          <% end %>
+        </ul>
+
+        <%= if Enum.empty?(@tasks) do %>
+          <p class="text-muted-foreground text-sm text-center py-12">Inbox is empty</p>
         <% end %>
-      </ul>
+      </div>
 
-      <%= if Enum.empty?(@tasks) do %>
-        <p class="text-muted-foreground text-sm text-center py-12">Inbox is empty</p>
+      <%= if @selected_task do %>
+        <.live_component
+          module={KairosWeb.TaskDetailComponent}
+          id="task-detail"
+          task={@selected_task}
+          current_scope={@current_scope}
+        />
       <% end %>
-    </div>
     </Layouts.app>
     """
   end

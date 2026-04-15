@@ -18,46 +18,46 @@ Reference implementation: `_old/` (Node.js/React app)
 
 ## Phase 1 — Auth
 
-- [ ] `mix phx.gen.auth Accounts User users`
-- [ ] Run migrations
+- [x] `mix phx.gen.auth Accounts User users`
+- [x] Run migrations
 - [ ] Verify login / register / logout flow in browser
-- [ ] Lock all LiveView routes behind auth
+- [x] Lock all LiveView routes behind auth
 
 ## Phase 2 — Database Schema
 
-- [ ] Migration: `areas` table
-- [ ] Migration: `projects` table (area_id nullable)
-- [ ] Migration: `tasks` table (project_id nullable, area_id nullable, parent_id nullable)
-- [ ] Migration: `links` table (from_id, from_type, to_id, to_type, link_type)
-- [ ] Add DB constraints: task max depth (parent must have no parent), self-link forbidden
-- [ ] Run migrations, verify schema in Supabase dashboard
+- [x] Migration: `areas` table
+- [x] Migration: `projects` table (area_id nullable)
+- [x] Migration: `tasks` table (project_id nullable, area_id nullable, parent_id nullable)
+- [x] Migration: `links` table (from_id, from_type, to_id, to_type, link_type)
+- [x] Add DB constraints: task max depth (context-level, max depth 1), self-link forbidden
+- [x] Run migrations, verify schema in Supabase dashboard
 
 ## Phase 3 — Contexts
 
-- [ ] `Areas` context: `list_areas/1`, `create_area/1`, `update_area/2`, `delete_area/1`
-- [ ] `Projects` context: `list_projects/1`, `create_project/1`, `update_project/2`, `delete_project/1`, `demote_to_task/1`
-- [ ] `Tasks` context: `list_tasks/1`, `list_inbox/1`, `create_task/1`, `update_task/2`, `complete_task/1`, `reopen_task/1`, `delete_task/1`, `promote_to_project/1`
-- [ ] `Links` context: `create_link/1` (auto-inverse), `delete_link/1`, `list_links_for/2`
-- [ ] ExUnit tests for all domain rules:
-  - [ ] Subtask depth limit
-  - [ ] Promotion (subtasks → project tasks)
-  - [ ] Demotion blocked when tasks have subtasks
-  - [ ] Self-link forbidden
-  - [ ] Inverse links auto-created
+- [x] `Areas` context: `list_areas/1`, `create_area/1`, `update_area/2`, `delete_area/1`
+- [x] `Projects` context: `list_projects/1`, `create_project/1`, `update_project/2`, `delete_project/1`, `demote_to_task/1`
+- [x] `Tasks` context: `list_tasks/1`, `list_inbox/1`, `create_task/1`, `update_task/2`, `complete_task/1`, `reopen_task/1`, `delete_task/1`, `promote_to_project/1`
+- [x] `Links` context: `create_link/1` (auto-inverse), `delete_link/1`, `list_links_for/2`
+- [x] ExUnit tests for all domain rules:
+  - [x] Subtask depth limit
+  - [x] Promotion (subtasks → project tasks)
+  - [x] Demotion blocked when tasks have subtasks
+  - [x] Self-link forbidden
+  - [x] Inverse links auto-created
 
 ## Phase 4 — LiveView Pages
 
-- [ ] Router: define all live routes (authenticated)
-- [ ] `InboxLive` — list inbox tasks, add task, complete task
-- [ ] `TodayLive` — tasks due today across all containers
-- [ ] `UpcomingLive` — tasks with future due dates
-- [ ] `AreaLive` — area tasks + projects list
-- [ ] `ProjectLive` — project tasks
-- [ ] `SearchLive` — full-text search across tasks
-- [ ] `CompletedLive` — completed tasks
-- [ ] Sidebar navigation component (areas + projects tree)
+- [x] Router: define all live routes (authenticated)
+- [x] `InboxLive` — list inbox tasks, add task, complete task
+- [x] `TodayLive` — tasks due today across all containers
+- [x] `UpcomingLive` — tasks with future due dates
+- [x] `AreaLive` — area tasks + projects list
+- [x] `ProjectLive` — project tasks
+- [x] `SearchLive` — full-text search across tasks
+- [x] `CompletedLive` — completed tasks
+- [x] Sidebar navigation component (areas + projects tree)
 - [ ] Task detail panel (slide-in, edit title/notes/due date)
-- [ ] PubSub broadcast on all mutations — all open LiveViews update live
+- [x] PubSub broadcast on all mutations — all open LiveViews update live
 
 ## Phase 5 — UI Polish
 
