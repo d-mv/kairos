@@ -1,0 +1,53 @@
+<div class="flex h-screen overflow-hidden">
+  <!-- Sidebar -->
+  <nav class="w-56 shrink-0 border-r bg-muted/30 flex flex-col">
+    <div class="p-4 border-b">
+      <span class="font-semibold text-sm">Kairos</span>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-2 space-y-1">
+      <.link navigate={~p"/inbox"} class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
+        <.icon name="hero-inbox" class="w-4 h-4 text-muted-foreground" /> Inbox
+      </.link>
+      <.link navigate={~p"/today"} class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
+        <.icon name="hero-sun" class="w-4 h-4 text-muted-foreground" /> Today
+      </.link>
+      <.link navigate={~p"/upcoming"} class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
+        <.icon name="hero-calendar" class="w-4 h-4 text-muted-foreground" /> Upcoming
+      </.link>
+      <.link navigate={~p"/completed"} class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
+        <.icon name="hero-check-circle" class="w-4 h-4 text-muted-foreground" /> Completed
+      </.link>
+      <.link navigate={~p"/search"} class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
+        <.icon name="hero-magnifying-glass" class="w-4 h-4 text-muted-foreground" /> Search
+      </.link>
+    </div>
+
+    <div class="p-2 border-t space-y-1">
+      <%= if @current_scope do %>
+        <div class="text-xs text-muted-foreground px-2 mb-1 truncate"><%= @current_scope.user.email %></div>
+        <.link navigate={~p"/users/settings"} class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
+          <.icon name="hero-cog-6-tooth" class="w-4 h-4 text-muted-foreground" /> Settings
+        </.link>
+        <.link
+          href={~p"/users/log-out"}
+          method="delete"
+          class="flex items-center gap-2 px-2 py-1.5 rounded text-sm text-muted-foreground hover:bg-muted w-full"
+        >
+          <.icon name="hero-arrow-right-on-rectangle" class="w-4 h-4" />
+          Log out
+        </.link>
+      <% end %>
+      <div class="mt-2 flex justify-end">
+        <.theme_toggle />
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="flex-1 overflow-y-auto">
+    {render_slot(@inner_block)}
+  </main>
+</div>
+
+<.flash_group flash={@flash} />
