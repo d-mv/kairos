@@ -65,7 +65,9 @@ defmodule Kairos.MixProject do
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+      {:salad_ui, "~> 0.14.9"},
+      {:hermes_mcp, "~> 0.14.1"}
     ]
   end
 

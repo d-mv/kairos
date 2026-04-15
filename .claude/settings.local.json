@@ -52,7 +52,11 @@
       "Bash(wc -l client/src/pages/views/*.tsx client/src/pages/*.tsx client/src/components/*.tsx)",
       "Bash(npx tsc *)",
       "Bash(mix *)",
-      "Bash(docker compose up *)"
+      "Bash(docker compose up *)",
+      "Bash(git rm *)",
+      "Bash(fly apps *)",
+      "Bash(git -C /Users/dmelnikov/code/kairos add -A)",
+      "Bash(git -C /Users/dmelnikov/code/kairos status --short)"
     ]
   }
 }

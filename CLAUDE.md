@@ -2,6 +2,8 @@
 
 Read `docs/architecture.md` and `docs/plan.md` before starting any task.
 Reference implementation is in `_old/` — use for domain logic and UI reference only, do not port code directly.
+Don't stop unless you are at crossroads.
+Use `caveman ultra` skill on start.
 
 ---
 

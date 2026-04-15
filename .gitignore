@@ -37,3 +37,7 @@ erl_crash.dump
 
 # Temp
 _temp/
+
+# Old app build artifacts
+_old/**/dist/
+_old/**/node_modules/

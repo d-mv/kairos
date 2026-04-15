@@ -8,6 +8,8 @@ defmodule Kairos.Application do
   @impl true
   def start(_type, _args) do
     children = [
+# Start TwMerge cache
+TwMerge.Cache, 
       KairosWeb.Telemetry,
       Kairos.Repo,
       {DNSCluster, query: Application.get_env(:kairos, :dns_cluster_query) || :ignore},
