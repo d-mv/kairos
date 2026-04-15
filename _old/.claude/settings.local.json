@@ -41,7 +41,16 @@
       "Bash(curl:*)",
       "Bash(gh api:*)",
       "Bash(node:*)",
-      "Bash(grep -r CopyButton /Users/dmelnikov/code/kairos/client/node_modules/@mantine/core/cjs/ --include=*.js -l)"
+      "Bash(grep -r CopyButton /Users/dmelnikov/code/kairos/client/node_modules/@mantine/core/cjs/ --include=*.js -l)",
+      "Bash(netlify status:*)",
+      "WebFetch(domain:www.instagram.com)",
+      "mcp__logger-api__list_projects",
+      "mcp__logger-api__get_recent_logs",
+      "Bash(fly logs:*)",
+      "Bash(grep:*)",
+      "mcp__kairos__list_projects",
+      "Bash(wc -l client/src/pages/views/*.tsx client/src/pages/*.tsx client/src/components/*.tsx)",
+      "Bash(npx tsc *)"
     ]
   }
 }

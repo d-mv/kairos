@@ -19,27 +19,40 @@ A self-hosted, open-source task management application to replace Todoist. Key d
 
 ### Backend
 
-- **Runtime:** Node.js
-- **Framework:** Fastify + TypeScript
+- **Runtime:** Node.js 22 (Alpine)
+- **Framework:** Fastify ^5.7.4 + TypeScript ^5.8.3
 - **Database:** Supabase (PostgreSQL + Auth)
-- **Real-time:** `@fastify/websocket` (WebSocket server built into Fastify)
-- **MCP:** Built-in as a Fastify plugin (same process, not a separate service)
-- **Deploy:** Fly.io
+- **Real-time:** `@fastify/websocket` ^11.2.0 (WebSocket server built into Fastify)
+- **Auth:** `@fastify/jwt` ^10.0.0 + `jose` ^6.1.0 (Supabase JWT verification via JWKS)
+- **Validation:** Zod ^3.24.4
+- **MCP:** `@modelcontextprotocol/sdk` ^1.27.1, built-in as a Fastify plugin (stdio transport)
+- **Observability:** `@sentry/node` ^10.22.0
+- **Deploy:** Fly.io (`kairos-app`, Frankfurt region, 512 MB)
 
 ### Frontend
 
-- **Framework:** React + TypeScript
-- **State:** Jotai
-- **UI Kit:** shadcn/ui + Tailwind CSS
+- **Framework:** React ^19.2.4 + TypeScript 5.9
+- **Build:** Vite ^7.3.1 (PWA via `vite-plugin-pwa`)
+- **Router:** react-router-dom ^7.6.2
+- **State:** Jotai ^2.18.0
+- **UI Kit:** Mantine ^9.0.0-alpha.4 (CSS vars, no Tailwind, no shadcn/ui)
+- **Icons:** react-icons ^5.6.0
+- **Dates:** date-fns ^4.1.0
 - **Real-time:** WebSocket connection to Fastify
-- **Auth:** Supabase Auth client
-- **Deploy:** Netlify
+- **Auth:** `@supabase/supabase-js` + `@supabase/auth-ui-react`
+- **Observability:** `@sentry/react` ^10.45.0
+- **Deploy:** Fly.io (`kairos-web`, Frankfurt region, 256 MB, served by nginx)
 
-### Testing & Design
+### Testing, Linting & Tooling
 
-- **Test runner:** Vitest
-- **Methodology:** TDD (Test-Driven Development)
-- **Architecture:** Domain-Driven Design (DDD)
+- **Test runner (server):** Vitest ^4.0.18
+- **Test runner (client):** Node.js built-in test runner via tsx
+- **E2E tests:** Playwright ^1.58.2 (`pnpm test:ui`)
+- **Linter:** oxlint ^1.50.0
+- **Formatter:** oxfmt ^0.35.0
+- **Git hooks:** Lefthook ^2.1.1 (pre-commit: lint + format:check + typecheck + test; pre-push: build)
+- **Package manager:** pnpm ^10 workspace (packages: `shared`, `server`, `client`)
+- **Methodology:** TDD + Domain-Driven Design (DDD)
 
 ---
 
@@ -47,24 +60,32 @@ A self-hosted, open-source task management application to replace Todoist. Key d
 
 ```
 /
-├── server/
+├── server/src/
 │   ├── domain/
 │   │   ├── shared/           # Entity, ValueObject, DomainEvent, Result
 │   │   ├── task/             # Task aggregate, repository interface, domain events
 │   │   ├── project/          # Project aggregate, repository interface
 │   │   ├── area/             # Area aggregate, repository interface
 │   │   └── link/             # Link domain model
-│   ├── application/          # Use cases / application services
-│   ├── infrastructure/
-│   │   ├── supabase/         # Repository implementations
-│   │   └── websocket/        # Event broadcasting
-│   ├── api/                  # Fastify routes (thin layer over application)
-│   └── mcp/                  # MCP tools (calls application layer)
-├── client/
-│   ├── components/
+│   ├── application/          # Use cases (area, brain, collaboration, integration, link, project, task)
+│   ├── infrastructure/       # Supabase repos, websocket broadcaster, security
+│   ├── api/                  # Fastify routes + container.ts (DI wiring)
+│   ├── auth/                 # JWT/JWKS auth plugin
+│   ├── mcp/                  # MCP plugin (stdio transport, calls application layer)
+│   └── observability/        # Sentry setup
+├── client/src/
 │   ├── atoms/                # Jotai atoms
-│   └── pages/
-└── shared/                   # Shared TypeScript types
+│   ├── components/           # React components
+│   ├── hooks/                # Custom hooks (useDataSync, etc.)
+│   ├── pages/                # Route-level components
+│   └── lib/                  # Utilities
+├── shared/src/               # @kairos/shared — DTOs shared between client and server
+├── scripts/                  # DB init/migrate scripts, UI regression runner
+├── Dockerfile                # Server image (Node 22 Alpine → node dist/api/server.js)
+├── Dockerfile.client         # Client image (Node 22 Alpine build → nginx-unprivileged)
+├── fly.toml                  # Server Fly.io config (app: kairos-app)
+├── fly.client.toml           # Client Fly.io config (app: kairos-web)
+└── nginx.client.conf         # nginx config for static client serving
 ```
 
 ---
