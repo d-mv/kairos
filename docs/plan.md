@@ -6,10 +6,10 @@ Reference implementation: `_old/` (Node.js/React app)
 
 ## Phase 0 — Scaffold
 
-- [ ] `mix phx.new kairos --live` in repo root
-- [ ] Add `docker-compose.yml` — Postgres 16 on port 5432
-- [ ] Configure `config/dev.exs` to point at local Docker Postgres
-- [ ] `docker compose up -d` + `mix ecto.create` — verify DB connection
+- [x] `mix phx.new kairos --live` in repo root (Phoenix 1.8.5)
+- [x] Add `docker-compose.yml` — Postgres 16 on port 5432
+- [x] Configure `config/dev.exs` to point at local Postgres
+- [x] `mix ecto.create` — DB created, connection verified
 - [ ] Add Salad UI — copy components into `lib/kairos_web/components/`
 - [ ] Confirm Heroicons available via `<.icon name="hero-*" />`
 - [ ] Add `hermes_mcp` to `mix.exs`
