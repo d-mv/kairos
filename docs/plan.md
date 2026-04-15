@@ -10,10 +10,10 @@ Reference implementation: `_old/` (Node.js/React app)
 - [x] Add `docker-compose.yml` — Postgres 16 on port 5432
 - [x] Configure `config/dev.exs` to point at local Postgres
 - [x] `mix ecto.create` — DB created, connection verified
-- [ ] Add Salad UI — copy components into `lib/kairos_web/components/`
-- [ ] Confirm Heroicons available via `<.icon name="hero-*" />`
-- [ ] Add `hermes_mcp` to `mix.exs`
-- [ ] Fly.io `fly launch` — single app config (`fly.toml`)
+- [x] Add Salad UI — 13 components installed into `lib/kairos_web/components/`
+- [x] Confirm Heroicons available via `<.icon name="hero-*" />` (built into Phoenix 1.8)
+- [x] Add `hermes_mcp` to `mix.exs`
+- [x] Fly.io — `fly.toml` written for `kairos-app` (fra, 512mb)
 - [ ] Set prod secrets: `DATABASE_URL` (Supabase), `SECRET_KEY_BASE`, `PHX_HOST`
 
 ## Phase 1 — Auth
