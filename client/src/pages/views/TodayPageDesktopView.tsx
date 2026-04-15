@@ -21,14 +21,19 @@ export function TodayPageDesktopView({
   weatherError,
 }: TodayPageDesktopViewProps) {
   return (
-    <Box flex={1} style={{ overflowY: "auto" }} p="xl">
-      <Box>
-        <Box mb="lg">
-          <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
-            Focus
-          </Text>
-          <Title order={2}>Today</Title>
-        </Box>
+    <Box flex={1} style={{ overflowY: "auto" }}>
+      <Box
+        px="xl"
+        pt="xl"
+        pb="md"
+        style={{ position: "sticky", top: 0, zIndex: 10, background: "var(--mantine-color-body)" }}
+      >
+        <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
+          Focus
+        </Text>
+        <Title order={2}>Today</Title>
+      </Box>
+      <Box px="xl" pb="xl">
         <TodayWeatherHero summary={weatherSummary} error={weatherError} />
         {isLoading ? (
           <Stack gap="sm">

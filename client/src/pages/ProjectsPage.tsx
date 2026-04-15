@@ -42,16 +42,22 @@ export default function ProjectsPage() {
     return () => setPageMenu([]);
   }, [setPageMenu, setAddEntity]);
 
-  return (
-    <Box flex={1} style={{ overflowY: "auto" }} p={isMobile ? "md" : "xl"}>
-      <Box>
-        <Box mb="xl">
-          <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
-            Workspace
-          </Text>
-          <Title order={2}>Projects</Title>
-        </Box>
+  const p = isMobile ? "md" : "xl";
 
+  return (
+    <Box flex={1} style={{ overflowY: "auto" }}>
+      <Box
+        px={p}
+        pt={p}
+        pb="md"
+        style={{ position: "sticky", top: 0, zIndex: 10, background: "var(--mantine-color-body)" }}
+      >
+        <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
+          Workspace
+        </Text>
+        <Title order={2}>Projects</Title>
+      </Box>
+      <Box px={p} pb={p}>
         {isLoading ? (
           <Stack gap="sm">
             <Skeleton h={44} radius="sm" />

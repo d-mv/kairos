@@ -307,30 +307,37 @@ export default function ProjectPage() {
 
   const isMobile = checkIsMobile();
 
+  const p = isMobile ? "md" : "xl";
+
   return (
-    <Box flex={1} style={{ overflowY: "auto" }} p={isMobile ? "md" : "xl"}>
-      <Box>
-        <Box mb="lg">
-          <Group gap="xs" align="center">
-            <Title order={2}>
-              <SharedItemLabel label={projectName} shared={project?.userId !== currentUser?.id} />
-            </Title>
-            {project?.completedAt ? <Badge color="green">Completed</Badge> : null}
-            {actionState !== "idle" && (
-              <Badge
-                size="sm"
-                variant="light"
-                color={actionState === "saved" ? "green" : actionState === "error" ? "red" : "gray"}
-              >
-                {actionState === "saving"
-                  ? "Updating"
-                  : actionState === "saved"
-                    ? "Updated"
-                    : "Not saved"}
-              </Badge>
-            )}
-          </Group>
-        </Box>
+    <Box flex={1} style={{ overflowY: "auto" }}>
+      <Box
+        px={p}
+        pt={p}
+        pb="md"
+        style={{ position: "sticky", top: 0, zIndex: 10, background: "var(--mantine-color-body)" }}
+      >
+        <Group gap="xs" align="center">
+          <Title order={2}>
+            <SharedItemLabel label={projectName} shared={project?.userId !== currentUser?.id} />
+          </Title>
+          {project?.completedAt ? <Badge color="green">Completed</Badge> : null}
+          {actionState !== "idle" && (
+            <Badge
+              size="sm"
+              variant="light"
+              color={actionState === "saved" ? "green" : actionState === "error" ? "red" : "gray"}
+            >
+              {actionState === "saving"
+                ? "Updating"
+                : actionState === "saved"
+                  ? "Updated"
+                  : "Not saved"}
+            </Badge>
+          )}
+        </Group>
+      </Box>
+      <Box px={p} pb={p}>
         {isLoading ? (
           <Stack gap="sm">
             <Skeleton h={40} radius="sm" />

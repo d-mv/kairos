@@ -109,10 +109,12 @@ export function TaskList({
     }
   };
 
-  const visibleTasks = useMemo(
-    () => (hideCompleted ? tasks.filter((task) => task.status !== "done") : tasks),
-    [hideCompleted, tasks],
-  );
+  const visibleTasks = useMemo(() => {
+    if (hideCompleted) return tasks.filter((task) => task.status !== "done");
+    const active = tasks.filter((t) => t.status !== "done");
+    const done = tasks.filter((t) => t.status === "done");
+    return [...active, ...done];
+  }, [hideCompleted, tasks]);
 
   const renderedTasks = useMemo(() => {
     const currentTaskIds = new Set(visibleTasks.map((task) => task.id));

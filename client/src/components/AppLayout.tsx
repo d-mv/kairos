@@ -91,7 +91,7 @@ export function AppLayout() {
             position: "absolute",
             top: 0,
             right: 0,
-            zIndex: 10,
+            zIndex: 20,
             display: "flex",
             alignItems: "center",
             gap: 6,
@@ -100,7 +100,7 @@ export function AppLayout() {
           <NotificationsMenu />
           <Menu items={items} topSection={pageMenuItems} />
         </Box>
-        <Box h="100%" style={{ overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <Box h="100%" style={{ overflowX: "hidden", overflowY: "auto", marginRight: 72 }}>
           {error ? errorPanel : <Outlet />}
         </Box>
         <SettingsDialog />

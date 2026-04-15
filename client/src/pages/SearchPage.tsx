@@ -56,16 +56,22 @@ export default function SearchPage() {
     [areas, brainPages, projects, query, showCompleted, tasks],
   );
 
-  return (
-    <Box flex={1} style={{ overflowY: "auto" }} p={isMobile ? "md" : "xl"}>
-      <Box>
-        <Box mb="xl">
-          <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
-            Workspace
-          </Text>
-          <Title order={2}>Query</Title>
-        </Box>
+  const p = isMobile ? "md" : "xl";
 
+  return (
+    <Box flex={1} style={{ overflowY: "auto" }}>
+      <Box
+        px={p}
+        pt={p}
+        pb="md"
+        style={{ position: "sticky", top: 0, zIndex: 10, background: "var(--mantine-color-body)" }}
+      >
+        <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
+          Workspace
+        </Text>
+        <Title order={2}>Query</Title>
+      </Box>
+      <Box px={p} pb={p}>
         <Stack gap="md">
           <Group align="end" wrap="nowrap">
             <TextInput

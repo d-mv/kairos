@@ -46,12 +46,6 @@ export function NewTaskInput({
     previousLoadingRef.current = loading;
   }, [loading]);
 
-  const handleBlur = () => {
-    if (title.trim()) {
-      void handleSubmit({ preventDefault: () => {} } as React.FormEvent);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = title.trim();
@@ -121,7 +115,6 @@ export function NewTaskInput({
             setTitle(e.target.value);
             if (error) setError(null);
           }}
-          onBlur={handleBlur}
           placeholder={placeholder}
           disabled={loading}
           size="sm"

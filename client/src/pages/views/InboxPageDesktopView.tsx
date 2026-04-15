@@ -15,14 +15,19 @@ export function InboxPageDesktopView({
   hideCompleted,
 }: InboxPageDesktopViewProps) {
   return (
-    <Box flex={1} style={{ overflowY: "auto" }} p="xl">
-      <Box>
-        <Box mb="lg">
-          <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
-            Overview
-          </Text>
-          <Title order={2}>Inbox</Title>
-        </Box>
+    <Box flex={1} style={{ overflowY: "auto" }}>
+      <Box
+        px="xl"
+        pt="xl"
+        pb="md"
+        style={{ position: "sticky", top: 0, zIndex: 10, background: "var(--mantine-color-body)" }}
+      >
+        <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
+          Overview
+        </Text>
+        <Title order={2}>Inbox</Title>
+      </Box>
+      <Box px="xl" pb="xl">
         {isLoading ? (
           <Stack gap="sm">
             <Skeleton h={40} radius="sm" />

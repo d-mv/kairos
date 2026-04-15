@@ -193,31 +193,37 @@ export default function AreaPage() {
 
   const isMobile = checkIsMobile();
 
-  return (
-    <Box flex={1} style={{ overflowY: "auto" }} p={isMobile ? "md" : "xl"}>
-      <Box>
-        <Box mb="xl">
-          <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
-            Area
-          </Text>
-          <Group gap="xs" align="center">
-            <Title order={2}>{areaName}</Title>
-            {actionState !== "idle" && (
-              <Badge
-                size="sm"
-                variant="light"
-                color={actionState === "saved" ? "green" : actionState === "error" ? "red" : "gray"}
-              >
-                {actionState === "saving"
-                  ? "Updating"
-                  : actionState === "saved"
-                    ? "Updated"
-                    : "Not saved"}
-              </Badge>
-            )}
-          </Group>
-        </Box>
+  const p = isMobile ? "md" : "xl";
 
+  return (
+    <Box flex={1} style={{ overflowY: "auto" }}>
+      <Box
+        px={p}
+        pt={p}
+        pb="md"
+        style={{ position: "sticky", top: 0, zIndex: 10, background: "var(--mantine-color-body)" }}
+      >
+        <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
+          Area
+        </Text>
+        <Group gap="xs" align="center">
+          <Title order={2}>{areaName}</Title>
+          {actionState !== "idle" && (
+            <Badge
+              size="sm"
+              variant="light"
+              color={actionState === "saved" ? "green" : actionState === "error" ? "red" : "gray"}
+            >
+              {actionState === "saving"
+                ? "Updating"
+                : actionState === "saved"
+                  ? "Updated"
+                  : "Not saved"}
+            </Badge>
+          )}
+        </Group>
+      </Box>
+      <Box px={p} pb={p}>
         <Box>
           {view !== "calendar" ? (
             <Title order={4} mb="md">
