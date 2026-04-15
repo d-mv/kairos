@@ -35,10 +35,11 @@ defmodule KairosWeb.SearchLive do
           type="text"
           name="query"
           value={@query}
-          placeholder="Search tasks…"
+          placeholder="Search tasks… (press /)"
           class="w-full border rounded px-3 py-2 text-sm"
           autocomplete="off"
           phx-debounce="300"
+          data-shortcut="search"
         />
       </form>
 

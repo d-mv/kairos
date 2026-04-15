@@ -111,9 +111,10 @@ defmodule KairosWeb.InboxLive do
             type="text"
             name="title"
             value={@new_task_title}
-            placeholder="Add a task…"
+            placeholder="Add a task… (press N)"
             class="flex-1 border rounded px-3 py-2 text-sm"
             autocomplete="off"
+            data-shortcut="new-task"
           />
           <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">
             Add

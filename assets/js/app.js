@@ -36,6 +36,29 @@ topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
+// Keyboard shortcuts (only when not focused on an input/textarea)
+document.addEventListener("keydown", (e) => {
+  const tag = document.activeElement?.tagName
+  if (tag === "INPUT" || tag === "TEXTAREA" || document.activeElement?.isContentEditable) return
+  if (e.metaKey || e.ctrlKey || e.altKey) return
+
+  if (e.key === "/") {
+    e.preventDefault()
+    const searchInput = document.querySelector('[data-shortcut="search"]')
+    if (searchInput) {
+      searchInput.focus()
+    } else {
+      window.location.href = "/search"
+    }
+  } else if (e.key === "n") {
+    e.preventDefault()
+    const newTaskInput = document.querySelector('[data-shortcut="new-task"]')
+    if (newTaskInput) newTaskInput.focus()
+  } else if (e.key === "Escape") {
+    document.activeElement?.blur()
+  }
+})
+
 // connect if there are any LiveViews on the page
 liveSocket.connect()
 
