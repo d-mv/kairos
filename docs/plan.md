@@ -61,26 +61,28 @@ Reference implementation: `_old/` (Node.js/React app)
 
 ## Phase 5 — UI Polish
 
-- [ ] Salad UI components wired: Button, Input, Modal, Dropdown, Badge
-- [ ] Task item component — checkbox, title, due date, project badge
-- [ ] New task inline input (bottom of list)
-- [ ] Keyboard shortcuts: `n` new task, `e` edit, `/` search
-- [ ] Dark mode via Tailwind `dark:` classes
-- [ ] Mobile responsive layout
+- [x] Keyboard shortcuts: `n` new task, `/` search (JS-based, data-shortcut attrs)
+- [x] Mobile responsive layout (sidebar hidden on small screens, mobile header)
+- [x] Dark mode via DaisyUI themes + theme_toggle component
+- [ ] Salad UI components wired: Button, Input, Modal, Dropdown, Badge (using core_components instead)
+- [ ] Task item reusable component
+- [ ] Keyboard shortcut `e` to edit selected task
 
 ## Phase 6 — MCP Server
 
-- [ ] Configure `hermes_mcp` in `mix.exs`
-- [ ] Mount `/mcp` scope in router with bearer token auth
-- [ ] Implement all 10 tools (call contexts directly)
+- [x] `hermes_mcp` in `mix.exs`
+- [x] Mount `/mcp` in router with bearer token auth (Kairos.MCP.AuthPlug)
+- [x] Implement all 10 tools (list/create/update/complete/reopen/delete task, list/create project, promote/demote)
 - [ ] Test via Claude Desktop / `kairos.id` file
 
 ## Phase 7 — Deploy
 
-- [ ] `mix release` — verify clean build
-- [ ] `fly deploy` — single app
-- [ ] Set `DATABASE_URL`, `SECRET_KEY_BASE`, `PHX_HOST` secrets
-- [ ] Smoke test production
+- [x] Dockerfile generated via `mix phx.gen.release --docker`
+- [x] runtime.exs reads `KAIROS_MCP_TOKEN`, `KAIROS_MCP_USER_ID` from env
+- [x] `fly deploy` — deployed to kairos-app.fly.dev
+- [x] Set `DATABASE_URL`, `SECRET_KEY_BASE`, `PHX_HOST` secrets
+- [x] Migrations ran on production (dropped old Node.js tables)
+- [x] Smoke test: / → 302, /users/log-in → 200
 
 ## Phase 8 — Gantt (Phase 2)
 
