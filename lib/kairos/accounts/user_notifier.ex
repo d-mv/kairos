@@ -9,7 +9,7 @@ defmodule Kairos.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"Kairos", "contact@example.com"})
+      |> from({"Kairos", Application.get_env(:kairos, :mailer_from, "onboarding@resend.dev")})
       |> subject(subject)
       |> text_body(body)
 
