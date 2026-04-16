@@ -78,9 +78,10 @@ defmodule KairosWeb.TaskDetailComponent do
       phx-click-away="close"
       phx-target={@myself}
     >
-      <div class="flex items-center justify-between p-4 border-b">
+      <div id="task-detail-header" class="flex items-center justify-between p-4 border-b">
         <span class="text-sm font-medium text-muted-foreground">Task detail</span>
         <button
+          id="task-detail-close"
           phx-click="close"
           phx-target={@myself}
           class="p-1 rounded hover:bg-muted"
@@ -89,11 +90,12 @@ defmodule KairosWeb.TaskDetailComponent do
         </button>
       </div>
 
-      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+      <div id="task-detail-body" class="flex-1 overflow-y-auto p-4 space-y-4">
         <!-- Status toggle -->
-        <div class="flex items-center gap-2">
+        <div id="task-detail-status" class="flex items-center gap-2">
           <%= if @task.status == "completed" do %>
             <button
+              id="task-detail-reopen"
               phx-click="reopen"
               phx-target={@myself}
               class="p-1 rounded-full text-primary hover:bg-muted"
@@ -103,6 +105,7 @@ defmodule KairosWeb.TaskDetailComponent do
             <span class="text-sm text-muted-foreground">Completed</span>
           <% else %>
             <button
+              id="task-detail-complete"
               phx-click="complete"
               phx-target={@myself}
               class="p-1 rounded-full hover:bg-muted text-muted-foreground"
@@ -115,8 +118,9 @@ defmodule KairosWeb.TaskDetailComponent do
 
         <!-- Title -->
         <%= if @editing_title do %>
-          <form phx-submit="save_title" phx-target={@myself}>
+          <form id="task-detail-title-form" phx-submit="save_title" phx-target={@myself}>
             <input
+              id="task-detail-title-input"
               type="text"
               name="title"
               value={@task.title}
@@ -129,6 +133,7 @@ defmodule KairosWeb.TaskDetailComponent do
           </form>
         <% else %>
           <button
+            id="task-detail-title"
             phx-click="edit_title"
             phx-target={@myself}
             class="w-full text-left text-lg font-medium hover:bg-muted rounded px-2 py-1"
@@ -138,9 +143,10 @@ defmodule KairosWeb.TaskDetailComponent do
         <% end %>
 
         <!-- Notes -->
-        <div>
-          <label class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</label>
+        <div id="task-detail-notes-section">
+          <label for="task-detail-notes" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</label>
           <textarea
+            id="task-detail-notes"
             phx-blur="save_field"
             phx-value-field="notes"
             phx-target={@myself}
@@ -150,9 +156,10 @@ defmodule KairosWeb.TaskDetailComponent do
         </div>
 
         <!-- Due date -->
-        <div>
-          <label class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due date</label>
+        <div id="task-detail-due-date-section">
+          <label for="task-detail-due-date" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due date</label>
           <input
+            id="task-detail-due-date"
             type="date"
             value={@task.due_date}
             phx-blur="save_field"
@@ -163,9 +170,10 @@ defmodule KairosWeb.TaskDetailComponent do
         </div>
 
         <!-- Due time -->
-        <div>
-          <label class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due time</label>
+        <div id="task-detail-due-time-section">
+          <label for="task-detail-due-time" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due time</label>
           <input
+            id="task-detail-due-time"
             type="time"
             value={@task.due_time}
             phx-blur="save_field"
@@ -176,9 +184,9 @@ defmodule KairosWeb.TaskDetailComponent do
         </div>
 
         <!-- Timestamps -->
-        <div class="text-xs text-muted-foreground space-y-1 pt-4 border-t">
-          <div>Created: {Calendar.strftime(@task.inserted_at, "%b %d, %Y")}</div>
-          <div>Updated: {Calendar.strftime(@task.updated_at, "%b %d, %Y")}</div>
+        <div id="task-detail-timestamps" class="text-xs text-muted-foreground space-y-1 pt-4 border-t">
+          <div id="task-detail-created">Created: {Calendar.strftime(@task.inserted_at, "%b %d, %Y")}</div>
+          <div id="task-detail-updated">Updated: {Calendar.strftime(@task.updated_at, "%b %d, %Y")}</div>
         </div>
       </div>
     </div>

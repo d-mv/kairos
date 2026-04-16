@@ -62,44 +62,46 @@ defmodule KairosWeb.ProjectLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="max-w-2xl mx-auto py-8 px-4">
-      <h1 class="text-2xl font-semibold mb-6"><%= @project.name %></h1>
+      <div id="project-container" class="w-full py-8 px-4">
+        <h1 id="project-title" class="text-2xl font-semibold mb-6"><%= @project.name %></h1>
 
-      <form phx-submit="create_task" class="flex gap-2 mb-6">
-        <input
-          type="text"
-          name="title"
-          value={@new_task_title}
-          placeholder="Add a task…"
-          class="flex-1 border rounded px-3 py-2 text-sm"
-          autocomplete="off"
-        />
-        <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">Add</button>
-      </form>
+        <form id="project-add-form" phx-submit="create_task" class="flex gap-2 mb-6">
+          <input
+            id="new-task-input"
+            type="text"
+            name="title"
+            value={@new_task_title}
+            placeholder="Add a task…"
+            class="flex-1 border rounded px-3 py-2 text-sm"
+            autocomplete="off"
+          />
+          <button id="add-task-btn" type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">Add</button>
+        </form>
 
-      <ul class="space-y-1">
-        <%= for task <- @tasks do %>
-          <li class="flex items-center gap-3 p-2 rounded hover:bg-muted">
-            <input
-              type="checkbox"
-              checked={task.status == "completed"}
-              phx-click="complete_task"
-              phx-value-id={task.id}
-              class="w-4 h-4 cursor-pointer"
-            />
-            <span class={["flex-1 text-sm", task.status == "completed" && "line-through text-muted-foreground"]}>
-              <%= task.title %>
-            </span>
-            <%= if task.subtasks != [] do %>
-              <span class="text-xs text-muted-foreground"><%= length(task.subtasks) %> subtasks</span>
-            <% end %>
-          </li>
+        <ul id="project-task-list" class="space-y-1">
+          <%= for task <- @tasks do %>
+            <li id={"task-#{task.id}"} class="flex items-center gap-3 p-2 rounded hover:bg-muted">
+              <input
+                id={"task-checkbox-#{task.id}"}
+                type="checkbox"
+                checked={task.status == "completed"}
+                phx-click="complete_task"
+                phx-value-id={task.id}
+                class="w-4 h-4 cursor-pointer"
+              />
+              <span id={"task-title-#{task.id}"} class={["flex-1 text-sm", task.status == "completed" && "line-through text-muted-foreground"]}>
+                <%= task.title %>
+              </span>
+              <%= if task.subtasks != [] do %>
+                <span id={"task-subtask-count-#{task.id}"} class="text-xs text-muted-foreground"><%= length(task.subtasks) %> subtasks</span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+
+        <%= if Enum.empty?(@tasks) do %>
+          <p id="project-empty" class="text-muted-foreground text-sm text-center py-12">No tasks yet</p>
         <% end %>
-      </ul>
-
-      <%= if Enum.empty?(@tasks) do %>
-        <p class="text-muted-foreground text-sm text-center py-12">No tasks yet</p>
-      <% end %>
       </div>
     </Layouts.app>
     """

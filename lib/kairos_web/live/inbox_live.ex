@@ -103,11 +103,12 @@ defmodule KairosWeb.InboxLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="max-w-2xl mx-auto py-8 px-4">
-        <h1 class="text-2xl font-semibold mb-6">Inbox</h1>
+      <div id="inbox-container" class="w-full py-8 px-4">
+        <h1 id="inbox-title" class="text-2xl font-semibold mb-6">Inbox</h1>
 
-        <form phx-submit="create_task" class="flex gap-2 mb-6">
+        <form id="inbox-add-form" phx-submit="create_task" class="flex gap-2 mb-6">
           <input
+            id="new-task-input"
             type="text"
             name="title"
             value={@new_task_title}
@@ -116,18 +117,22 @@ defmodule KairosWeb.InboxLive do
             autocomplete="off"
             data-shortcut="new-task"
           />
-          <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">
+          <button id="add-task-btn" type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">
             Add
           </button>
         </form>
 
-        <ul class="space-y-1">
+        <ul id="inbox-task-list" class="space-y-1">
           <%= for task <- @tasks do %>
-            <li class={[
-              "flex items-center gap-3 p-2 rounded hover:bg-muted group",
-              @selected_task && @selected_task.id == task.id && "bg-muted"
-            ]}>
+            <li
+              id={"task-#{task.id}"}
+              class={[
+                "flex items-center gap-3 p-2 rounded hover:bg-muted group",
+                @selected_task && @selected_task.id == task.id && "bg-muted"
+              ]}
+            >
               <input
+                id={"task-checkbox-#{task.id}"}
                 type="checkbox"
                 checked={task.status == "completed"}
                 phx-click={if task.status == "completed", do: "reopen_task", else: "complete_task"}
@@ -135,6 +140,7 @@ defmodule KairosWeb.InboxLive do
                 class="w-4 h-4 cursor-pointer"
               />
               <button
+                id={"task-title-#{task.id}"}
                 phx-click="select_task"
                 phx-value-id={task.id}
                 class={["flex-1 text-left text-sm", task.status == "completed" && "line-through text-muted-foreground"]}
@@ -142,9 +148,10 @@ defmodule KairosWeb.InboxLive do
                 <%= task.title %>
               </button>
               <%= if task.due_date do %>
-                <span class="text-xs text-muted-foreground"><%= task.due_date %></span>
+                <span id={"task-due-#{task.id}"} class="text-xs text-muted-foreground"><%= task.due_date %></span>
               <% end %>
               <button
+                id={"task-delete-#{task.id}"}
                 phx-click="delete_task"
                 phx-value-id={task.id}
                 class="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive text-xs"
@@ -156,7 +163,7 @@ defmodule KairosWeb.InboxLive do
         </ul>
 
         <%= if Enum.empty?(@tasks) do %>
-          <p class="text-muted-foreground text-sm text-center py-12">Inbox is empty</p>
+          <p id="inbox-empty" class="text-muted-foreground text-sm text-center py-12">Inbox is empty</p>
         <% end %>
       </div>
 
