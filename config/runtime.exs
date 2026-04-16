@@ -113,7 +113,7 @@ if config_env() == :prod do
       api_key: resend_key
 
     config :kairos, :mailer_from,
-      System.get_env("MAILER_FROM", "onboarding@resend.dev")
+      System.get_env("MAILER_FROM", "info@kairos-app.fly.dev")
   end
 
   # ## Configuring the mailer (alternative - Mailgun example)
