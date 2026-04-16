@@ -44,7 +44,8 @@ defmodule Kairos.MCP.Server do
           id: {:required, :string, description: "Task ID"},
           title: {:string, description: "New title"},
           notes: {:string, description: "New notes"},
-          due_date: {:string, description: "Due date YYYY-MM-DD, or empty string to clear"}
+          due_date: {:string, description: "Due date YYYY-MM-DD, or empty string to clear"},
+          url: {:string, description: "URL to attach to the task, or empty string to clear"}
         }
       )
       |> register_tool("complete_task",
@@ -132,6 +133,7 @@ defmodule Kairos.MCP.Server do
         |> maybe_put(:title, params["title"])
         |> maybe_put(:notes, params["notes"])
         |> maybe_put(:due_date, parse_date(params["due_date"]))
+        |> maybe_put(:url, parse_optional_string(params["url"]))
 
       case Tasks.update_task(task, attrs) do
         {:ok, updated} -> reply(Jason.encode!(task_to_map(updated)), frame)
@@ -258,6 +260,7 @@ defmodule Kairos.MCP.Server do
       status: task.status,
       due_date: task.due_date,
       due_time: task.due_time,
+      url: task.url,
       project_id: task.project_id,
       area_id: task.area_id,
       parent_id: task.parent_id
@@ -283,6 +286,10 @@ defmodule Kairos.MCP.Server do
       _ -> nil
     end
   end
+
+  defp parse_optional_string(nil), do: nil
+  defp parse_optional_string(""), do: nil
+  defp parse_optional_string(str), do: str
 
   defp maybe_put(map, _key, nil), do: map
   defp maybe_put(map, key, value), do: Map.put(map, key, value)

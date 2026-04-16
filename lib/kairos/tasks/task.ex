@@ -16,6 +16,7 @@ defmodule Kairos.Tasks.Task do
     field :due_date, :date
     field :due_time, :time
     field :position, :integer, default: 0
+    field :url, :string
     field :user_id, :integer
 
     belongs_to :project, Kairos.Projects.Project
@@ -28,7 +29,7 @@ defmodule Kairos.Tasks.Task do
 
   def changeset(task, attrs) do
     task
-    |> cast(attrs, [:title, :notes, :status, :priority, :due_date, :due_time, :position, :user_id, :project_id, :area_id, :parent_id])
+    |> cast(attrs, [:title, :notes, :status, :priority, :due_date, :due_time, :position, :url, :user_id, :project_id, :area_id, :parent_id])
     |> validate_required([:title, :user_id])
     |> validate_length(:title, min: 1, max: 500)
     |> validate_inclusion(:status, @statuses)

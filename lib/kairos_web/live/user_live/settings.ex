@@ -9,6 +9,7 @@ defmodule KairosWeb.UserLive.Settings do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} nav_areas={assigns[:nav_areas] || []} nav_projects={assigns[:nav_projects] || []}>
+      <div id="settings-container" class="w-full py-8 px-4 max-w-lg">
       <div class="text-center">
         <.header>
           Account Settings
@@ -65,6 +66,7 @@ defmodule KairosWeb.UserLive.Settings do
           Save Password
         </.button>
       </.form>
+      </div>
     </Layouts.app>
     """
   end

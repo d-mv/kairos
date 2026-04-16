@@ -46,6 +46,24 @@ defmodule Kairos.TasksTest do
     end
   end
 
+  describe "url field" do
+    test "saves url on create", %{user: user} do
+      assert {:ok, task} = Tasks.create_task(%{title: "T", user_id: user.id, url: "https://example.com"})
+      assert task.url == "https://example.com"
+    end
+
+    test "saves url on update", %{user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "T", user_id: user.id})
+      assert {:ok, updated} = Tasks.update_task(task, %{url: "https://github.com"})
+      assert updated.url == "https://github.com"
+    end
+
+    test "allows nil url", %{user: user} do
+      assert {:ok, task} = Tasks.create_task(%{title: "T", user_id: user.id})
+      assert is_nil(task.url)
+    end
+  end
+
   describe "complete_task/1 and reopen_task/1" do
     test "marks task complete", %{user: user} do
       {:ok, task} = Tasks.create_task(%{title: "T", user_id: user.id})

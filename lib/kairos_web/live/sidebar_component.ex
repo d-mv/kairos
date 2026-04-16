@@ -249,7 +249,7 @@ defmodule KairosWeb.SidebarComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <nav id="sidebar" class="hidden md:flex w-56 shrink-0 border-r bg-muted/30 flex-col">
+    <nav id="sidebar" class={["w-56 shrink-0 border-r bg-muted/30 flex-col", if(@current_scope, do: "hidden md:flex", else: "hidden")]}>
       <div id="sidebar-header" class="p-4 border-b">
         <span class="font-semibold text-sm">Kairos</span>
       </div>
