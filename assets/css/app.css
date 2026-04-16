@@ -195,3 +195,13 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
 }
+
+/* Cursor defaults */
+button, a, [role="button"], summary, label[for], input[type="checkbox"], input[type="radio"], select {
+  cursor: pointer;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+textarea {
+  cursor: text;
+}
