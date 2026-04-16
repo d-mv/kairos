@@ -18,6 +18,12 @@ defmodule Kairos.Projects do
     |> Repo.all()
   end
 
+  def get_project(id, user_id) do
+    Project
+    |> where([p], p.id == ^id and p.user_id == ^user_id)
+    |> Repo.one()
+  end
+
   def get_project!(id, user_id) do
     Project
     |> where([p], p.id == ^id and p.user_id == ^user_id)
@@ -70,12 +76,7 @@ defmodule Kairos.Projects do
         # Move project tasks to inbox (no container)
         Task
         |> where([t], t.project_id == ^project.id)
-        |> Repo.all()
-        |> Enum.each(fn t ->
-          t
-          |> Task.changeset(%{project_id: nil})
-          |> Repo.update!()
-        end)
+        |> Repo.update_all(set: [project_id: nil])
 
         Repo.delete!(project)
         task

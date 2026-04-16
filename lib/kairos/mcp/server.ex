@@ -2,8 +2,10 @@ defmodule Kairos.MCP.Server do
   @moduledoc """
   Hermes MCP server exposing Kairos task management tools.
 
-  Authentication is handled externally by `Kairos.MCP.AuthPlug`.
-  The user_id is read from application config `:kairos, :mcp_user_id` at startup.
+  Authentication is handled by `Kairos.MCP.AuthPlug`, which validates the
+  bearer token against the users table and assigns `user_id` to `conn.assigns`.
+  Hermes propagates `conn.assigns` into the frame on each request, so
+  `frame.assigns.user_id` is always the authenticated user for that request.
   """
 
   use Hermes.Server,
@@ -20,11 +22,8 @@ defmodule Kairos.MCP.Server do
 
   @impl true
   def init(_client_info, frame) do
-    user_id = Application.get_env(:kairos, :mcp_user_id)
-
     frame =
       frame
-      |> assign(user_id: user_id)
       |> register_tool("list_tasks",
         description: "List all tasks for the user. Optionally filter by status.",
         input_schema: %{

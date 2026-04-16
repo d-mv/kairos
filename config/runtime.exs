@@ -100,11 +100,7 @@ if config_env() == :prod do
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
 
-  # MCP server config
-  config :kairos, :mcp_api_token, System.get_env("KAIROS_MCP_TOKEN")
-
-  mcp_user_id_env = System.get_env("KAIROS_MCP_USER_ID")
-  config :kairos, :mcp_user_id, if(mcp_user_id_env, do: String.to_integer(mcp_user_id_env))
+  # MCP server config — tokens are stored per-user in the database; no global token needed
 
   # Mailer — Resend
   if resend_key = System.get_env("RESEND_API_KEY") do

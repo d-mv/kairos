@@ -47,9 +47,9 @@
   --color-warning-content: oklch(98% 0.022 95.277);
   --color-error: oklch(58% 0.253 17.585);
   --color-error-content: oklch(96% 0.015 12.422);
-  --radius-selector: 0.25rem;
-  --radius-field: 0.25rem;
-  --radius-box: 0.5rem;
+  --radius-selector: 5px;
+  --radius-field: 5px;
+  --radius-box: 5px;
   --size-selector: 0.21875rem;
   --size-field: 0.21875rem;
   --border: 1.5px;
@@ -82,9 +82,9 @@
   --color-warning-content: oklch(98% 0.022 95.277);
   --color-error: oklch(58% 0.253 17.585);
   --color-error-content: oklch(96% 0.015 12.422);
-  --radius-selector: 0.25rem;
-  --radius-field: 0.25rem;
-  --radius-box: 0.5rem;
+  --radius-selector: 5px;
+  --radius-field: 5px;
+  --radius-box: 5px;
   --size-selector: 0.21875rem;
   --size-field: 0.21875rem;
   --border: 1.5px;
@@ -127,7 +127,7 @@
   --border: 220 13% 91%;
   --input: 220 13% 91%;
   --ring: 224 71.4% 4.1%;
-  --radius: 1rem;
+  --radius: 5px;
   --chart-1: 12 76% 61%;
   --chart-2: 173 58% 39%;
   --chart-3: 197 37% 24%;
@@ -194,6 +194,7 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  font-family: 'Open Sans', sans-serif;
 }
 
 /* Cursor defaults */

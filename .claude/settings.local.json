@@ -60,7 +60,9 @@
       "Bash(git *)",
       "Bash(echo \"EXIT: $?\")",
       "Bash(ls Dockerfile* *)",
-      "Bash(fly ssh *)"
+      "Bash(fly ssh *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(MIX_ENV=dev mix phx.server)"
     ]
   }
 }

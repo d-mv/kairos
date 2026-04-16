@@ -75,6 +75,12 @@ defmodule Kairos.Tasks do
     |> Repo.all()
   end
 
+  def get_task(id, user_id) do
+    Task
+    |> where([t], t.id == ^id and t.user_id == ^user_id)
+    |> Repo.one()
+  end
+
   def get_task!(id, user_id) do
     Task
     |> where([t], t.id == ^id and t.user_id == ^user_id)
@@ -129,12 +135,7 @@ defmodule Kairos.Tasks do
       # Move subtasks to project as top-level tasks
       Task
       |> where([t], t.parent_id == ^task.id)
-      |> Repo.all()
-      |> Enum.each(fn sub ->
-        sub
-        |> Task.changeset(%{parent_id: nil, project_id: project.id})
-        |> Repo.update!()
-      end)
+      |> Repo.update_all(set: [parent_id: nil, project_id: project.id])
 
       Repo.delete!(task)
       project

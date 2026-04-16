@@ -60,6 +60,28 @@ defmodule Kairos.Accounts do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
+  @doc """
+  Gets a user by their MCP token.
+
+  Returns `nil` if no user has that token.
+  """
+  def get_user_by_mcp_token(nil), do: nil
+
+  def get_user_by_mcp_token(token) when is_binary(token) do
+    Repo.get_by(User, mcp_token: token)
+  end
+
+  @doc """
+  Sets the MCP token for a user.
+
+  Returns `{:ok, user}` or `{:error, changeset}`.
+  """
+  def set_mcp_token(user, token) do
+    user
+    |> User.mcp_token_changeset(token)
+    |> Repo.update()
+  end
+
   ## User registration
 
   @doc """

@@ -389,6 +389,23 @@ defmodule Kairos.AccountsTest do
     end
   end
 
+  describe "get_user_by_mcp_token/1" do
+    test "returns nil when token does not exist" do
+      assert Accounts.get_user_by_mcp_token("nonexistent-token") == nil
+    end
+
+    test "returns the user when token matches" do
+      user = user_fixture()
+      {:ok, user} = Accounts.set_mcp_token(user, "secret-token-abc")
+      assert %User{id: id} = Accounts.get_user_by_mcp_token("secret-token-abc")
+      assert id == user.id
+    end
+
+    test "returns nil when token is nil" do
+      assert Accounts.get_user_by_mcp_token(nil) == nil
+    end
+  end
+
   describe "inspect/2 for the User module" do
     test "does not include password" do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""

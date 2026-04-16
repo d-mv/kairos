@@ -84,6 +84,24 @@ Reference implementation: `_old/` (Node.js/React app)
 - [x] Migrations ran on production (dropped old Node.js tables)
 - [x] Smoke test: / → 302, /users/log-in → 200
 
+## Phase 9 — Security & Quality (from REVIEW.md)
+
+### Security
+- [ ] **MCP multi-tenancy**: Refactor `AuthPlug` + MCP tools to validate per-user tokens; remove hardcoded `mcp_user_id`
+- [ ] **Links IDOR**: Add `user_id` ownership check to `Links.list_links_for/2` and `Links.create_link/1`
+- [ ] **Tasks ownership**: Fix `Tasks.check_max_depth/1` to verify ownership of parent task
+- [ ] **Centralized scoping**: Add `scope(query, user_id)` convention to all contexts
+
+### Performance
+- [ ] **N+1 updates**: Replace `Repo.update!` loops with `Repo.update_all` in `demote_to_task/1` and `promote_to_project/1`
+- [ ] **Full-text search**: Replace `ilike %term%` with Postgres tsvector + GIN index
+
+### Features & UX
+- [ ] **Links UI**: Add "Dependencies / Related" section to `TaskDetailComponent`
+- [ ] **Sidebar refactor**: Extract area/project management into dedicated LiveComponents
+
+---
+
 ## Phase 8 — Gantt (Phase 2)
 
 - [ ] Add frappe-gantt to `assets/package.json`

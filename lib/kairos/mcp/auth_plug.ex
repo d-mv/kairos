@@ -1,24 +1,25 @@
 defmodule Kairos.MCP.AuthPlug do
   @moduledoc """
-  Checks the Bearer token on MCP requests.
-  Returns 401 if missing or invalid.
+  Validates the Bearer token on MCP requests by looking up the user that owns
+  the token. Assigns `user_id` in conn.assigns on success, halts with 401
+  otherwise.
   """
 
   @behaviour Plug
 
   import Plug.Conn
 
+  alias Kairos.Accounts
+
   @impl Plug
   def init(opts), do: opts
 
   @impl Plug
   def call(conn, _opts) do
-    expected = Application.get_env(:kairos, :mcp_api_token)
-
-    case get_req_header(conn, "authorization") do
-      ["Bearer " <> token] when token == expected and not is_nil(expected) ->
-        conn
-
+    with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
+         %{id: user_id} <- Accounts.get_user_by_mcp_token(token) do
+      assign(conn, :user_id, user_id)
+    else
       _ ->
         conn
         |> put_resp_content_type("application/json")

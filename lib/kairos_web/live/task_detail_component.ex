@@ -144,7 +144,7 @@ defmodule KairosWeb.TaskDetailComponent do
 
         <!-- Priority -->
         <div id="task-detail-priority-section">
-          <label for="task-detail-priority" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Priority</label>
+          <span id="task-detail-priority-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Priority</span>
           <select
             id="task-detail-priority"
             phx-change="save_field"
@@ -162,7 +162,7 @@ defmodule KairosWeb.TaskDetailComponent do
 
         <!-- Notes -->
         <div id="task-detail-notes-section">
-          <label for="task-detail-notes" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</label>
+          <span id="task-detail-notes-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</span>
           <textarea
             id="task-detail-notes"
             phx-blur="save_field"
@@ -175,7 +175,7 @@ defmodule KairosWeb.TaskDetailComponent do
 
         <!-- Due date -->
         <div id="task-detail-due-date-section">
-          <label for="task-detail-due-date" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due date</label>
+          <span id="task-detail-due-date-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due date</span>
           <input
             id="task-detail-due-date"
             type="date"
@@ -189,7 +189,7 @@ defmodule KairosWeb.TaskDetailComponent do
 
         <!-- Due time -->
         <div id="task-detail-due-time-section">
-          <label for="task-detail-due-time" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due time</label>
+          <span id="task-detail-due-time-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due time</span>
           <input
             id="task-detail-due-time"
             type="time"
