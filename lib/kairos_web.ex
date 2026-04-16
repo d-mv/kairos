@@ -87,6 +87,16 @@ defmodule KairosWeb do
       # Core UI components
       import KairosWeb.CoreComponents
 
+      # SaladUI components
+      import KairosWeb.Components.Badge
+      import KairosWeb.Components.Card
+      import KairosWeb.Components.Sheet
+      import KairosWeb.Components.Dialog
+      import KairosWeb.Components.DropdownMenu
+      import KairosWeb.Components.Tabs
+      import KairosWeb.Components.Separator
+      import KairosWeb.Components.Label
+
       # Common modules used in templates
       alias Phoenix.LiveView.JS
       alias KairosWeb.Layouts

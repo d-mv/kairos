@@ -28,7 +28,7 @@ defmodule KairosWeb.UserLive.Settings do
         <.button variant="primary" phx-disable-with="Changing...">Change Email</.button>
       </.form>
 
-      <div class="divider" />
+      <div class="my-6 border-t border-border" />
 
       <.form
         for={@password_form}

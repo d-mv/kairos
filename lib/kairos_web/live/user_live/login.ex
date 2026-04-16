@@ -25,8 +25,8 @@ defmodule KairosWeb.UserLive.Login do
           </.header>
         </div>
 
-        <div :if={local_mail_adapter?()} class="alert alert-info">
-          <.icon name="hero-information-circle" class="size-6 shrink-0" />
+        <div :if={local_mail_adapter?()} class="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100">
+          <.icon name="hero-information-circle" class="size-5 shrink-0 mt-0.5" />
           <div>
             <p>You are running the local mail adapter.</p>
             <p>
@@ -52,12 +52,16 @@ defmodule KairosWeb.UserLive.Login do
             required
             phx-mounted={JS.focus()}
           />
-          <.button class="btn btn-primary w-full">
+          <.button variant="primary" class="w-full">
             Log in with email <span aria-hidden="true">→</span>
           </.button>
         </.form>
 
-        <div class="divider">or</div>
+        <div class="relative flex items-center py-1">
+          <div class="flex-1 border-t border-border" />
+          <span class="mx-3 text-xs text-muted-foreground">or</span>
+          <div class="flex-1 border-t border-border" />
+        </div>
 
         <.form
           :let={f}
@@ -83,10 +87,10 @@ defmodule KairosWeb.UserLive.Login do
             autocomplete="current-password"
             spellcheck="false"
           />
-          <.button class="btn btn-primary w-full" name={@form[:remember_me].name} value="true">
+          <.button variant="primary" class="w-full" name={@form[:remember_me].name} value="true">
             Log in and stay logged in <span aria-hidden="true">→</span>
           </.button>
-          <.button class="btn btn-primary btn-soft w-full mt-2">
+          <.button class="w-full mt-2">
             Log in only this time
           </.button>
         </.form>

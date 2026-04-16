@@ -74,7 +74,7 @@ defmodule KairosWeb.TaskDetailComponent do
     ~H"""
     <div
       id={@id}
-      class="fixed inset-y-0 right-0 w-96 bg-base-100 border-l shadow-xl flex flex-col z-50"
+      class="fixed inset-y-0 right-0 w-96 bg-background border-l border-border shadow-xl flex flex-col z-50"
       phx-click-away="close"
       phx-target={@myself}
     >
