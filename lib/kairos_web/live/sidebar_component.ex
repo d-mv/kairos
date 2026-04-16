@@ -13,7 +13,15 @@ defmodule KairosWeb.SidebarComponent do
        projects: [],
        creating_area: false,
        creating_project: nil,
-       new_name: ""
+       new_name: "",
+       area_menu_open: nil,
+       project_menu_open: nil,
+       renaming_area: nil,
+       renaming_project: nil,
+       confirm_delete_area: nil,
+       confirm_delete_project: nil,
+       confirm_demote_project: nil,
+       demote_error: nil
      )}
   end
 
@@ -30,20 +38,28 @@ defmodule KairosWeb.SidebarComponent do
 
   def update(assigns, socket), do: {:ok, assign(socket, assigns)}
 
+  # ── Create area/project ────────────────────────────────────────────────
+
   @impl true
   def handle_event("toggle_create_area", _params, socket) do
     {:noreply,
-     assign(socket, creating_area: !socket.assigns.creating_area, creating_project: nil, new_name: "")}
+     assign(socket,
+       creating_area: !socket.assigns.creating_area,
+       creating_project: nil,
+       new_name: "",
+       area_menu_open: nil,
+       project_menu_open: nil
+     )}
   end
 
   def handle_event("toggle_create_project", %{"area-id" => area_id}, socket) do
     toggle = if socket.assigns.creating_project == area_id, do: nil, else: area_id
-    {:noreply, assign(socket, creating_project: toggle, creating_area: false, new_name: "")}
+    {:noreply, assign(socket, creating_project: toggle, creating_area: false, new_name: "", area_menu_open: nil, project_menu_open: nil)}
   end
 
   def handle_event("toggle_create_project", _params, socket) do
     toggle = if socket.assigns.creating_project == "_none", do: nil, else: "_none"
-    {:noreply, assign(socket, creating_project: toggle, creating_area: false, new_name: "")}
+    {:noreply, assign(socket, creating_project: toggle, creating_area: false, new_name: "", area_menu_open: nil, project_menu_open: nil)}
   end
 
   def handle_event("cancel", _params, socket) do
@@ -82,6 +98,153 @@ defmodule KairosWeb.SidebarComponent do
   end
 
   def handle_event("create_project", _params, socket), do: {:noreply, socket}
+
+  # ── Menus ──────────────────────────────────────────────────────────────
+
+  def handle_event("toggle_area_menu", %{"id" => id}, socket) do
+    open = if socket.assigns.area_menu_open == id, do: nil, else: id
+    {:noreply, assign(socket, area_menu_open: open, project_menu_open: nil, confirm_delete_area: nil, confirm_delete_project: nil, confirm_demote_project: nil)}
+  end
+
+  def handle_event("toggle_project_menu", %{"id" => id}, socket) do
+    open = if socket.assigns.project_menu_open == id, do: nil, else: id
+    {:noreply, assign(socket, project_menu_open: open, area_menu_open: nil, confirm_delete_area: nil, confirm_delete_project: nil, confirm_demote_project: nil)}
+  end
+
+  def handle_event("close_menus", _params, socket) do
+    {:noreply, assign(socket, area_menu_open: nil, project_menu_open: nil)}
+  end
+
+  # ── Rename area ────────────────────────────────────────────────────────
+
+  def handle_event("start_rename_area", %{"id" => id}, socket) do
+    {:noreply, assign(socket, renaming_area: id, area_menu_open: nil)}
+  end
+
+  def handle_event("save_rename_area", %{"record_id" => id, "name" => name}, socket)
+      when byte_size(name) > 0 do
+    user_id = socket.assigns.current_scope.user.id
+    area = Enum.find(socket.assigns.areas, &(&1.id == id))
+
+    case Areas.update_area(area, %{name: String.trim(name)}) do
+      {:ok, _} ->
+        areas = Areas.list_areas(user_id)
+        {:noreply, assign(socket, areas: areas, renaming_area: nil)}
+
+      {:error, _} ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("save_rename_area", _params, socket) do
+    {:noreply, assign(socket, renaming_area: nil)}
+  end
+
+  # ── Rename project ─────────────────────────────────────────────────────
+
+  def handle_event("start_rename_project", %{"id" => id}, socket) do
+    {:noreply, assign(socket, renaming_project: id, project_menu_open: nil)}
+  end
+
+  def handle_event("save_rename_project", %{"record_id" => id, "name" => name}, socket)
+      when byte_size(name) > 0 do
+    user_id = socket.assigns.current_scope.user.id
+    project = Enum.find(socket.assigns.projects, &(&1.id == id))
+
+    case Projects.update_project(project, %{name: String.trim(name)}) do
+      {:ok, _} ->
+        projects = Projects.list_projects(user_id)
+        {:noreply, assign(socket, projects: projects, renaming_project: nil)}
+
+      {:error, _} ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("save_rename_project", _params, socket) do
+    {:noreply, assign(socket, renaming_project: nil)}
+  end
+
+  def handle_event("cancel_rename", _params, socket) do
+    {:noreply, assign(socket, renaming_area: nil, renaming_project: nil)}
+  end
+
+  # ── Delete area ────────────────────────────────────────────────────────
+
+  def handle_event("confirm_delete_area", %{"id" => id}, socket) do
+    area = Enum.find(socket.assigns.areas, &(&1.id == id))
+    task_count = Areas.count_tasks(id)
+    project_count = Enum.count(socket.assigns.projects, &(&1.area_id == id))
+
+    {:noreply,
+     assign(socket,
+       confirm_delete_area: %{area: area, task_count: task_count, project_count: project_count},
+       area_menu_open: nil
+     )}
+  end
+
+  def handle_event("delete_area", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    area = Enum.find(socket.assigns.areas, &(&1.id == id))
+    {:ok, _} = Areas.delete_area(area)
+    areas = Areas.list_areas(user_id)
+    projects = Projects.list_projects(user_id)
+    {:noreply, assign(socket, areas: areas, projects: projects, confirm_delete_area: nil)}
+  end
+
+  # ── Delete project ─────────────────────────────────────────────────────
+
+  def handle_event("confirm_delete_project", %{"id" => id}, socket) do
+    project = Enum.find(socket.assigns.projects, &(&1.id == id))
+    task_count = Projects.count_tasks(id)
+
+    {:noreply,
+     assign(socket,
+       confirm_delete_project: %{project: project, task_count: task_count},
+       project_menu_open: nil
+     )}
+  end
+
+  def handle_event("delete_project", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    project = Enum.find(socket.assigns.projects, &(&1.id == id))
+    {:ok, _} = Projects.delete_project(project)
+    projects = Projects.list_projects(user_id)
+    {:noreply, assign(socket, projects: projects, confirm_delete_project: nil)}
+  end
+
+  # ── Demote project ─────────────────────────────────────────────────────
+
+  def handle_event("confirm_demote_project", %{"id" => id}, socket) do
+    project = Enum.find(socket.assigns.projects, &(&1.id == id))
+    {:noreply, assign(socket, confirm_demote_project: project, project_menu_open: nil, demote_error: nil)}
+  end
+
+  def handle_event("demote_project", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    project = Enum.find(socket.assigns.projects, &(&1.id == id))
+
+    case Projects.demote_to_task(project) do
+      {:ok, _task} ->
+        projects = Projects.list_projects(user_id)
+        {:noreply, assign(socket, projects: projects, confirm_demote_project: nil, demote_error: nil)}
+
+      {:error, :has_subtasks} ->
+        {:noreply, assign(socket, demote_error: "Cannot demote: project tasks have subtasks.", confirm_demote_project: nil)}
+    end
+  end
+
+  def handle_event("cancel_confirm", _params, socket) do
+    {:noreply,
+     assign(socket,
+       confirm_delete_area: nil,
+       confirm_delete_project: nil,
+       confirm_demote_project: nil,
+       demote_error: nil
+     )}
+  end
+
+  # ── Render ─────────────────────────────────────────────────────────────
 
   @impl true
   def render(assigns) do
@@ -142,25 +305,123 @@ defmodule KairosWeb.SidebarComponent do
 
           <div id="sidebar-areas">
             <%= for area <- @areas do %>
-              <div id={"sidebar-area-#{area.id}"}>
-                <.link
-                  navigate={~p"/areas/#{area.id}"}
-                  class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted group/area"
-                >
-                  <.icon name="hero-square-2-stack" class="w-4 h-4 text-muted-foreground shrink-0" />
-                  <span class="flex-1 truncate"><%= area.name %></span>
-                  <button
-                    id={"sidebar-add-project-to-area-#{area.id}"}
-                    phx-click="toggle_create_project"
-                    phx-value-area-id={area.id}
+              <div id={"sidebar-area-#{area.id}"} class="relative">
+                <!-- Demote error for this area's projects -->
+                <%= if @demote_error do %>
+                  <div class="mx-2 mb-1 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs text-destructive">
+                    <%= @demote_error %>
+                    <button phx-click="cancel_confirm" phx-target={@myself} class="ml-1 underline">OK</button>
+                  </div>
+                <% end %>
+
+                <%= if @renaming_area == area.id do %>
+                  <form
+                    id={"sidebar-rename-area-form-#{area.id}"}
+                    phx-submit="save_rename_area"
                     phx-target={@myself}
-                    class="opacity-0 group-hover/area:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground"
-                    title="New project in area"
-                    onclick="event.preventDefault()"
+                    class="flex items-center gap-1 px-2 py-1"
                   >
-                    <.icon name="hero-plus" class="w-3 h-3" />
-                  </button>
-                </.link>
+                    <input type="hidden" name="record_id" value={area.id} />
+                    <.icon name="hero-square-2-stack" class="w-4 h-4 text-muted-foreground shrink-0" />
+                    <input
+                      type="text"
+                      name="name"
+                      value={area.name}
+                      class="flex-1 text-sm border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                      phx-mounted={JS.focus()}
+                      phx-keydown="cancel_rename"
+                      phx-key="Escape"
+                      phx-target={@myself}
+                    />
+                  </form>
+                <% else %>
+                  <.link
+                    navigate={~p"/areas/#{area.id}"}
+                    class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted group/area"
+                  >
+                    <.icon name="hero-square-2-stack" class="w-4 h-4 text-muted-foreground shrink-0" />
+                    <span class="flex-1 truncate"><%= area.name %></span>
+                    <button
+                      id={"sidebar-add-project-to-area-#{area.id}"}
+                      phx-click="toggle_create_project"
+                      phx-value-area-id={area.id}
+                      phx-target={@myself}
+                      class="opacity-0 group-hover/area:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground"
+                      title="New project in area"
+                      onclick="event.preventDefault()"
+                    >
+                      <.icon name="hero-plus" class="w-3 h-3" />
+                    </button>
+                    <button
+                      id={"sidebar-area-menu-btn-#{area.id}"}
+                      phx-click="toggle_area_menu"
+                      phx-value-id={area.id}
+                      phx-target={@myself}
+                      class="opacity-0 group-hover/area:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground"
+                      title="Area options"
+                      onclick="event.preventDefault()"
+                    >
+                      <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
+                    </button>
+                  </.link>
+
+                  <%= if @area_menu_open == area.id do %>
+                    <div
+                      id={"sidebar-area-menu-#{area.id}"}
+                      class="absolute right-1 top-7 z-50 w-36 bg-background border border-border rounded-md shadow-md py-1"
+                      phx-click-away="close_menus"
+                      phx-target={@myself}
+                    >
+                      <button
+                        phx-click="start_rename_area"
+                        phx-value-id={area.id}
+                        phx-target={@myself}
+                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
+                      >
+                        <.icon name="hero-pencil" class="w-3.5 h-3.5" /> Rename
+                      </button>
+                      <button
+                        phx-click="confirm_delete_area"
+                        phx-value-id={area.id}
+                        phx-target={@myself}
+                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted text-destructive flex items-center gap-2"
+                      >
+                        <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
+                      </button>
+                    </div>
+                  <% end %>
+
+                  <%= if @confirm_delete_area && @confirm_delete_area.area.id == area.id do %>
+                    <div class="mx-2 mb-1 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs">
+                      <p class="text-muted-foreground mb-1.5">
+                        Delete "<%= area.name %>"?
+                        <%= if @confirm_delete_area.task_count > 0 do %>
+                          <%= @confirm_delete_area.task_count %> tasks → inbox.
+                        <% end %>
+                        <%= if @confirm_delete_area.project_count > 0 do %>
+                          <%= @confirm_delete_area.project_count %> projects lose area.
+                        <% end %>
+                      </p>
+                      <div class="flex gap-3">
+                        <button
+                          phx-click="delete_area"
+                          phx-value-id={area.id}
+                          phx-target={@myself}
+                          class="text-destructive font-medium hover:underline"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          phx-click="cancel_confirm"
+                          phx-target={@myself}
+                          class="text-muted-foreground hover:underline"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  <% end %>
+                <% end %>
 
                 <%= if @creating_project == area.id do %>
                   <form
@@ -184,14 +445,136 @@ defmodule KairosWeb.SidebarComponent do
                 <% end %>
 
                 <%= for project <- Enum.filter(@projects, &(&1.area_id == area.id)) do %>
-                  <.link
-                    id={"sidebar-project-#{project.id}"}
-                    navigate={~p"/projects/#{project.id}"}
-                    class="flex items-center gap-2 pl-7 pr-2 py-1.5 rounded text-sm hover:bg-muted text-muted-foreground"
-                  >
-                    <.icon name="hero-folder" class="w-3.5 h-3.5 shrink-0" />
-                    <span class="truncate"><%= project.name %></span>
-                  </.link>
+                  <div id={"sidebar-project-wrapper-#{project.id}"} class="relative">
+                    <%= if @renaming_project == project.id do %>
+                      <form
+                        id={"sidebar-rename-project-form-#{project.id}"}
+                        phx-submit="save_rename_project"
+                        phx-target={@myself}
+                        class="flex items-center gap-1 pl-7 pr-2 py-1"
+                      >
+                        <input type="hidden" name="record_id" value={project.id} />
+                        <.icon name="hero-folder" class="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <input
+                          type="text"
+                          name="name"
+                          value={project.name}
+                          class="flex-1 text-sm border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                          phx-mounted={JS.focus()}
+                          phx-keydown="cancel_rename"
+                          phx-key="Escape"
+                          phx-target={@myself}
+                        />
+                      </form>
+                    <% else %>
+                      <.link
+                        id={"sidebar-project-#{project.id}"}
+                        navigate={~p"/projects/#{project.id}"}
+                        class="flex items-center gap-2 pl-7 pr-2 py-1.5 rounded text-sm hover:bg-muted text-muted-foreground group/proj"
+                      >
+                        <.icon name="hero-folder" class="w-3.5 h-3.5 shrink-0" />
+                        <span class="flex-1 truncate"><%= project.name %></span>
+                        <button
+                          id={"sidebar-project-menu-btn-#{project.id}"}
+                          phx-click="toggle_project_menu"
+                          phx-value-id={project.id}
+                          phx-target={@myself}
+                          class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted"
+                          title="Project options"
+                          onclick="event.preventDefault()"
+                        >
+                          <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
+                        </button>
+                      </.link>
+
+                      <%= if @project_menu_open == project.id do %>
+                        <div
+                          id={"sidebar-project-menu-#{project.id}"}
+                          class="absolute right-1 top-7 z-50 w-40 bg-background border border-border rounded-md shadow-md py-1"
+                          phx-click-away="close_menus"
+                          phx-target={@myself}
+                        >
+                          <button
+                            phx-click="start_rename_project"
+                            phx-value-id={project.id}
+                            phx-target={@myself}
+                            class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
+                          >
+                            <.icon name="hero-pencil" class="w-3.5 h-3.5" /> Rename
+                          </button>
+                          <button
+                            phx-click="confirm_demote_project"
+                            phx-value-id={project.id}
+                            phx-target={@myself}
+                            class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
+                          >
+                            <.icon name="hero-arrow-down-circle" class="w-3.5 h-3.5" /> Demote to task
+                          </button>
+                          <button
+                            phx-click="confirm_delete_project"
+                            phx-value-id={project.id}
+                            phx-target={@myself}
+                            class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted text-destructive flex items-center gap-2"
+                          >
+                            <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
+                          </button>
+                        </div>
+                      <% end %>
+
+                      <%= if @confirm_delete_project && @confirm_delete_project.project.id == project.id do %>
+                        <div class="ml-7 mr-2 mb-1 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs">
+                          <p class="text-muted-foreground mb-1.5">
+                            Delete "<%= project.name %>"?
+                            <%= if @confirm_delete_project.task_count > 0 do %>
+                              <%= @confirm_delete_project.task_count %> tasks → inbox.
+                            <% end %>
+                          </p>
+                          <div class="flex gap-3">
+                            <button
+                              phx-click="delete_project"
+                              phx-value-id={project.id}
+                              phx-target={@myself}
+                              class="text-destructive font-medium hover:underline"
+                            >
+                              Delete
+                            </button>
+                            <button
+                              phx-click="cancel_confirm"
+                              phx-target={@myself}
+                              class="text-muted-foreground hover:underline"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      <% end %>
+
+                      <%= if @confirm_demote_project && @confirm_demote_project.id == project.id do %>
+                        <div class="ml-7 mr-2 mb-1 p-2 rounded border border-border bg-muted/30 text-xs">
+                          <p class="text-muted-foreground mb-1.5">
+                            Convert "<%= project.name %>" to a task? Its tasks move to inbox.
+                          </p>
+                          <div class="flex gap-3">
+                            <button
+                              phx-click="demote_project"
+                              phx-value-id={project.id}
+                              phx-target={@myself}
+                              class="font-medium hover:underline"
+                            >
+                              Convert
+                            </button>
+                            <button
+                              phx-click="cancel_confirm"
+                              phx-target={@myself}
+                              class="text-muted-foreground hover:underline"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      <% end %>
+                    <% end %>
+                  </div>
                 <% end %>
               </div>
             <% end %>
@@ -232,14 +615,143 @@ defmodule KairosWeb.SidebarComponent do
 
           <div id="sidebar-projects">
             <%= for project <- Enum.filter(@projects, &is_nil(&1.area_id)) do %>
-              <.link
-                id={"sidebar-project-#{project.id}"}
-                navigate={~p"/projects/#{project.id}"}
-                class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted"
-              >
-                <.icon name="hero-folder" class="w-4 h-4 text-muted-foreground shrink-0" />
-                <span class="truncate"><%= project.name %></span>
-              </.link>
+              <div id={"sidebar-project-wrapper-#{project.id}"} class="relative">
+                <%= if @renaming_project == project.id do %>
+                  <form
+                    id={"sidebar-rename-project-form-#{project.id}"}
+                    phx-submit="save_rename_project"
+                    phx-target={@myself}
+                    class="flex items-center gap-1 px-2 py-1"
+                  >
+                    <input type="hidden" name="record_id" value={project.id} />
+                    <.icon name="hero-folder" class="w-4 h-4 text-muted-foreground shrink-0" />
+                    <input
+                      type="text"
+                      name="name"
+                      value={project.name}
+                      class="flex-1 text-sm border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                      phx-mounted={JS.focus()}
+                      phx-keydown="cancel_rename"
+                      phx-key="Escape"
+                      phx-target={@myself}
+                    />
+                  </form>
+                <% else %>
+                  <.link
+                    id={"sidebar-project-#{project.id}"}
+                    navigate={~p"/projects/#{project.id}"}
+                    class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted group/proj"
+                  >
+                    <.icon name="hero-folder" class="w-4 h-4 text-muted-foreground shrink-0" />
+                    <span class="truncate flex-1"><%= project.name %></span>
+                    <button
+                      id={"sidebar-project-menu-btn-#{project.id}"}
+                      phx-click="toggle_project_menu"
+                      phx-value-id={project.id}
+                      phx-target={@myself}
+                      class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground"
+                      title="Project options"
+                      onclick="event.preventDefault()"
+                    >
+                      <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
+                    </button>
+                  </.link>
+
+                  <%= if @project_menu_open == project.id do %>
+                    <div
+                      id={"sidebar-project-menu-#{project.id}"}
+                      class="absolute right-1 top-7 z-50 w-40 bg-background border border-border rounded-md shadow-md py-1"
+                      phx-click-away="close_menus"
+                      phx-target={@myself}
+                    >
+                      <button
+                        phx-click="start_rename_project"
+                        phx-value-id={project.id}
+                        phx-target={@myself}
+                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
+                      >
+                        <.icon name="hero-pencil" class="w-3.5 h-3.5" /> Rename
+                      </button>
+                      <button
+                        phx-click="confirm_demote_project"
+                        phx-value-id={project.id}
+                        phx-target={@myself}
+                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
+                      >
+                        <.icon name="hero-arrow-down-circle" class="w-3.5 h-3.5" /> Demote to task
+                      </button>
+                      <button
+                        phx-click="confirm_delete_project"
+                        phx-value-id={project.id}
+                        phx-target={@myself}
+                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted text-destructive flex items-center gap-2"
+                      >
+                        <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
+                      </button>
+                    </div>
+                  <% end %>
+
+                  <%= if @confirm_delete_project && @confirm_delete_project.project.id == project.id do %>
+                    <div class="mx-2 mb-1 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs">
+                      <p class="text-muted-foreground mb-1.5">
+                        Delete "<%= project.name %>"?
+                        <%= if @confirm_delete_project.task_count > 0 do %>
+                          <%= @confirm_delete_project.task_count %> tasks → inbox.
+                        <% end %>
+                      </p>
+                      <div class="flex gap-3">
+                        <button
+                          phx-click="delete_project"
+                          phx-value-id={project.id}
+                          phx-target={@myself}
+                          class="text-destructive font-medium hover:underline"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          phx-click="cancel_confirm"
+                          phx-target={@myself}
+                          class="text-muted-foreground hover:underline"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  <% end %>
+
+                  <%= if @confirm_demote_project && @confirm_demote_project.id == project.id do %>
+                    <div class="mx-2 mb-1 p-2 rounded border border-border bg-muted/30 text-xs">
+                      <p class="text-muted-foreground mb-1.5">
+                        Convert "<%= project.name %>" to a task? Its tasks move to inbox.
+                      </p>
+                      <div class="flex gap-3">
+                        <button
+                          phx-click="demote_project"
+                          phx-value-id={project.id}
+                          phx-target={@myself}
+                          class="font-medium hover:underline"
+                        >
+                          Convert
+                        </button>
+                        <button
+                          phx-click="cancel_confirm"
+                          phx-target={@myself}
+                          class="text-muted-foreground hover:underline"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  <% end %>
+
+                  <%= if @demote_error do %>
+                    <div class="mx-2 mb-1 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs text-destructive">
+                      <%= @demote_error %>
+                      <button phx-click="cancel_confirm" phx-target={@myself} class="ml-1 underline">OK</button>
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
             <% end %>
           </div>
         </div>

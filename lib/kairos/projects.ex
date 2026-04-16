@@ -40,6 +40,10 @@ defmodule Kairos.Projects do
     Repo.delete(project)
   end
 
+  def count_tasks(project_id) do
+    Task |> where([t], t.project_id == ^project_id) |> Repo.aggregate(:count)
+  end
+
   def demote_to_task(%Project{} = project) do
     # A project task has subtasks if any task's parent_id points to a project task
     project_task_ids =

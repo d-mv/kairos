@@ -2,6 +2,8 @@ defmodule Kairos.Areas do
   import Ecto.Query
   alias Kairos.Repo
   alias Kairos.Areas.Area
+  alias Kairos.Tasks.Task
+  alias Kairos.Projects.Project
 
   def list_areas(user_id) do
     Area
@@ -30,5 +32,13 @@ defmodule Kairos.Areas do
 
   def delete_area(%Area{} = area) do
     Repo.delete(area)
+  end
+
+  def count_tasks(area_id) do
+    Task |> where([t], t.area_id == ^area_id) |> Repo.aggregate(:count)
+  end
+
+  def count_projects(area_id) do
+    Project |> where([p], p.area_id == ^area_id) |> Repo.aggregate(:count)
   end
 end
