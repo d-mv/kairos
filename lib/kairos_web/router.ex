@@ -32,7 +32,7 @@ defmodule KairosWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [{KairosWeb.UserAuth, :require_authenticated}] do
+      on_mount: [{KairosWeb.UserAuth, :require_authenticated}, {KairosWeb.Nav, :load_nav}] do
       live "/inbox", InboxLive, :index
       live "/today", TodayLive, :index
       live "/upcoming", UpcomingLive, :index

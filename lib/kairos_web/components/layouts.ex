@@ -12,6 +12,8 @@ defmodule KairosWeb.Layouts do
 
   attr :flash, :map, required: true
   attr :current_scope, :any, default: nil
+  attr :nav_areas, :list, default: []
+  attr :nav_projects, :list, default: []
   slot :inner_block, required: true
   def app(assigns)
 

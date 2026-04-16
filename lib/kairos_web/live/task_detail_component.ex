@@ -142,6 +142,24 @@ defmodule KairosWeb.TaskDetailComponent do
           </button>
         <% end %>
 
+        <!-- Priority -->
+        <div id="task-detail-priority-section">
+          <label for="task-detail-priority" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Priority</label>
+          <select
+            id="task-detail-priority"
+            phx-change="save_field"
+            phx-value-field="priority"
+            phx-target={@myself}
+            name="value"
+            class="mt-1 w-full border rounded px-2 py-1 text-sm focus:outline-none bg-background"
+          >
+            <option value="none" selected={@task.priority == "none"}>None</option>
+            <option value="low" selected={@task.priority == "low"}>Low</option>
+            <option value="medium" selected={@task.priority == "medium"}>Medium</option>
+            <option value="high" selected={@task.priority == "high"}>High</option>
+          </select>
+        </div>
+
         <!-- Notes -->
         <div id="task-detail-notes-section">
           <label for="task-detail-notes" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</label>

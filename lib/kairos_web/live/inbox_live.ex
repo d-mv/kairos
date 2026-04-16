@@ -102,7 +102,7 @@ defmodule KairosWeb.InboxLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} nav_areas={assigns[:nav_areas] || []} nav_projects={assigns[:nav_projects] || []}>
       <div id="inbox-container" class="w-full py-8 px-4">
         <h1 id="inbox-title" class="text-2xl font-semibold mb-6">Inbox</h1>
 
@@ -143,12 +143,28 @@ defmodule KairosWeb.InboxLive do
                 id={"task-title-#{task.id}"}
                 phx-click="select_task"
                 phx-value-id={task.id}
-                class={["flex-1 text-left text-sm", task.status == "completed" && "line-through text-muted-foreground"]}
+                class="flex-1 text-left min-w-0"
               >
-                <%= task.title %>
+                <span class={["text-sm block truncate", task.status == "completed" && "line-through text-muted-foreground"]}>
+                  <%= task.title %>
+                </span>
+                <%= if task.notes && task.notes != "" do %>
+                  <span id={"task-desc-#{task.id}"} class="text-xs text-muted-foreground block truncate"><%= task.notes %></span>
+                <% end %>
               </button>
+              <span
+                id={"task-priority-#{task.id}"}
+                :if={task.priority != "none"}
+                class={[
+                  "w-2 h-2 rounded-full shrink-0",
+                  task.priority == "high" && "bg-red-500",
+                  task.priority == "medium" && "bg-yellow-500",
+                  task.priority == "low" && "bg-blue-400"
+                ]}
+                title={task.priority}
+              />
               <%= if task.due_date do %>
-                <span id={"task-due-#{task.id}"} class="text-xs text-muted-foreground"><%= task.due_date %></span>
+                <span id={"task-due-#{task.id}"} class="text-xs text-muted-foreground shrink-0"><%= task.due_date %></span>
               <% end %>
               <button
                 id={"task-delete-#{task.id}"}

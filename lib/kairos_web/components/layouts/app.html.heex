@@ -1,11 +1,11 @@
 <div class="flex h-screen overflow-hidden">
   <!-- Sidebar -->
-  <nav class="hidden md:flex w-56 shrink-0 border-r bg-muted/30 flex-col">
-    <div class="p-4 border-b">
+  <nav id="sidebar" class="hidden md:flex w-56 shrink-0 border-r bg-muted/30 flex-col">
+    <div id="sidebar-header" class="p-4 border-b">
       <span class="font-semibold text-sm">Kairos</span>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-2 space-y-1">
+    <div id="sidebar-nav" class="flex-1 overflow-y-auto p-2 space-y-1">
       <.link navigate={~p"/inbox"} class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
         <.icon name="hero-inbox" class="w-4 h-4 text-muted-foreground" /> Inbox
       </.link>
@@ -21,9 +21,49 @@
       <.link navigate={~p"/search"} class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
         <.icon name="hero-magnifying-glass" class="w-4 h-4 text-muted-foreground" /> Search
       </.link>
+
+      <%= if @nav_areas != [] do %>
+        <div id="sidebar-areas" class="pt-3">
+          <p class="px-2 pb-1 text-xs font-medium text-muted-foreground uppercase tracking-wide">Areas</p>
+          <%= for area <- @nav_areas do %>
+            <div id={"sidebar-area-#{area.id}"}>
+              <.link navigate={~p"/areas/#{area.id}"} class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
+                <.icon name="hero-square-2-stack" class="w-4 h-4 text-muted-foreground" />
+                <%= area.name %>
+              </.link>
+              <%= for project <- Enum.filter(@nav_projects, &(&1.area_id == area.id)) do %>
+                <.link
+                  id={"sidebar-project-#{project.id}"}
+                  navigate={~p"/projects/#{project.id}"}
+                  class="flex items-center gap-2 pl-7 pr-2 py-1.5 rounded text-sm hover:bg-muted text-muted-foreground"
+                >
+                  <.icon name="hero-folder" class="w-3.5 h-3.5" />
+                  <%= project.name %>
+                </.link>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= if Enum.any?(@nav_projects, &is_nil(&1.area_id)) do %>
+        <div id="sidebar-projects" class="pt-3">
+          <p class="px-2 pb-1 text-xs font-medium text-muted-foreground uppercase tracking-wide">Projects</p>
+          <%= for project <- Enum.filter(@nav_projects, &is_nil(&1.area_id)) do %>
+            <.link
+              id={"sidebar-project-#{project.id}"}
+              navigate={~p"/projects/#{project.id}"}
+              class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted"
+            >
+              <.icon name="hero-folder" class="w-4 h-4 text-muted-foreground" />
+              <%= project.name %>
+            </.link>
+          <% end %>
+        </div>
+      <% end %>
     </div>
 
-    <div class="p-2 border-t space-y-1">
+    <div id="sidebar-footer" class="p-2 border-t space-y-1">
       <%= if @current_scope do %>
         <div class="text-xs text-muted-foreground px-2 mb-1 truncate"><%= @current_scope.user.email %></div>
         <.link navigate={~p"/users/settings"} class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">

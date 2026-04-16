@@ -6,11 +6,13 @@ defmodule Kairos.Tasks.Task do
   @foreign_key_type :binary_id
 
   @statuses ~w(pending completed)
+  @priorities ~w(none low medium high)
 
   schema "tasks" do
     field :title, :string
     field :notes, :string
     field :status, :string, default: "pending"
+    field :priority, :string, default: "none"
     field :due_date, :date
     field :due_time, :time
     field :position, :integer, default: 0
@@ -26,10 +28,11 @@ defmodule Kairos.Tasks.Task do
 
   def changeset(task, attrs) do
     task
-    |> cast(attrs, [:title, :notes, :status, :due_date, :due_time, :position, :user_id, :project_id, :area_id, :parent_id])
+    |> cast(attrs, [:title, :notes, :status, :priority, :due_date, :due_time, :position, :user_id, :project_id, :area_id, :parent_id])
     |> validate_required([:title, :user_id])
     |> validate_length(:title, min: 1, max: 500)
     |> validate_inclusion(:status, @statuses)
+    |> validate_inclusion(:priority, @priorities)
     |> validate_single_container()
   end
 

@@ -79,6 +79,10 @@ end
 - Run: `mix test`
 
 ---
+## Frontend
+
+- Add IDs to every element to help with testing and human evaluation
+---
 
 ## Commands
 

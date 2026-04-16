@@ -24,7 +24,7 @@ defmodule KairosWeb.UpcomingLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} nav_areas={assigns[:nav_areas] || []} nav_projects={assigns[:nav_projects] || []}>
       <div id="upcoming-container" class="w-full py-8 px-4">
         <h1 id="upcoming-title" class="text-2xl font-semibold mb-6">Upcoming</h1>
         <ul id="upcoming-task-list" class="space-y-1">

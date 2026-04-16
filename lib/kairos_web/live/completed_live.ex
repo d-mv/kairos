@@ -33,7 +33,7 @@ defmodule KairosWeb.CompletedLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} nav_areas={assigns[:nav_areas] || []} nav_projects={assigns[:nav_projects] || []}>
       <div id="completed-container" class="w-full py-8 px-4">
         <h1 id="completed-title" class="text-2xl font-semibold mb-6">Completed</h1>
         <ul id="completed-task-list" class="space-y-1">
