@@ -335,35 +335,37 @@ defmodule KairosWeb.SidebarComponent do
                     />
                   </form>
                 <% else %>
-                  <.link
-                    navigate={~p"/areas/#{area.id}"}
-                    class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted group/area"
-                  >
-                    <.icon name="hero-square-2-stack" class="w-4 h-4 text-muted-foreground shrink-0" />
-                    <span class="flex-1 truncate"><%= area.name %></span>
-                    <button
-                      id={"sidebar-add-project-to-area-#{area.id}"}
-                      phx-click="toggle_create_project"
-                      phx-value-area-id={area.id}
-                      phx-target={@myself}
-                      class="opacity-0 group-hover/area:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground"
-                      title="New project in area"
-                      onclick="event.preventDefault()"
+                  <div class="flex items-center rounded hover:bg-muted group/area">
+                    <.link
+                      navigate={~p"/areas/#{area.id}"}
+                      class="flex items-center gap-2 px-2 py-1.5 text-sm flex-1 min-w-0"
                     >
-                      <.icon name="hero-plus" class="w-3 h-3" />
-                    </button>
-                    <button
-                      id={"sidebar-area-menu-btn-#{area.id}"}
-                      phx-click="toggle_area_menu"
-                      phx-value-id={area.id}
-                      phx-target={@myself}
-                      class="opacity-0 group-hover/area:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground"
-                      title="Area options"
-                      onclick="event.preventDefault()"
-                    >
-                      <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
-                    </button>
-                  </.link>
+                      <.icon name="hero-square-2-stack" class="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span class="flex-1 truncate"><%= area.name %></span>
+                    </.link>
+                    <div class="flex items-center gap-0.5 pr-1 shrink-0 opacity-0 group-hover/area:opacity-100">
+                      <button
+                        id={"sidebar-add-project-to-area-#{area.id}"}
+                        phx-click="toggle_create_project"
+                        phx-value-area-id={area.id}
+                        phx-target={@myself}
+                        class="p-0.5 rounded hover:bg-muted text-muted-foreground"
+                        title="New project in area"
+                      >
+                        <.icon name="hero-plus" class="w-3 h-3" />
+                      </button>
+                      <button
+                        id={"sidebar-area-menu-btn-#{area.id}"}
+                        phx-click="toggle_area_menu"
+                        phx-value-id={area.id}
+                        phx-target={@myself}
+                        class="p-0.5 rounded hover:bg-muted text-muted-foreground"
+                        title="Area options"
+                      >
+                        <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
 
                   <%= if @area_menu_open == area.id do %>
                     <div
@@ -467,25 +469,26 @@ defmodule KairosWeb.SidebarComponent do
                         />
                       </form>
                     <% else %>
-                      <.link
-                        id={"sidebar-project-#{project.id}"}
-                        navigate={~p"/projects/#{project.id}"}
-                        class="flex items-center gap-2 pl-7 pr-2 py-1.5 rounded text-sm hover:bg-muted text-muted-foreground group/proj"
-                      >
-                        <.icon name="hero-folder" class="w-3.5 h-3.5 shrink-0" />
-                        <span class="flex-1 truncate"><%= project.name %></span>
+                      <div class="flex items-center rounded hover:bg-muted group/proj">
+                        <.link
+                          id={"sidebar-project-#{project.id}"}
+                          navigate={~p"/projects/#{project.id}"}
+                          class="flex items-center gap-2 pl-7 pr-2 py-1.5 text-sm flex-1 min-w-0 text-muted-foreground"
+                        >
+                          <.icon name="hero-folder" class="w-3.5 h-3.5 shrink-0" />
+                          <span class="flex-1 truncate"><%= project.name %></span>
+                        </.link>
                         <button
                           id={"sidebar-project-menu-btn-#{project.id}"}
                           phx-click="toggle_project_menu"
                           phx-value-id={project.id}
                           phx-target={@myself}
-                          class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted"
+                          class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground mr-1 shrink-0"
                           title="Project options"
-                          onclick="event.preventDefault()"
                         >
                           <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
                         </button>
-                      </.link>
+                      </div>
 
                       <%= if @project_menu_open == project.id do %>
                         <div
@@ -637,25 +640,26 @@ defmodule KairosWeb.SidebarComponent do
                     />
                   </form>
                 <% else %>
-                  <.link
-                    id={"sidebar-project-#{project.id}"}
-                    navigate={~p"/projects/#{project.id}"}
-                    class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted group/proj"
-                  >
-                    <.icon name="hero-folder" class="w-4 h-4 text-muted-foreground shrink-0" />
-                    <span class="truncate flex-1"><%= project.name %></span>
+                  <div class="flex items-center rounded hover:bg-muted group/proj">
+                    <.link
+                      id={"sidebar-project-#{project.id}"}
+                      navigate={~p"/projects/#{project.id}"}
+                      class="flex items-center gap-2 px-2 py-1.5 text-sm flex-1 min-w-0"
+                    >
+                      <.icon name="hero-folder" class="w-4 h-4 text-muted-foreground shrink-0" />
+                      <span class="truncate flex-1"><%= project.name %></span>
+                    </.link>
                     <button
                       id={"sidebar-project-menu-btn-#{project.id}"}
                       phx-click="toggle_project_menu"
                       phx-value-id={project.id}
                       phx-target={@myself}
-                      class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground"
+                      class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground mr-1 shrink-0"
                       title="Project options"
-                      onclick="event.preventDefault()"
                     >
                       <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
                     </button>
-                  </.link>
+                  </div>
 
                   <%= if @project_menu_open == project.id do %>
                     <div
