@@ -205,3 +205,10 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="
 textarea {
   cursor: text;
 }
+
+/* Prevent browser button defaults from distorting icon buttons */
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
