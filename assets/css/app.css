@@ -11,84 +11,80 @@
    The heroicons installation itself is managed by your mix.exs */
 @plugin "../vendor/heroicons";
 
-/* daisyUI Tailwind Plugin. You can update this file by fetching the latest version with:
-   curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.js
-   Make sure to look at the daisyUI changelog: https://daisyui.com/docs/changelog/ */
+/* daisyUI Tailwind Plugin */
 @plugin "../vendor/daisyui" {
   themes: false;
 }
 
-/* daisyUI theme plugin. You can update this file by fetching the latest version with:
-  curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.js
-  We ship with two themes, a light one inspired on Phoenix colors and a dark one inspired
-  on Elixir colors. Build your own at: https://daisyui.com/theme-generator/ */
+/* ── Bauhaus: Dark theme ── black base, near-white text, mint accent ── */
 @plugin "../vendor/daisyui-theme" {
   name: "dark";
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-  --color-base-100: oklch(30.33% 0.016 252.42);
-  --color-base-200: oklch(25.26% 0.014 253.1);
-  --color-base-300: oklch(20.15% 0.012 254.09);
-  --color-base-content: oklch(97.807% 0.029 256.847);
-  --color-primary: oklch(58% 0.233 277.117);
-  --color-primary-content: oklch(96% 0.018 272.314);
-  --color-secondary: oklch(58% 0.233 277.117);
-  --color-secondary-content: oklch(96% 0.018 272.314);
-  --color-accent: oklch(60% 0.25 292.717);
-  --color-accent-content: oklch(96% 0.016 293.756);
-  --color-neutral: oklch(37% 0.044 257.287);
-  --color-neutral-content: oklch(98% 0.003 247.858);
-  --color-info: oklch(58% 0.158 241.966);
-  --color-info-content: oklch(97% 0.013 236.62);
-  --color-success: oklch(60% 0.118 184.704);
-  --color-success-content: oklch(98% 0.014 180.72);
-  --color-warning: oklch(66% 0.179 58.318);
-  --color-warning-content: oklch(98% 0.022 95.277);
-  --color-error: oklch(58% 0.253 17.585);
-  --color-error-content: oklch(96% 0.015 12.422);
+  --color-base-100: oklch(12% 0 0);
+  --color-base-200: oklch(9% 0 0);
+  --color-base-300: oklch(6% 0 0);
+  --color-base-content: oklch(93% 0 0);
+  --color-primary: oklch(93% 0 0);
+  --color-primary-content: oklch(10% 0 0);
+  --color-secondary: oklch(35% 0 0);
+  --color-secondary-content: oklch(93% 0 0);
+  --color-accent: oklch(76% 0.1 184);
+  --color-accent-content: oklch(10% 0 0);
+  --color-neutral: oklch(20% 0 0);
+  --color-neutral-content: oklch(93% 0 0);
+  --color-info: oklch(55% 0 0);
+  --color-info-content: oklch(93% 0 0);
+  --color-success: oklch(76% 0.1 184);
+  --color-success-content: oklch(10% 0 0);
+  --color-warning: oklch(65% 0.08 80);
+  --color-warning-content: oklch(10% 0 0);
+  --color-error: oklch(55% 0.22 17);
+  --color-error-content: oklch(97% 0 0);
   --radius-selector: 5px;
   --radius-field: 5px;
   --radius-box: 5px;
   --size-selector: 0.21875rem;
   --size-field: 0.21875rem;
-  --border: 1.5px;
-  --depth: 1;
+  --border: 1px;
+  --depth: 0;
   --noise: 0;
 }
 
+/* ── Bauhaus: Light theme ── pure white, near-black text, mint accent ── */
 @plugin "../vendor/daisyui-theme" {
   name: "light";
   default: true;
   prefersdark: false;
   color-scheme: "light";
-  --color-base-100: oklch(98% 0 0);
-  --color-base-200: oklch(96% 0.001 286.375);
-  --color-base-300: oklch(92% 0.004 286.32);
-  --color-base-content: oklch(21% 0.006 285.885);
-  --color-primary: oklch(70% 0.213 47.604);
-  --color-primary-content: oklch(98% 0.016 73.684);
-  --color-secondary: oklch(55% 0.027 264.364);
-  --color-secondary-content: oklch(98% 0.002 247.839);
-  --color-accent: oklch(0% 0 0);
-  --color-accent-content: oklch(100% 0 0);
-  --color-neutral: oklch(44% 0.017 285.786);
-  --color-neutral-content: oklch(98% 0 0);
-  --color-info: oklch(62% 0.214 259.815);
-  --color-info-content: oklch(97% 0.014 254.604);
-  --color-success: oklch(70% 0.14 182.503);
-  --color-success-content: oklch(98% 0.014 180.72);
-  --color-warning: oklch(66% 0.179 58.318);
-  --color-warning-content: oklch(98% 0.022 95.277);
-  --color-error: oklch(58% 0.253 17.585);
-  --color-error-content: oklch(96% 0.015 12.422);
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(96% 0 0);
+  --color-base-300: oklch(90% 0 0);
+  --color-base-content: oklch(10% 0 0);
+  --color-primary: oklch(10% 0 0);
+  --color-primary-content: oklch(100% 0 0);
+  --color-secondary: oklch(65% 0 0);
+  --color-secondary-content: oklch(10% 0 0);
+  --color-accent: oklch(76% 0.1 184);
+  --color-accent-content: oklch(10% 0 0);
+  --color-neutral: oklch(25% 0 0);
+  --color-neutral-content: oklch(96% 0 0);
+  --color-info: oklch(55% 0 0);
+  --color-info-content: oklch(96% 0 0);
+  --color-success: oklch(76% 0.1 184);
+  --color-success-content: oklch(10% 0 0);
+  --color-warning: oklch(65% 0.08 80);
+  --color-warning-content: oklch(10% 0 0);
+  --color-error: oklch(55% 0.22 17);
+  --color-error-content: oklch(97% 0 0);
   --radius-selector: 5px;
   --radius-field: 5px;
   --radius-box: 5px;
   --size-selector: 0.21875rem;
   --size-field: 0.21875rem;
-  --border: 1.5px;
-  --depth: 1;
+  --border: 1px;
+  --depth: 0;
   --noise: 0;
 }
 
@@ -103,64 +99,68 @@
 /* Make LiveView wrapper divs transparent for layout */
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
-/* This file is for your main application CSS */
-
+/* ──────────────────────────────────────────────────────
+   Bauhaus SaladUI / Shadcn CSS variables
+   Black / white / grayscale — mint (#2DD4BF) as sole accent
+   ────────────────────────────────────────────────────── */
 
 @layer base {
   :root {
-  --background: 0 0% 100%;
-  --foreground: 224 71.4% 4.1%;
-  --card: 0 0% 100%;
-  --card-foreground: 224 71.4% 4.1%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 224 71.4% 4.1%;
-  --primary: 220.9 39.3% 11%;
-  --primary-foreground: 210 20% 98%;
-  --secondary: 220 14.3% 95.9%;
-  --secondary-foreground: 220.9 39.3% 11%;
-  --muted: 220 14.3% 95.9%;
-  --muted-foreground: 220 8.9% 46.1%;
-  --accent: 220 14.3% 95.9%;
-  --accent-foreground: 220.9 39.3% 11%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 20% 98%;
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 224 71.4% 4.1%;
-  --radius: 5px;
-  --chart-1: 12 76% 61%;
-  --chart-2: 173 58% 39%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
-}
+    /* ── Light ── */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 6%;
+    --card: 0 0% 99%;
+    --card-foreground: 0 0% 6%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 6%;
+    --primary: 0 0% 6%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 6%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 174 64% 50%;         /* mint */
+    --accent-foreground: 0 0% 6%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 174 64% 50%;           /* mint focus ring */
+    --radius: 5px;
+    --chart-1: 0 0% 10%;
+    --chart-2: 0 0% 28%;
+    --chart-3: 0 0% 46%;
+    --chart-4: 174 64% 50%;
+    --chart-5: 0 0% 68%;
+  }
 
-.dark {
-  --background: 224 71.4% 4.1%;
-  --foreground: 210 20% 98%;
-  --card: 224 71.4% 4.1%;
-  --card-foreground: 210 20% 98%;
-  --popover: 224 71.4% 4.1%;
-  --popover-foreground: 210 20% 98%;
-  --primary: 210 20% 98%;
-  --primary-foreground: 220.9 39.3% 11%;
-  --secondary: 215 27.9% 16.9%;
-  --secondary-foreground: 210 20% 98%;
-  --muted: 215 27.9% 16.9%;
-  --muted-foreground: 217.9 10.6% 64.9%;
-  --accent: 215 27.9% 16.9%;
-  --accent-foreground: 210 20% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 20% 98%;
-  --border: 215 27.9% 16.9%;
-  --input: 215 27.9% 16.9%;
-  --ring: 216 12.2% 83.9%;
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
-}
+  .dark {
+    /* ── Dark ── */
+    --background: 0 0% 7%;
+    --foreground: 0 0% 94%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 94%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 94%;
+    --primary: 0 0% 94%;
+    --primary-foreground: 0 0% 7%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 94%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 174 64% 50%;         /* mint — same in dark */
+    --accent-foreground: 0 0% 6%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 94%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 174 64% 50%;
+    --chart-1: 0 0% 94%;
+    --chart-2: 0 0% 70%;
+    --chart-3: 0 0% 48%;
+    --chart-4: 174 64% 50%;
+    --chart-5: 0 0% 28%;
+  }
 
   * {
     border-color: hsl(var(--border));
@@ -191,13 +191,28 @@
   --radius: var(--radius);
 }
 
+/* ── Base ── */
+
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: 'Open Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Cursor defaults */
+/* Mint text-selection */
+::selection {
+  background-color: hsl(174 64% 50% / 25%);
+  color: hsl(var(--foreground));
+}
+
+/* Thin Bauhaus scrollbars */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+/* ── Cursors ── */
 button, a, [role="button"], summary, label[for], input[type="checkbox"], input[type="radio"], select {
   cursor: pointer;
 }
