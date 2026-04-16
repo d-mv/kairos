@@ -97,3 +97,4 @@ config :salad_ui, components_path: Path.join(File.cwd!(), "lib/kairos_web/compon
 # MCP server config — set these for local MCP usage
 config :kairos, :mcp_api_token, System.get_env("KAIROS_MCP_TOKEN", "dev-token")
 config :kairos, :mcp_user_id, System.get_env("KAIROS_MCP_USER_ID") && String.to_integer(System.get_env("KAIROS_MCP_USER_ID") || "0")
+config :kairos, :env, :dev

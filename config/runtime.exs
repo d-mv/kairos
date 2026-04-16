@@ -106,10 +106,21 @@ if config_env() == :prod do
   mcp_user_id_env = System.get_env("KAIROS_MCP_USER_ID")
   config :kairos, :mcp_user_id, if(mcp_user_id_env, do: String.to_integer(mcp_user_id_env))
 
-  # ## Configuring the mailer
-  #
-  # In production you need to configure the mailer to use a different adapter.
-  # Here is an example configuration for Mailgun:
+  # Mailer — use SMTP in production if SMTP_RELAY is set
+  if smtp_relay = System.get_env("SMTP_RELAY") do
+    config :kairos, Kairos.Mailer,
+      adapter: Swoosh.Adapters.SMTP,
+      relay: smtp_relay,
+      port: String.to_integer(System.get_env("SMTP_PORT", "587")),
+      username: System.get_env("SMTP_USERNAME"),
+      password: System.get_env("SMTP_PASSWORD"),
+      tls: :always,
+      auth: :always,
+      from_name: System.get_env("SMTP_FROM_NAME", "Kairos"),
+      from_email: System.get_env("SMTP_FROM_EMAIL", "noreply@kairos-app.fly.dev")
+  end
+
+  # ## Configuring the mailer (alternative - Mailgun example)
   #
   #     config :kairos, Kairos.Mailer,
   #       adapter: Swoosh.Adapters.Mailgun,

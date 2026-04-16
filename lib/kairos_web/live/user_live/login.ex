@@ -129,6 +129,7 @@ defmodule KairosWeb.UserLive.Login do
   end
 
   defp local_mail_adapter? do
-    Application.get_env(:kairos, Kairos.Mailer)[:adapter] == Swoosh.Adapters.Local
+    Application.get_env(:kairos, Kairos.Mailer)[:adapter] == Swoosh.Adapters.Local and
+      Application.get_env(:kairos, :env, :prod) == :dev
   end
 end
