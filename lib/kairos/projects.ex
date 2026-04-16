@@ -6,27 +6,30 @@ defmodule Kairos.Projects do
 
   def list_projects(user_id) do
     Project
-    |> where([p], p.user_id == ^user_id)
+    |> Repo.scope(user_id)
     |> order_by([p], [p.position, p.name])
     |> Repo.all()
   end
 
   def list_for_area(area_id, user_id) do
     Project
-    |> where([p], p.area_id == ^area_id and p.user_id == ^user_id)
+    |> Repo.scope(user_id)
+    |> where([p], p.area_id == ^area_id)
     |> order_by([p], [p.position, p.name])
     |> Repo.all()
   end
 
   def get_project(id, user_id) do
     Project
-    |> where([p], p.id == ^id and p.user_id == ^user_id)
+    |> Repo.scope(user_id)
+    |> where([p], p.id == ^id)
     |> Repo.one()
   end
 
   def get_project!(id, user_id) do
     Project
-    |> where([p], p.id == ^id and p.user_id == ^user_id)
+    |> Repo.scope(user_id)
+    |> where([p], p.id == ^id)
     |> Repo.one!()
   end
 

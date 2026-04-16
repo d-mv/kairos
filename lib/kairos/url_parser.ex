@@ -53,13 +53,56 @@ defmodule Kairos.UrlParser do
 
   defp fetch_title(url, :youtube) do
     case Req.get(@youtube_oembed, params: [url: url, format: "json"], receive_timeout: 5_000) do
-      {:ok, %{status: 200, body: %{"title" => title}}} -> {:ok, title}
-      _ -> fetch_title_from_html(url)
+      {:ok, %{status: 200, body: %{"title" => title, "author_name" => author}}} ->
+        {:ok, "#{author}: #{title}"}
+
+      {:ok, %{status: 200, body: %{"title" => title}}} ->
+        {:ok, title}
+
+      _ ->
+        fetch_title_from_html(url)
+    end
+  end
+
+  defp fetch_title(url, :instagram) do
+    # Instagram doesn't have a simple oEmbed without a token anymore,
+    # but we can try to extract from OpenGraph tags in HTML
+    case Req.get(url, receive_timeout: 5_000) do
+      {:ok, %{status: 200, body: body}} ->
+        author = extract_og(body, "og:title") # Often "Author (@handle) • Instagram..."
+        description = extract_og(body, "og:description")
+
+        title =
+          cond do
+            author && description ->
+              # Clean up author string "Author (@handle) on Instagram"
+              clean_author = author |> String.split("•") |> List.first() |> String.trim()
+              "#{clean_author}: #{description}"
+
+            author ->
+              author
+
+            true ->
+              extract_title_from_html(body)
+          end
+
+        {:ok, title}
+
+      _ ->
+        {:ok, nil}
     end
   end
 
   defp fetch_title(url, _service) do
     fetch_title_from_html(url)
+  end
+
+  defp extract_og(html, property) do
+    pattern = ~r/<meta[^>]+property=["']#{property}["'][^>]+content=["']([^"']+)["']/i
+    case Regex.run(pattern, html) do
+      [_, content] -> content
+      _ -> nil
+    end
   end
 
   defp fetch_title_from_html(url) do

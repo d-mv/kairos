@@ -26,11 +26,11 @@ defmodule KairosWeb.MCP.AuthPlugTest do
 
     test "allows request with valid token and assigns user_id", %{conn: conn} do
       user = user_fixture()
-      {:ok, user} = Accounts.set_mcp_token(user, "valid-mcp-token")
+      {:ok, {_token, raw_token}} = Accounts.create_mcp_token(user.id, "Test Token")
 
       conn =
         conn
-        |> put_req_header("authorization", "Bearer valid-mcp-token")
+        |> put_req_header("authorization", "Bearer #{raw_token}")
         |> AuthPlug.call(AuthPlug.init([]))
 
       refute conn.halted

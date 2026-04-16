@@ -8,7 +8,6 @@ defmodule Kairos.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
-    field :mcp_token, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -129,14 +128,5 @@ defmodule Kairos.Accounts.User do
   def valid_password?(_, _) do
     Bcrypt.no_user_verify()
     false
-  end
-
-  @doc """
-  A changeset for setting the MCP token.
-  """
-  def mcp_token_changeset(user, token) do
-    user
-    |> change(mcp_token: token)
-    |> unique_constraint(:mcp_token)
   end
 end

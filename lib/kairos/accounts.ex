@@ -6,7 +6,7 @@ defmodule Kairos.Accounts do
   import Ecto.Query, warn: false
   alias Kairos.Repo
 
-  alias Kairos.Accounts.{User, UserToken, UserNotifier}
+  alias Kairos.Accounts.{User, UserToken, UserNotifier, McpToken}
 
   ## Database getters
 
@@ -68,18 +68,54 @@ defmodule Kairos.Accounts do
   def get_user_by_mcp_token(nil), do: nil
 
   def get_user_by_mcp_token(token) when is_binary(token) do
-    Repo.get_by(User, mcp_token: token)
+    hash = :crypto.hash(:sha256, token) |> Base.encode16(case: :lower)
+
+    McpToken
+    |> where([t], t.token_hash == ^hash)
+    |> join(:inner, [t], u in User, on: u.id == t.user_id)
+    |> select([t, u], u)
+    |> Repo.one()
   end
 
   @doc """
-  Sets the MCP token for a user.
-
-  Returns `{:ok, user}` or `{:error, changeset}`.
+  Lists all MCP tokens for a user.
   """
-  def set_mcp_token(user, token) do
-    user
-    |> User.mcp_token_changeset(token)
-    |> Repo.update()
+  def list_mcp_tokens(user_id) do
+    McpToken
+    |> where([t], t.user_id == ^user_id)
+    |> order_by([t], desc: t.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Creates a new MCP token for a user.
+  Returns `{:ok, {mcp_token, raw_token}}` or `{:error, changeset}`.
+  """
+  def create_mcp_token(user_id, name) do
+    raw_token = "kt_" <> (32 |> :crypto.strong_rand_bytes() |> Base.url_encode64(padding: false))
+    hash = :crypto.hash(:sha256, raw_token) |> Base.encode16(case: :lower)
+
+    attrs = %{
+      name: name,
+      token_hash: hash,
+      user_id: user_id
+    }
+
+    case %McpToken{} |> McpToken.changeset(attrs) |> Repo.insert() do
+      {:ok, token} -> {:ok, {token, raw_token}}
+      {:error, changeset} -> {:error, changeset}
+    end
+  end
+
+  @doc """
+  Deletes an MCP token for a user.
+  """
+  def delete_mcp_token(user_id, token_id) do
+    McpToken
+    |> where([t], t.id == ^token_id and t.user_id == ^user_id)
+    |> Repo.delete_all()
+
+    :ok
   end
 
   ## User registration

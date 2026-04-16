@@ -13,6 +13,57 @@ defmodule Kairos.Links do
     |> Repo.all()
   end
 
+  def list_detailed_links_for(entity_id, entity_type, user_id) do
+    links = list_links_for(entity_id, entity_type, user_id)
+
+    # Separate target IDs by type to fetch details efficiently
+    task_ids = Enum.flat_map(links, fn l ->
+      if l.from_id == entity_id and l.from_type == entity_type do
+        if l.to_type == "task", do: [l.to_id], else: []
+      else
+        if l.from_type == "task", do: [l.from_id], else: []
+      end
+    end)
+
+    project_ids = Enum.flat_map(links, fn l ->
+      if l.from_id == entity_id and l.from_type == entity_type do
+        if l.to_type == "project", do: [l.to_id], else: []
+      else
+        if l.from_type == "project", do: [l.from_id], else: []
+      end
+    end)
+
+    tasks_map =
+      Task
+      |> where([t], t.id in ^task_ids)
+      |> Repo.all()
+      |> Map.new(&{&1.id, &1.title})
+
+    projects_map =
+      Project
+      |> where([p], p.id in ^project_ids)
+      |> Repo.all()
+      |> Map.new(&{&1.id, &1.name})
+
+    Enum.map(links, fn l ->
+      {target_id, target_type} =
+        if l.from_id == entity_id and l.from_type == entity_type do
+          {l.to_id, l.to_type}
+        else
+          {l.from_id, l.from_type}
+        end
+
+      title =
+        case target_type do
+          "task" -> Map.get(tasks_map, target_id, "Unknown Task")
+          "project" -> Map.get(projects_map, target_id, "Unknown Project")
+          _ -> "Unknown"
+        end
+
+      Map.merge(l, %{target_title: title, target_id: target_id, target_type: target_type})
+    end)
+  end
+
   def create_link(attrs, user_id) do
     from_id = Map.get(attrs, :from_id) || Map.get(attrs, "from_id")
     to_id = Map.get(attrs, :to_id) || Map.get(attrs, "to_id")
