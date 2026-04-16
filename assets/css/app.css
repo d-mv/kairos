@@ -134,8 +134,8 @@
     --chart-5: 0 0% 68%;
   }
 
-  .dark {
-    /* ── Dark ── */
+  /* Dark vars: applied when data-theme="dark" is explicitly set */
+  [data-theme="dark"] {
     --background: 0 0% 7%;
     --foreground: 0 0% 94%;
     --card: 0 0% 10%;
@@ -148,7 +148,7 @@
     --secondary-foreground: 0 0% 94%;
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 55%;
-    --accent: 174 64% 50%;         /* mint — same in dark */
+    --accent: 174 64% 50%;
     --accent-foreground: 0 0% 6%;
     --destructive: 0 62% 40%;
     --destructive-foreground: 0 0% 94%;
@@ -160,6 +160,36 @@
     --chart-3: 0 0% 48%;
     --chart-4: 174 64% 50%;
     --chart-5: 0 0% 28%;
+  }
+
+  /* Dark vars: applied when system prefers dark and no explicit theme is set */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+      --background: 0 0% 7%;
+      --foreground: 0 0% 94%;
+      --card: 0 0% 10%;
+      --card-foreground: 0 0% 94%;
+      --popover: 0 0% 10%;
+      --popover-foreground: 0 0% 94%;
+      --primary: 0 0% 94%;
+      --primary-foreground: 0 0% 7%;
+      --secondary: 0 0% 15%;
+      --secondary-foreground: 0 0% 94%;
+      --muted: 0 0% 15%;
+      --muted-foreground: 0 0% 55%;
+      --accent: 174 64% 50%;
+      --accent-foreground: 0 0% 6%;
+      --destructive: 0 62% 40%;
+      --destructive-foreground: 0 0% 94%;
+      --border: 0 0% 20%;
+      --input: 0 0% 20%;
+      --ring: 174 64% 50%;
+      --chart-1: 0 0% 94%;
+      --chart-2: 0 0% 70%;
+      --chart-3: 0 0% 48%;
+      --chart-4: 174 64% 50%;
+      --chart-5: 0 0% 28%;
+    }
   }
 
   * {
@@ -227,4 +257,16 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
+}
+
+/* Bauhaus: replace browser-native blue focus outline with mint ring */
+:focus-visible {
+  outline: 2px solid hsl(174 64% 50% / 70%);
+  outline-offset: 2px;
+}
+
+/* Elements that manage their own focus style via Tailwind (outline-none + ring-*) */
+.focus-visible\:outline-none:focus-visible,
+.focus\:outline-none:focus {
+  outline: none;
 }
