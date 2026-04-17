@@ -264,7 +264,7 @@ defmodule KairosWeb.BrowseLive do
                         <div class="font-medium text-foreground"><%= project.name %></div>
                         <div class="text-xs text-muted-foreground text-status">Standalone</div>
                       </div>
-                    </_link>
+                    </.link>
                     <button
                       phx-click="toggle_menu"
                       phx-value-id={project.id}
