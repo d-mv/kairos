@@ -64,11 +64,24 @@ defmodule Kairos.Links do
     end)
   end
 
-  def create_link(attrs, user_id) do
+  def list_blocking_links_for_user(user_id) do
+    Link
+    |> where([l], l.user_id == ^user_id and l.link_type == "blocks")
+    |> Repo.all()
+  end
+
+  def get_link(id, user_id) do
+    Link
+    |> where([l], l.id == ^id and l.user_id == ^user_id)
+    |> Repo.one()
+  end
+
+  def create_link(attrs) do
     from_id = Map.get(attrs, :from_id) || Map.get(attrs, "from_id")
     to_id = Map.get(attrs, :to_id) || Map.get(attrs, "to_id")
     from_type = Map.get(attrs, :from_type) || Map.get(attrs, "from_type")
     to_type = Map.get(attrs, :to_type) || Map.get(attrs, "to_type")
+    user_id = Map.get(attrs, :user_id) || Map.get(attrs, "user_id")
 
     if from_id == to_id do
       {:error, :self_link}
