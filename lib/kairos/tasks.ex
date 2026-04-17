@@ -69,11 +69,11 @@ defmodule Kairos.Tasks do
   end
 
   def search(user_id, query) do
-    term = "%#{query}%"
+    tsquery = build_tsquery(query)
 
     Task
     |> Repo.scope(user_id)
-    |> where([t], ilike(t.title, ^term) or ilike(t.notes, ^term))
+    |> where([t], fragment("? @@ to_tsquery('english', ?)", t.search_vector, ^tsquery))
     |> order_by([t], [t.position, t.inserted_at])
     |> Repo.all()
   end
@@ -110,20 +110,24 @@ defmodule Kairos.Tasks do
     title = Map.get(attrs, :title) || Map.get(attrs, "title")
 
     attrs =
-      case URI.parse(title) do
-        %URI{scheme: s, host: h} when s in ["http", "https"] and is_binary(h) ->
-          case UrlParser.fetch_metadata(title) do
-            {:ok, %{title: fetched_title}} when is_binary(fetched_title) ->
-              attrs
-              |> Map.put(:title, fetched_title)
-              |> Map.put(:url, title)
+      if is_binary(title) do
+        case URI.parse(title) do
+          %URI{scheme: s, host: h} when s in ["http", "https"] and is_binary(h) ->
+            case UrlParser.fetch_metadata(title) do
+              {:ok, %{title: fetched_title}} when is_binary(fetched_title) ->
+                attrs
+                |> Map.put(:title, fetched_title)
+                |> Map.put(:url, title)
 
-            _ ->
-              attrs
-          end
+              _ ->
+                attrs
+            end
 
-        _ ->
-          attrs
+          _ ->
+            attrs
+        end
+      else
+        attrs
       end
 
     with :ok <- check_max_depth(parent_id, user_id) do
@@ -175,6 +179,13 @@ defmodule Kairos.Tasks do
       Repo.delete!(task)
       project
     end)
+  end
+
+  defp build_tsquery(query) do
+    query
+    |> String.split(~r/\s+/, trim: true)
+    |> Enum.map(&(&1 <> ":*"))
+    |> Enum.join(" & ")
   end
 
   defp check_max_depth(nil, _user_id), do: :ok

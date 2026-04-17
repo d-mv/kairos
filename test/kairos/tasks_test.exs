@@ -2,7 +2,6 @@ defmodule Kairos.TasksTest do
   use Kairos.DataCase, async: true
 
   alias Kairos.Tasks
-  alias Kairos.Accounts
 
   import Kairos.AccountsFixtures
 
@@ -93,6 +92,24 @@ defmodule Kairos.TasksTest do
     end
   end
 
+  describe "tags" do
+    test "creates task with tags", %{user: user} do
+      assert {:ok, task} = Tasks.create_task(%{title: "T", user_id: user.id, tags: ["work", "urgent"]})
+      assert task.tags == ["work", "urgent"]
+    end
+
+    test "updates tags", %{user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "T", user_id: user.id})
+      assert {:ok, updated} = Tasks.update_task(task, %{tags: ["home"]})
+      assert updated.tags == ["home"]
+    end
+
+    test "defaults to empty tags", %{user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "T", user_id: user.id})
+      assert task.tags == []
+    end
+  end
+
   describe "list_inbox/1" do
     test "returns tasks with no container", %{user: user} do
       {:ok, t1} = Tasks.create_task(%{title: "Inbox task", user_id: user.id})
@@ -102,6 +119,27 @@ defmodule Kairos.TasksTest do
       inbox = Tasks.list_inbox(user.id)
       assert Enum.any?(inbox, &(&1.id == t1.id))
       refute Enum.any?(inbox, &(&1.title == "Area task"))
+    end
+  end
+
+  describe "search/2" do
+    test "finds tasks by title prefix", %{user: user} do
+      {:ok, t} = Tasks.create_task(%{title: "Buy groceries", user_id: user.id})
+      results = Tasks.search(user.id, "grocer")
+      assert Enum.any?(results, &(&1.id == t.id))
+    end
+
+    test "finds tasks by notes", %{user: user} do
+      {:ok, t} = Tasks.create_task(%{title: "Task", user_id: user.id, notes: "important deadline"})
+      results = Tasks.search(user.id, "deadline")
+      assert Enum.any?(results, &(&1.id == t.id))
+    end
+
+    test "does not return other users tasks", %{user: user} do
+      other = user_fixture()
+      {:ok, _} = Tasks.create_task(%{title: "Secret", user_id: other.id})
+      results = Tasks.search(user.id, "Secret")
+      assert results == []
     end
   end
 
