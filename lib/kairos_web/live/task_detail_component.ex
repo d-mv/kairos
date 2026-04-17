@@ -1,25 +1,128 @@
 defmodule KairosWeb.TaskDetailComponent do
   use KairosWeb, :live_component
 
-  alias Kairos.Tasks
+  alias Kairos.{Tasks, Links, Projects}
   alias Kairos.UrlParser
 
   @impl true
   def update(%{task: task} = assigns, socket) do
+    user_id = assigns.current_scope.user.id
     changeset = Tasks.change_task(task)
+    links = Links.list_detailed_links_for(task.id, "task", user_id)
 
     {:ok,
      socket
      |> assign(assigns)
      |> assign(:changeset, changeset)
      |> assign(:editing_title, false)
-     |> assign(:url_metadata, nil)}
+     |> assign(:url_metadata, nil)
+     |> assign(:links, links)
+     |> assign(:link_search_results, [])
+     |> assign(:link_search_query, "")
+     |> assign(:show_link_search, false)
+     |> assign(:new_link_type, "related_to")}
   end
 
   @impl true
   def handle_event("close", _params, socket) do
     send(self(), {:close_task_detail})
     {:noreply, socket}
+  end
+
+  def handle_event("toggle_link_search", _, socket) do
+    {:noreply, assign(socket, show_link_search: !socket.assigns.show_link_search, link_search_results: [])}
+  end
+
+  def handle_event("search_links", %{"query" => query}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    task_id = socket.assigns.task.id
+
+    tasks = Tasks.search_for_linking(user_id, query, task_id)
+    projects = Projects.search_for_linking(user_id, query, "")
+
+    results =
+      Enum.map(tasks, &%{id: &1.id, title: &1.title, type: "task"}) ++
+      Enum.map(projects, &%{id: &1.id, title: &1.name, type: "project"})
+
+    {:noreply, assign(socket, link_search_results: results, link_search_query: query)}
+  end
+
+  def handle_event("create_link", %{"to_id" => to_id, "to_type" => to_type}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    task = socket.assigns.task
+
+    attrs = %{
+      from_id: task.id,
+      from_type: "task",
+      to_id: to_id,
+      to_type: to_type,
+      link_type: socket.assigns.new_link_type,
+      user_id: user_id
+    }
+
+    case Links.create_link(attrs) do
+      {:ok, _} ->
+        links = Links.list_detailed_links_for(task.id, "task", user_id)
+        Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+        {:noreply, assign(socket, links: links, show_link_search: false, link_search_results: [])}
+
+      {:error, _} ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("delete_link", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    task = socket.assigns.task
+
+    case Links.get_link(id, user_id) do
+      nil -> {:noreply, socket}
+      link ->
+        {:ok, _} = Links.delete_link(link)
+        links = Links.list_detailed_links_for(task.id, "task", user_id)
+        Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+        {:noreply, assign(socket, links: links)}
+    end
+  end
+
+  def handle_event("set_link_type", %{"type" => type}, socket) do
+    {:noreply, assign(socket, new_link_type: type)}
+  end
+
+  def handle_event("add_tag", %{"tag" => tag}, socket) do
+    task = socket.assigns.task
+    user_id = socket.assigns.current_scope.user.id
+    new_tag = tag |> String.trim() |> String.downcase()
+
+    if new_tag != "" && new_tag not in (task.tags || []) do
+      tags = (task.tags || []) ++ [new_tag]
+
+      case Tasks.update_task(task, %{tags: tags}) do
+        {:ok, updated_task} ->
+          Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+          {:noreply, assign(socket, :task, updated_task)}
+
+        {:error, _} ->
+          {:noreply, socket}
+      end
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("remove_tag", %{"tag" => tag}, socket) do
+    task = socket.assigns.task
+    user_id = socket.assigns.current_scope.user.id
+    tags = (task.tags || []) -- [tag]
+
+    case Tasks.update_task(task, %{tags: tags}) do
+      {:ok, updated_task} ->
+        Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+        {:noreply, assign(socket, :task, updated_task)}
+
+      {:error, _} ->
+        {:noreply, socket}
+    end
   end
 
   def handle_event("edit_title", _params, socket) do
@@ -208,12 +311,38 @@ defmodule KairosWeb.TaskDetailComponent do
           <span id="task-detail-notes-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</span>
           <textarea
             id="task-detail-notes"
-            phx-blur="save_field"
+            phx-change="save_field"
+            phx-debounce="1000"
             phx-value-field="notes"
             phx-target={@myself}
-            class="mt-1 w-full border rounded px-2 py-1 text-sm min-h-24 resize-none focus:outline-none"
+            class="mt-1 w-full border rounded px-2 py-1 text-sm min-h-24 resize-none focus:outline-none bg-background"
             placeholder="Add notes…"
           >{@task.notes}</textarea>
+        </div>
+
+        <!-- Tags -->
+        <div id="task-detail-tags-section">
+          <span id="task-detail-tags-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tags</span>
+          <div class="mt-1 flex flex-wrap gap-1 mb-2">
+            <%= for tag <- (@task.tags || []) do %>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium border border-primary/20">
+                <%= tag %>
+                <button phx-click="remove_tag" phx-value-tag={tag} phx-target={@myself} class="hover:text-destructive">
+                  <.icon name="hero-x-mark" class="w-3 h-3" />
+                </button>
+              </span>
+            <% end %>
+          </div>
+          <form id="add-tag-form" phx-submit="add_tag" phx-target={@myself}>
+            <input
+              id="add-tag-input"
+              type="text"
+              name="tag"
+              placeholder="Add tag…"
+              class="w-full border rounded px-2 py-1 text-xs focus:outline-none bg-background"
+              autocomplete="off"
+            />
+          </form>
         </div>
 
         <!-- Due date -->
@@ -254,7 +383,7 @@ defmodule KairosWeb.TaskDetailComponent do
             phx-blur="save_field"
             phx-value-field="url"
             phx-target={@myself}
-            class="mt-1 w-full border rounded px-2 py-1 text-sm focus:outline-none"
+            class="mt-1 w-full border rounded px-2 py-1 text-sm focus:outline-none bg-background"
             placeholder="https://…"
           />
           <%= if @task.url && @task.url != "" do %>
@@ -279,6 +408,92 @@ defmodule KairosWeb.TaskDetailComponent do
               <% end %>
             </div>
           <% end %>
+        </div>
+
+        <!-- Links -->
+        <div id="task-detail-links-section" class="pt-4 border-t">
+          <div class="flex items-center justify-between mb-2">
+            <span id="task-detail-links-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Links</span>
+            <button
+              id="task-detail-add-link"
+              phx-click="toggle_link_search"
+              phx-target={@myself}
+              class="text-xs font-medium text-primary hover:underline"
+            >
+              <%= if @show_link_search, do: "Cancel", else: "Add link" %>
+            </button>
+          </div>
+
+          <%= if @show_link_search do %>
+            <div id="link-search-container" class="space-y-3 mb-4 p-3 bg-muted/30 rounded-lg border border-border">
+              <div class="flex gap-1">
+                <%= for type <- ~w(blocks blocked_by related_to) do %>
+                  <button
+                    phx-click="set_link_type"
+                    phx-value-type={type}
+                    phx-target={@myself}
+                    class={["px-2 py-1 text-[10px] rounded border transition-colors capitalize", 
+                           if(@new_link_type == type, do: "bg-primary text-primary-foreground border-primary", else: "bg-background text-muted-foreground border-border")]}
+                  >
+                    <%= String.replace(type, "_", " ") %>
+                  </button>
+                <% end %>
+              </div>
+              <input
+                id="link-search-input"
+                type="text"
+                placeholder="Search tasks or projects…"
+                class="w-full text-sm border rounded px-2 py-1.5 focus:outline-none bg-background"
+                phx-keyup="search_links"
+                phx-target={@myself}
+                phx-mounted={JS.focus()}
+                autocomplete="off"
+              />
+              <div id="link-search-results" class="max-h-40 overflow-y-auto space-y-1">
+                <%= for result <- @link_search_results do %>
+                  <button
+                    phx-click="create_link"
+                    phx-value-to_id={result.id}
+                    phx-value-to_type={result.type}
+                    phx-target={@myself}
+                    class="w-full text-left p-2 text-xs hover:bg-muted rounded flex items-center gap-2 border border-transparent hover:border-border"
+                  >
+                    <.icon name={if result.type == "task", do: "hero-circle", else: "hero-folder"} class="w-3 h-3 text-muted-foreground" />
+                    <span class="truncate flex-1"><%= result.title %></span>
+                    <span class="text-[10px] text-muted-foreground uppercase opacity-60"><%= result.type %></span>
+                  </button>
+                <% end %>
+                <%= if @link_search_query != "" && Enum.empty?(@link_search_results) do %>
+                  <div class="text-[10px] text-muted-foreground text-center py-2">No matches found</div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+
+          <div id="active-links-list" class="space-y-2">
+            <%= for link <- @links do %>
+              <div id={"link-#{link.id}"} class="flex items-center justify-between group p-2 hover:bg-muted/50 rounded transition-colors border border-transparent hover:border-border">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-1.5 mb-0.5">
+                    <span class="text-[10px] font-bold uppercase tracking-tighter text-primary/80"><%= String.replace(link.link_type, "_", " ") %></span>
+                    <.icon name={if link.target_type == "task", do: "hero-circle", else: "hero-folder"} class="w-3 h-3 text-muted-foreground" />
+                  </div>
+                  <.link navigate={if link.target_type == "task", do: ~p"/inbox", else: ~p"/projects/#{link.target_id}"} class="text-xs font-medium hover:underline block truncate">
+                    <%= link.target_title %>
+                  </.link>
+                </div>
+                <button
+                  phx-click="delete_link"
+                  phx-value-id={link.id}
+                  phx-target={@myself}
+                  class="p-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                  title="Remove link"
+                >
+                  <.icon name="hero-x-mark" class="w-3.5 h-3.5" />
+                </button>
+              </div>
+            <% end %>
+          </div>
         </div>
 
         <!-- Timestamps -->

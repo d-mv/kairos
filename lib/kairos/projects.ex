@@ -19,6 +19,27 @@ defmodule Kairos.Projects do
     |> Repo.all()
   end
 
+  def search(user_id, query) do
+    term = "%#{query}%"
+
+    Project
+    |> Repo.scope(user_id)
+    |> where([p], ilike(p.name, ^term))
+    |> order_by([p], [p.position, p.name])
+    |> Repo.all()
+  end
+
+  def search_for_linking(user_id, query, exclude_id) do
+    term = "%#{query}%"
+
+    Project
+    |> Repo.scope(user_id)
+    |> where([p], ilike(p.name, ^term))
+    |> where([p], p.id != ^exclude_id)
+    |> limit(10)
+    |> Repo.all()
+  end
+
   def get_project(id, user_id) do
     Project
     |> Repo.scope(user_id)

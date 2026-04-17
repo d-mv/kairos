@@ -396,8 +396,8 @@ defmodule Kairos.AccountsTest do
 
     test "returns the user when token matches" do
       user = user_fixture()
-      {:ok, user} = Accounts.set_mcp_token(user, "secret-token-abc")
-      assert %User{id: id} = Accounts.get_user_by_mcp_token("secret-token-abc")
+      {:ok, {_token, raw_token}} = Accounts.create_mcp_token(user.id, "secret-token")
+      assert %User{id: id} = Accounts.get_user_by_mcp_token(raw_token)
       assert id == user.id
     end
 
