@@ -56,7 +56,7 @@ Reference implementation: `_old/` (Node.js/React app)
 - [x] `SearchLive` — full-text search across tasks
 - [x] `CompletedLive` — completed tasks
 - [x] Sidebar navigation component (areas + projects tree)
-- [ ] Task detail panel (slide-in, edit title/notes/due date)
+- [x] Task detail panel (slide-in, edit title/notes/due date)
 - [x] PubSub broadcast on all mutations — all open LiveViews update live
 
 ## Phase 5 — UI Polish
@@ -66,7 +66,7 @@ Reference implementation: `_old/` (Node.js/React app)
 - [x] Dark mode via DaisyUI themes + theme_toggle component
 - [ ] Salad UI components wired: Button, Input, Modal, Dropdown, Badge (using core_components instead)
 - [ ] Task item reusable component
-- [ ] Keyboard shortcut `e` to edit selected task
+- [x] Keyboard shortcut `e` to edit selected task
 
 ## Phase 6 — MCP Server
 
@@ -87,26 +87,26 @@ Reference implementation: `_old/` (Node.js/React app)
 ## Phase 9 — Security & Quality (from REVIEW.md)
 
 ### Security
-- [ ] **MCP multi-tenancy**: Refactor `AuthPlug` + MCP tools to validate per-user tokens; remove hardcoded `mcp_user_id`
-- [ ] **Links IDOR**: Add `user_id` ownership check to `Links.list_links_for/2` and `Links.create_link/1`
-- [ ] **Tasks ownership**: Fix `Tasks.check_max_depth/1` to verify ownership of parent task
-- [ ] **Centralized scoping**: Add `scope(query, user_id)` convention to all contexts
+- [x] **MCP multi-tenancy**: AuthPlug validates per-user tokens via `get_user_by_mcp_token/1`
+- [x] **Links IDOR**: `user_id` ownership check in `list_links_for/3` and `create_link/1`
+- [x] **Tasks ownership**: `check_max_depth/2` uses `Repo.scope(user_id)` to verify ownership
+- [x] **Centralized scoping**: `Repo.scope/2` used in all contexts
 
 ### Performance
-- [ ] **N+1 updates**: Replace `Repo.update!` loops with `Repo.update_all` in `demote_to_task/1` and `promote_to_project/1`
-- [ ] **Full-text search**: Replace `ilike %term%` with Postgres tsvector + GIN index
+- [x] **N+1 updates**: `Repo.update_all` used in `demote_to_task/1` and `promote_to_project/1`
+- [x] **Full-text search**: tsvector generated column + GIN index; search uses `@@ to_tsquery`
 
 ### Features & UX
-- [ ] **Links UI**: Add "Dependencies / Related" section to `TaskDetailComponent`
+- [x] **Links UI**: "Dependencies / Related" section in `TaskDetailComponent` with add/remove/search
 - [ ] **Sidebar refactor**: Extract area/project management into dedicated LiveComponents
 
 ---
 
 ## Phase 8 — Gantt (Phase 2)
 
-- [ ] Add frappe-gantt to `assets/package.json`
-- [ ] `GanttHook` in `assets/js/hooks/gantt_hook.js`
-- [ ] `GanttLive` — assigns tasks + links as JSON
-- [ ] Hook mounts frappe-gantt on `mounted()`, updates on `updated()`
-- [ ] Drag interaction pushes `link_create` / `date_update` events to LiveView
-- [ ] LiveView handles events, updates DB, broadcasts
+- [x] Add frappe-gantt to `assets/package.json`
+- [x] `GanttHook` in `assets/js/hooks/gantt_hook.js`
+- [x] `GanttLive` — assigns tasks + links as JSON
+- [x] Hook mounts frappe-gantt on `mounted()`, updates on `updated()`
+- [x] Drag interaction pushes `date_update` events to LiveView
+- [x] LiveView handles events, updates DB, broadcasts
