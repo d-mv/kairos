@@ -99,6 +99,12 @@ defmodule KairosWeb.BrowseLive do
                   </button>
                 </div>
               <% end %>
+
+              <%= if Enum.empty?(Enum.filter(@nav_projects, &is_nil(&1.area_id))) do %>
+                <div class="text-center py-10 border-2 border-dashed border-border rounded-xl">
+                  <p class="text-sm text-muted-foreground">No standalone projects yet.</p>
+                </div>
+              <% end %>
             </div>
           </section>
         </div>
