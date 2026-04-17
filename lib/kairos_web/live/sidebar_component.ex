@@ -370,7 +370,7 @@ defmodule KairosWeb.SidebarComponent do
                   <%= if @area_menu_open == area.id do %>
                     <div
                       id={"sidebar-area-menu-#{area.id}"}
-                      class="absolute right-1 top-7 z-50 w-36 bg-background border border-border rounded-md shadow-md py-1"
+                      class="absolute right-1 top-7 z-50 w-36 bg-background border border-border rounded-xl shadow-xl py-1"
                       phx-click-away="close_menus"
                       phx-target={@myself}
                     >
@@ -380,7 +380,7 @@ defmodule KairosWeb.SidebarComponent do
                         phx-target={@myself}
                         class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
                       >
-                        <.icon name="hero-pencil" class="w-3.5 h-3.5" /> Rename
+                        <.icon name="hero-pencil" class="w-3.5 h-3.5 text-muted-foreground" /> Rename
                       </button>
                       <button
                         phx-click="confirm_delete_area"
@@ -390,37 +390,6 @@ defmodule KairosWeb.SidebarComponent do
                       >
                         <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
                       </button>
-                    </div>
-                  <% end %>
-
-                  <%= if @confirm_delete_area && @confirm_delete_area.area.id == area.id do %>
-                    <div class="mx-2 mb-1 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs">
-                      <p class="text-muted-foreground mb-1.5">
-                        Delete "<%= area.name %>"?
-                        <%= if @confirm_delete_area.task_count > 0 do %>
-                          <%= @confirm_delete_area.task_count %> tasks → inbox.
-                        <% end %>
-                        <%= if @confirm_delete_area.project_count > 0 do %>
-                          <%= @confirm_delete_area.project_count %> projects lose area.
-                        <% end %>
-                      </p>
-                      <div class="flex gap-3">
-                        <button
-                          phx-click="delete_area"
-                          phx-value-id={area.id}
-                          phx-target={@myself}
-                          class="text-destructive font-medium hover:underline"
-                        >
-                          Delete
-                        </button>
-                        <button
-                          phx-click="cancel_confirm"
-                          phx-target={@myself}
-                          class="text-muted-foreground hover:underline"
-                        >
-                          Cancel
-                        </button>
-                      </div>
                     </div>
                   <% end %>
                 <% end %>
@@ -493,7 +462,7 @@ defmodule KairosWeb.SidebarComponent do
                       <%= if @project_menu_open == project.id do %>
                         <div
                           id={"sidebar-project-menu-#{project.id}"}
-                          class="absolute right-1 top-7 z-50 w-40 bg-background border border-border rounded-md shadow-md py-1"
+                          class="absolute right-1 top-7 z-50 w-40 bg-background border border-border rounded-xl shadow-xl py-1"
                           phx-click-away="close_menus"
                           phx-target={@myself}
                         >
@@ -503,7 +472,7 @@ defmodule KairosWeb.SidebarComponent do
                             phx-target={@myself}
                             class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
                           >
-                            <.icon name="hero-pencil" class="w-3.5 h-3.5" /> Rename
+                            <.icon name="hero-pencil" class="w-3.5 h-3.5 text-muted-foreground" /> Rename
                           </button>
                           <button
                             phx-click="confirm_demote_project"
@@ -511,7 +480,7 @@ defmodule KairosWeb.SidebarComponent do
                             phx-target={@myself}
                             class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
                           >
-                            <.icon name="hero-arrow-down-circle" class="w-3.5 h-3.5" /> Demote to task
+                            <.icon name="hero-arrow-down-circle" class="w-3.5 h-3.5 text-muted-foreground" /> Demote to task
                           </button>
                           <button
                             phx-click="confirm_delete_project"
@@ -521,59 +490,6 @@ defmodule KairosWeb.SidebarComponent do
                           >
                             <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
                           </button>
-                        </div>
-                      <% end %>
-
-                      <%= if @confirm_delete_project && @confirm_delete_project.project.id == project.id do %>
-                        <div class="ml-7 mr-2 mb-1 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs">
-                          <p class="text-muted-foreground mb-1.5">
-                            Delete "<%= project.name %>"?
-                            <%= if @confirm_delete_project.task_count > 0 do %>
-                              <%= @confirm_delete_project.task_count %> tasks → inbox.
-                            <% end %>
-                          </p>
-                          <div class="flex gap-3">
-                            <button
-                              phx-click="delete_project"
-                              phx-value-id={project.id}
-                              phx-target={@myself}
-                              class="text-destructive font-medium hover:underline"
-                            >
-                              Delete
-                            </button>
-                            <button
-                              phx-click="cancel_confirm"
-                              phx-target={@myself}
-                              class="text-muted-foreground hover:underline"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      <% end %>
-
-                      <%= if @confirm_demote_project && @confirm_demote_project.id == project.id do %>
-                        <div class="ml-7 mr-2 mb-1 p-2 rounded border border-border bg-muted/30 text-xs">
-                          <p class="text-muted-foreground mb-1.5">
-                            Convert "<%= project.name %>" to a task? Its tasks move to inbox.
-                          </p>
-                          <div class="flex gap-3">
-                            <button
-                              phx-click="demote_project"
-                              phx-value-id={project.id}
-                              phx-target={@myself}
-                              class="font-medium hover:underline"
-                            >
-                              Convert
-                            </button>
-                            <button
-                              phx-click="cancel_confirm"
-                              phx-target={@myself}
-                              class="text-muted-foreground hover:underline"
-                            >
-                              Cancel
-                            </button>
-                          </div>
                         </div>
                       <% end %>
                     <% end %>
@@ -664,7 +580,7 @@ defmodule KairosWeb.SidebarComponent do
                   <%= if @project_menu_open == project.id do %>
                     <div
                       id={"sidebar-project-menu-#{project.id}"}
-                      class="absolute right-1 top-7 z-50 w-40 bg-background border border-border rounded-md shadow-md py-1"
+                      class="absolute right-1 top-7 z-50 w-40 bg-background border border-border rounded-xl shadow-xl py-1"
                       phx-click-away="close_menus"
                       phx-target={@myself}
                     >
@@ -674,7 +590,7 @@ defmodule KairosWeb.SidebarComponent do
                         phx-target={@myself}
                         class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
                       >
-                        <.icon name="hero-pencil" class="w-3.5 h-3.5" /> Rename
+                        <.icon name="hero-pencil" class="w-3.5 h-3.5 text-muted-foreground" /> Rename
                       </button>
                       <button
                         phx-click="confirm_demote_project"
@@ -682,7 +598,7 @@ defmodule KairosWeb.SidebarComponent do
                         phx-target={@myself}
                         class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
                       >
-                        <.icon name="hero-arrow-down-circle" class="w-3.5 h-3.5" /> Demote to task
+                        <.icon name="hero-arrow-down-circle" class="w-3.5 h-3.5 text-muted-foreground" /> Demote to task
                       </button>
                       <button
                         phx-click="confirm_delete_project"
@@ -692,66 +608,6 @@ defmodule KairosWeb.SidebarComponent do
                       >
                         <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
                       </button>
-                    </div>
-                  <% end %>
-
-                  <%= if @confirm_delete_project && @confirm_delete_project.project.id == project.id do %>
-                    <div class="mx-2 mb-1 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs">
-                      <p class="text-muted-foreground mb-1.5">
-                        Delete "<%= project.name %>"?
-                        <%= if @confirm_delete_project.task_count > 0 do %>
-                          <%= @confirm_delete_project.task_count %> tasks → inbox.
-                        <% end %>
-                      </p>
-                      <div class="flex gap-3">
-                        <button
-                          phx-click="delete_project"
-                          phx-value-id={project.id}
-                          phx-target={@myself}
-                          class="text-destructive font-medium hover:underline"
-                        >
-                          Delete
-                        </button>
-                        <button
-                          phx-click="cancel_confirm"
-                          phx-target={@myself}
-                          class="text-muted-foreground hover:underline"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  <% end %>
-
-                  <%= if @confirm_demote_project && @confirm_demote_project.id == project.id do %>
-                    <div class="mx-2 mb-1 p-2 rounded border border-border bg-muted/30 text-xs">
-                      <p class="text-muted-foreground mb-1.5">
-                        Convert "<%= project.name %>" to a task? Its tasks move to inbox.
-                      </p>
-                      <div class="flex gap-3">
-                        <button
-                          phx-click="demote_project"
-                          phx-value-id={project.id}
-                          phx-target={@myself}
-                          class="font-medium hover:underline"
-                        >
-                          Convert
-                        </button>
-                        <button
-                          phx-click="cancel_confirm"
-                          phx-target={@myself}
-                          class="text-muted-foreground hover:underline"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  <% end %>
-
-                  <%= if @demote_error do %>
-                    <div class="mx-2 mb-1 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs text-destructive">
-                      <%= @demote_error %>
-                      <button phx-click="cancel_confirm" phx-target={@myself} class="ml-1 underline">OK</button>
                     </div>
                   <% end %>
                 <% end %>
@@ -779,8 +635,97 @@ defmodule KairosWeb.SidebarComponent do
         <div class="mt-2 flex justify-end">
           <.theme_toggle />
         </div>
-      </div>
-    </nav>
+        </div>
+
+        <%!-- Confirm Delete Area --%>
+        <.modal
+        :if={@confirm_delete_area}
+        id="confirm-delete-area-modal"
+        show={true}
+        on_cancel={JS.push("cancel_confirm", target: @myself)}
+        >
+        <div class="text-left">
+          <h3 class="text-lg font-semibold leading-6 text-foreground">Delete area</h3>
+          <p class="mt-3 text-sm text-muted-foreground">
+            Delete area "<%= @confirm_delete_area.area.name %>"?
+            <%= if @confirm_delete_area.task_count > 0 do %>
+              <%= @confirm_delete_area.task_count %> tasks will move to inbox.
+            <% end %>
+            <%= if @confirm_delete_area.project_count > 0 do %>
+              <%= @confirm_delete_area.project_count %> projects will lose their area.
+            <% end %>
+          </p>
+        </div>
+        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="secondary">Cancel</_button>
+          <.button phx-click={JS.push("delete_area", value: %{id: @confirm_delete_area.area.id}, target: @myself)} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Delete
+          </_button>
+        </div>
+        </.modal>
+
+        <%!-- Confirm Delete Project --%>
+        <.modal
+        :if={@confirm_delete_project}
+        id="confirm-delete-project-modal"
+        show={true}
+        on_cancel={JS.push("cancel_confirm", target: @myself)}
+        >
+        <div class="text-left">
+          <h3 class="text-lg font-semibold leading-6 text-foreground">Delete project</h3>
+          <p class="mt-3 text-sm text-muted-foreground">
+            Delete project "<%= @confirm_delete_project.project.name %>"?
+            <%= if @confirm_delete_project.task_count > 0 do %>
+              <%= @confirm_delete_project.task_count %> tasks will move to inbox.
+            <% end %>
+          </p>
+        </div>
+        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="secondary">Cancel</_button>
+          <.button phx-click={JS.push("delete_project", value: %{id: @confirm_delete_project.project.id}, target: @myself)} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Delete
+          </_button>
+        </div>
+        </.modal>
+
+        <%!-- Confirm Demote Project --%>
+        <.modal
+        :if={@confirm_demote_project}
+        id="confirm-demote-project-modal"
+        show={true}
+        on_cancel={JS.push("cancel_confirm", target: @myself)}
+        >
+        <div class="text-left">
+          <h3 class="text-lg font-semibold leading-6 text-foreground">Convert to task</h3>
+          <p class="mt-3 text-sm text-muted-foreground">
+            Convert project "<%= @confirm_demote_project.name %>" to a task? All tasks within will move to inbox.
+          </p>
+        </div>
+        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="secondary">Cancel</_button>
+          <.button phx-click={JS.push("demote_project", value: %{id: @confirm_demote_project.id}, target: @myself)} variant="primary">
+            Convert
+          </_button>
+        </div>
+        </.modal>
+
+        <%!-- Error Modal (e.g. Demote Error) --%>
+        <.modal
+        :if={@demote_error}
+        id="error-modal"
+        show={true}
+        on_cancel={JS.push("cancel_confirm", target: @myself)}
+        >
+        <div class="text-left">
+          <h3 class="text-lg font-semibold leading-6 text-destructive">Error</h3>
+          <p class="mt-3 text-sm text-muted-foreground"><%= @demote_error %></p>
+        </div>
+        <div class="mt-6 flex justify-end">
+          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="primary">OK</_button>
+        </div>
+        </.modal>
+        </nav>
+
     """
   end
 end

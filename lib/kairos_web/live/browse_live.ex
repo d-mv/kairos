@@ -295,20 +295,34 @@ defmodule KairosWeb.BrowseLive do
       </div>
 
       <%!-- Delete Confirmation Modal --%>
-      <%= if @confirm_delete do %>
-        <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div class="bg-card w-full max-w-sm p-6 border border-border rounded-2xl shadow-2xl">
-            <h3 class="text-lg font-semibold mb-2">Confirm Delete</h3>
-            <p class="text-sm text-muted-foreground mb-6">
+      <.modal
+        :if={@confirm_delete}
+        id="confirm-delete-modal"
+        show={true}
+        on_cancel={JS.push("cancel_delete")}
+      >
+        <div class="text-center sm:text-left">
+          <h3 class="text-lg font-semibold leading-6 text-foreground" id="confirm-delete-title">
+            Confirm Delete
+          </h3>
+          <div class="mt-3">
+            <p class="text-sm text-muted-foreground">
               Are you sure you want to delete this <%= elem(@confirm_delete, 0) %>? This action cannot be undone.
             </p>
-            <div class="flex gap-3 justify-end">
-              <button phx-click="cancel_delete" class="px-4 py-2 text-sm font-medium hover:bg-muted rounded-lg">Cancel</button>
-              <button phx-click="delete_confirmed" class="px-4 py-2 text-sm font-medium bg-destructive text-destructive-foreground rounded-lg">Delete</button>
-            </div>
           </div>
         </div>
-      <% end %>
+        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <.button phx-click={JS.push("cancel_delete")} variant="secondary">
+            Cancel
+          </.button>
+          <.button
+            phx-click={JS.push("delete_confirmed") |> JS.add_class("opacity-50 pointer-events-none")}
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Delete
+          </.button>
+        </div>
+      </.modal>
     </Layouts.app>
     """
   end
