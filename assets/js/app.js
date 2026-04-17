@@ -23,12 +23,13 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
+import GanttChart from "./hooks/gantt_hook"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {},
+  hooks: { GanttChart },
 })
 
 // Show progress bar on live navigation and form submits
@@ -54,6 +55,13 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault()
     const newTaskInput = document.querySelector('[data-shortcut="new-task"]')
     if (newTaskInput) newTaskInput.focus()
+  } else if (e.key === "e") {
+    e.preventDefault()
+    const selectedTask = document.querySelector('[data-selected="true"]')
+    if (selectedTask) {
+      const editBtn = selectedTask.querySelector('[data-shortcut="edit-task"]')
+      if (editBtn) editBtn.click()
+    }
   } else if (e.key === "Escape") {
     document.activeElement?.blur()
   }
