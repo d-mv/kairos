@@ -23,19 +23,19 @@
       <.link navigate={~p"/inbox"} class={["flex flex-col items-center gap-1 text-[10px] font-medium transition-colors", @active_tab == "inbox" && "text-primary", @active_tab != "inbox" && "text-muted-foreground hover:text-foreground"]}>
         <.icon name="hero-inbox" class="w-6 h-6" />
         Inbox
-      </_link>
+      </.link>
       <.link navigate={~p"/today"} class={["flex flex-col items-center gap-1 text-[10px] font-medium transition-colors", @active_tab == "today" && "text-primary", @active_tab != "today" && "text-muted-foreground hover:text-foreground"]}>
         <.icon name="hero-sun" class="w-6 h-6" />
         Today
-      </_link>
+      </.link>
       <.link navigate={~p"/browse"} class={["flex flex-col items-center gap-1 text-[10px] font-medium transition-colors", @active_tab == "browse" && "text-primary", @active_tab != "browse" && "text-muted-foreground hover:text-foreground"]}>
         <.icon name="hero-square-2-stack" class="w-6 h-6" />
         Browse
-      </_link>
+      </.link>
       <.link navigate={~p"/search"} class={["flex flex-col items-center gap-1 text-[10px] font-medium transition-colors", @active_tab == "search" && "text-primary", @active_tab != "search" && "text-muted-foreground hover:text-foreground"]}>
         <.icon name="hero-magnifying-glass" class="w-6 h-6" />
         Search
-      </_link>
+      </.link>
     </nav>
   </main>
 </div>

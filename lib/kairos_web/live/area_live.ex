@@ -24,7 +24,8 @@ defmodule KairosWeb.AreaLive do
        page_title: area.name,
        header_menu_open: false,
        renaming: false,
-       confirm_delete: nil
+       confirm_delete: nil,
+       active_tab: "browse"
      )}
   end
 

@@ -12,7 +12,7 @@ defmodule KairosWeb.UpcomingLive do
     end
 
     tasks = Tasks.list_upcoming(user_id)
-    {:ok, assign(socket, tasks: tasks, page_title: "Upcoming")}
+    {:ok, assign(socket, tasks: tasks, page_title: "Upcoming", active_tab: "browse")}
   end
 
   @impl true

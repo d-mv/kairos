@@ -12,7 +12,7 @@ defmodule KairosWeb.CompletedLive do
     end
 
     tasks = Tasks.list_completed(user_id)
-    {:ok, assign(socket, tasks: tasks, page_title: "Completed")}
+    {:ok, assign(socket, tasks: tasks, page_title: "Completed", active_tab: "browse")}
   end
 
   @impl true

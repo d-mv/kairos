@@ -5,8 +5,6 @@ defmodule KairosWeb.BrowseLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    user_id = socket.assigns.current_scope.user.id
-
     if connected?(socket) do
       # Subscribe to updates if needed, though SidebarComponent usually handles broadcasts
       # For simplicity in Browse view, we refetch or use standard Sidebar logic
@@ -52,7 +50,7 @@ defmodule KairosWeb.BrowseLive do
                         <%= Enum.count(Enum.filter(@nav_projects, &(&1.area_id == area.id))) %> projects
                       </div>
                     </div>
-                  </_link>
+                  </.link>
                   <button
                     phx-click={JS.push("toggle_area_menu", value: %{id: area.id}, target: "#sidebar-component")}
                     class="p-2 text-muted-foreground hover:bg-muted rounded-full"
@@ -92,7 +90,7 @@ defmodule KairosWeb.BrowseLive do
                       <div class="font-medium"><%= project.name %></div>
                       <div class="text-xs text-muted-foreground text-status">Standalone</div>
                     </div>
-                  </_link>
+                  </.link>
                   <button
                     phx-click={JS.push("toggle_project_menu", value: %{id: project.id}, target: "#sidebar-component")}
                     class="p-2 text-muted-foreground hover:bg-muted rounded-full"
@@ -105,9 +103,6 @@ defmodule KairosWeb.BrowseLive do
           </section>
         </div>
       </div>
-
-      <%!-- Reuse sidebar maintenance modals via delegation if possible, or build specific ones --%>
-      <%!-- For now, standard maintenance actions like rename/delete will be triggered via SidebarComponent's state --%>
     </Layouts.app>
     """
   end

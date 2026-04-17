@@ -24,7 +24,8 @@ defmodule KairosWeb.ProjectLive do
        renaming: false,
        confirm_delete: nil,
        confirm_demote: false,
-       demote_error: nil
+       demote_error: nil,
+       active_tab: "browse"
      )}
   end
 
