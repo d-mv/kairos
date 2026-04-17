@@ -7,17 +7,36 @@
   />
 
   <!-- Main content -->
-  <main class="flex-1 overflow-y-auto flex flex-col min-w-0">
+  <main class="flex-1 overflow-y-auto flex flex-col min-w-0 pb-16 md:pb-0">
     <!-- Mobile header -->
-    <div class="flex items-center justify-between p-3 border-b md:hidden">
+    <div class="flex items-center justify-between p-3 border-b md:hidden bg-background sticky top-0 z-40">
       <span class="font-semibold text-sm">Kairos</span>
       <div class="flex items-center gap-2 text-sm">
-        <.link navigate={~p"/inbox"} class="hover:text-primary"><.icon name="hero-inbox-mini" class="w-5 h-5" /></.link>
-        <.link navigate={~p"/search"} class="hover:text-primary"><.icon name="hero-magnifying-glass-mini" class="w-5 h-5" /></.link>
-        <.link navigate={~p"/users/settings"} class="hover:text-primary"><.icon name="hero-cog-6-tooth-mini" class="w-5 h-5" /></.link>
+        <.link navigate={~p"/users/settings"} class="hover:text-primary"><.icon name="hero-cog-6-tooth-mini" class="w-5 h-5 text-muted-foreground" /></.link>
       </div>
     </div>
+    
     {render_slot(@inner_block)}
+
+    <!-- Mobile Bottom Navigation -->
+    <nav id="mobile-nav" class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background border-t border-border flex items-center justify-around z-40 px-2">
+      <.link navigate={~p"/inbox"} class={["flex flex-col items-center gap-1 text-[10px] font-medium transition-colors", @active_tab == "inbox" && "text-primary", @active_tab != "inbox" && "text-muted-foreground hover:text-foreground"]}>
+        <.icon name="hero-inbox" class="w-6 h-6" />
+        Inbox
+      </_link>
+      <.link navigate={~p"/today"} class={["flex flex-col items-center gap-1 text-[10px] font-medium transition-colors", @active_tab == "today" && "text-primary", @active_tab != "today" && "text-muted-foreground hover:text-foreground"]}>
+        <.icon name="hero-sun" class="w-6 h-6" />
+        Today
+      </_link>
+      <.link navigate={~p"/browse"} class={["flex flex-col items-center gap-1 text-[10px] font-medium transition-colors", @active_tab == "browse" && "text-primary", @active_tab != "browse" && "text-muted-foreground hover:text-foreground"]}>
+        <.icon name="hero-square-2-stack" class="w-6 h-6" />
+        Browse
+      </_link>
+      <.link navigate={~p"/search"} class={["flex flex-col items-center gap-1 text-[10px] font-medium transition-colors", @active_tab == "search" && "text-primary", @active_tab != "search" && "text-muted-foreground hover:text-foreground"]}>
+        <.icon name="hero-magnifying-glass" class="w-6 h-6" />
+        Search
+      </_link>
+    </nav>
   </main>
 </div>
 

@@ -12,7 +12,7 @@ defmodule KairosWeb.TodayLive do
     end
 
     tasks = Tasks.list_today(user_id)
-    {:ok, assign(socket, tasks: tasks, page_title: "Today")}
+    {:ok, assign(socket, tasks: tasks, page_title: "Today", active_tab: "today")}
   end
 
   @impl true

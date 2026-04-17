@@ -38,6 +38,7 @@ defmodule KairosWeb.Router do
       live "/upcoming", UpcomingLive, :index
       live "/completed", CompletedLive, :index
       live "/search", SearchLive, :index
+      live "/browse", BrowseLive, :index
       live "/areas/:id", AreaLive, :index
       live "/projects/:id", ProjectLive, :index
 

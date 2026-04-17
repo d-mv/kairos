@@ -5,7 +5,7 @@ defmodule KairosWeb.SearchLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, tasks: [], query: "", page_title: "Search")}
+    {:ok, assign(socket, tasks: [], query: "", page_title: "Search", active_tab: "search")}
   end
 
   @impl true

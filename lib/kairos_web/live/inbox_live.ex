@@ -13,7 +13,7 @@ defmodule KairosWeb.InboxLive do
 
     tasks = Tasks.list_inbox(user_id)
 
-    {:ok, assign(socket, tasks: tasks, new_task_title: "", selected_task: nil, page_title: "Inbox")}
+    {:ok, assign(socket, tasks: tasks, new_task_title: "", selected_task: nil, page_title: "Inbox", active_tab: "inbox")}
   end
 
   @impl true
