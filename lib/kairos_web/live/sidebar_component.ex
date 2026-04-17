@@ -247,6 +247,7 @@ defmodule KairosWeb.SidebarComponent do
   # ── Render ─────────────────────────────────────────────────────────────
 
   @impl true
+  @impl true
   def render(assigns) do
     ~H"""
     <nav id="sidebar" class={["w-56 shrink-0 border-r bg-muted/30 flex-col", if(@current_scope, do: "hidden md:flex", else: "hidden")]}>
@@ -304,16 +305,8 @@ defmodule KairosWeb.SidebarComponent do
           <% end %>
 
           <div id="sidebar-areas">
-            <%= for area <- @areas do %>
-              <div id={"sidebar-area-#{area.id}"} class="relative">
-                <!-- Demote error for this area's projects -->
-                <%= if @demote_error do %>
-                  <div class="mx-2 mb-1 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs text-destructive">
-                    <%= @demote_error %>
-                    <button phx-click="cancel_confirm" phx-target={@myself} class="ml-1 underline">OK</button>
-                  </div>
-                <% end %>
-
+            <%= for area <- @nav_areas do %>
+              <div id={"sidebar-area-wrapper-#{area.id}"} class="space-y-0.5">
                 <%= if @renaming_area == area.id do %>
                   <form
                     id={"sidebar-rename-area-form-#{area.id}"}
@@ -335,8 +328,9 @@ defmodule KairosWeb.SidebarComponent do
                     />
                   </form>
                 <% else %>
-                  <div class="flex items-center rounded hover:bg-muted group/area">
+                  <div class="flex items-center rounded hover:bg-muted group/area relative">
                     <.link
+                      id={"sidebar-area-#{area.id}"}
                       navigate={~p"/areas/#{area.id}"}
                       class="flex items-center gap-2 px-2 py-1.5 text-sm flex-1 min-w-0"
                     >
@@ -415,7 +409,7 @@ defmodule KairosWeb.SidebarComponent do
                   </form>
                 <% end %>
 
-                <%= for project <- Enum.filter(@projects, &(&1.area_id == area.id)) do %>
+                <%= for project <- Enum.filter(@nav_projects, &(&1.area_id == area.id)) do %>
                   <div id={"sidebar-project-wrapper-#{project.id}"} class="relative">
                     <%= if @renaming_project == project.id do %>
                       <form
@@ -533,7 +527,7 @@ defmodule KairosWeb.SidebarComponent do
           <% end %>
 
           <div id="sidebar-projects">
-            <%= for project <- Enum.filter(@projects, &is_nil(&1.area_id)) do %>
+            <%= for project <- Enum.filter(@nav_projects, &is_nil(&1.area_id)) do %>
               <div id={"sidebar-project-wrapper-#{project.id}"} class="relative">
                 <%= if @renaming_project == project.id do %>
                   <form
@@ -635,15 +629,15 @@ defmodule KairosWeb.SidebarComponent do
         <div class="mt-2 flex justify-end">
           <.theme_toggle />
         </div>
-        </div>
+      </div>
 
-        <%!-- Confirm Delete Area --%>
-        <.modal
+      <%!-- Confirm Delete Area --%>
+      <.modal
         :if={@confirm_delete_area}
         id="confirm-delete-area-modal"
         show={true}
         on_cancel={JS.push("cancel_confirm", target: @myself)}
-        >
+      >
         <div class="text-left">
           <h3 class="text-lg font-semibold leading-6 text-foreground">Delete area</h3>
           <p class="mt-3 text-sm text-muted-foreground">
@@ -657,20 +651,20 @@ defmodule KairosWeb.SidebarComponent do
           </p>
         </div>
         <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="secondary">Cancel</_button>
+          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="secondary">Cancel</.button>
           <.button phx-click={JS.push("delete_area", value: %{id: @confirm_delete_area.area.id}, target: @myself)} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
             Delete
-          </_button>
+          </.button>
         </div>
-        </.modal>
+      </.modal>
 
-        <%!-- Confirm Delete Project --%>
-        <.modal
+      <%!-- Confirm Delete Project --%>
+      <.modal
         :if={@confirm_delete_project}
         id="confirm-delete-project-modal"
         show={true}
         on_cancel={JS.push("cancel_confirm", target: @myself)}
-        >
+      >
         <div class="text-left">
           <h3 class="text-lg font-semibold leading-6 text-foreground">Delete project</h3>
           <p class="mt-3 text-sm text-muted-foreground">
@@ -681,20 +675,20 @@ defmodule KairosWeb.SidebarComponent do
           </p>
         </div>
         <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="secondary">Cancel</_button>
+          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="secondary">Cancel</.button>
           <.button phx-click={JS.push("delete_project", value: %{id: @confirm_delete_project.project.id}, target: @myself)} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
             Delete
-          </_button>
+          </.button>
         </div>
-        </.modal>
+      </.modal>
 
-        <%!-- Confirm Demote Project --%>
-        <.modal
+      <%!-- Confirm Demote Project --%>
+      <.modal
         :if={@confirm_demote_project}
         id="confirm-demote-project-modal"
         show={true}
         on_cancel={JS.push("cancel_confirm", target: @myself)}
-        >
+      >
         <div class="text-left">
           <h3 class="text-lg font-semibold leading-6 text-foreground">Convert to task</h3>
           <p class="mt-3 text-sm text-muted-foreground">
@@ -702,30 +696,29 @@ defmodule KairosWeb.SidebarComponent do
           </p>
         </div>
         <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="secondary">Cancel</_button>
+          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="secondary">Cancel</.button>
           <.button phx-click={JS.push("demote_project", value: %{id: @confirm_demote_project.id}, target: @myself)} variant="primary">
             Convert
-          </_button>
+          </.button>
         </div>
-        </.modal>
+      </.modal>
 
-        <%!-- Error Modal (e.g. Demote Error) --%>
-        <.modal
+      <%!-- Error Modal (e.g. Demote Error) --%>
+      <.modal
         :if={@demote_error}
         id="error-modal"
         show={true}
         on_cancel={JS.push("cancel_confirm", target: @myself)}
-        >
+      >
         <div class="text-left">
           <h3 class="text-lg font-semibold leading-6 text-destructive">Error</h3>
           <p class="mt-3 text-sm text-muted-foreground"><%= @demote_error %></p>
         </div>
         <div class="mt-6 flex justify-end">
-          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="primary">OK</_button>
+          <.button phx-click={JS.push("cancel_confirm", target: @myself)} variant="primary">OK</.button>
         </div>
-        </.modal>
-        </nav>
-
+      </.modal>
+    </nav>
     """
   end
 end

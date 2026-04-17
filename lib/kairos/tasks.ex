@@ -2,6 +2,7 @@ defmodule Kairos.Tasks do
   import Ecto.Query
   alias Kairos.Repo
   alias Kairos.Tasks.Task
+  alias Kairos.Projects
   alias Kairos.UrlParser
 
   def list_tasks(user_id) do
