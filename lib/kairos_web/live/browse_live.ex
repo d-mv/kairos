@@ -157,7 +157,7 @@ defmodule KairosWeb.BrowseLive do
 
             <div class="space-y-3">
               <%= for area <- @nav_areas do %>
-                <div id={"browse-area-#{area.id}"} class="space-y-2 relative">
+                <div id={"browse-area-#{area.id}"} class="space-y-2">
                   <div class="flex items-center justify-between p-4 bg-card border border-border rounded-xl shadow-sm active:scale-[0.98] transition-transform">
                     <.link navigate={~p"/areas/#{area.id}"} class="flex items-center gap-3 flex-1">
                       <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -178,23 +178,24 @@ defmodule KairosWeb.BrowseLive do
                       >
                         <.icon name="hero-plus" class="w-5 h-5" />
                       </button>
-                      <button
-                        phx-click="toggle_menu"
-                        phx-value-id={area.id}
-                        class="p-2 text-muted-foreground hover:bg-muted rounded-full"
-                      >
-                        <.icon name="hero-ellipsis-horizontal" class="w-5 h-5" />
-                      </button>
+                      <div class="relative">
+                        <button
+                          phx-click="toggle_menu"
+                          phx-value-id={area.id}
+                          class="p-2 text-muted-foreground hover:bg-muted rounded-full"
+                        >
+                          <.icon name="hero-ellipsis-horizontal" class="w-5 h-5" />
+                        </button>
+                        <%= if @menu_open == area.id do %>
+                          <div class="absolute right-0 top-full mt-1 z-50 w-40 bg-background border border-border rounded-xl shadow-xl py-2" phx-click-away="close_menu">
+                            <button phx-click="confirm_delete_area" phx-value-id={area.id} class="w-full text-left px-4 py-2 text-sm text-destructive flex items-center gap-2">
+                              <.icon name="hero-trash" class="w-4 h-4" /> Delete
+                            </button>
+                          </div>
+                        <% end %>
+                      </div>
                     </div>
                   </div>
-
-                  <%= if @menu_open == area.id do %>
-                    <div class="absolute right-0 top-14 z-50 w-40 bg-background border border-border rounded-xl shadow-xl py-2" phx-click-away="close_menu">
-                      <button phx-click="confirm_delete_area" phx-value-id={area.id} class="w-full text-left px-4 py-2 text-sm text-destructive flex items-center gap-2">
-                        <.icon name="hero-trash" class="w-4 h-4" /> Delete
-                      </button>
-                    </div>
-                  <% end %>
 
                   <%= if @creating_project == area.id do %>
                     <form id={"browse-new-project-area-form-#{area.id}"} phx-submit="create_project" class="px-2">
@@ -254,7 +255,7 @@ defmodule KairosWeb.BrowseLive do
 
             <div class="space-y-3">
               <%= for project <- Enum.filter(@nav_projects, &is_nil(&1.area_id)) do %>
-                <div id={"browse-project-#{project.id}"} class="space-y-2 relative">
+                <div id={"browse-project-#{project.id}"}>
                   <div class="flex items-center justify-between p-4 bg-card border border-border rounded-xl shadow-sm active:scale-[0.98] transition-transform">
                     <.link navigate={~p"/projects/#{project.id}"} class="flex items-center gap-3 flex-1">
                       <div class="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center">
@@ -265,22 +266,23 @@ defmodule KairosWeb.BrowseLive do
                         <div class="text-xs text-muted-foreground text-status">Standalone</div>
                       </div>
                     </.link>
-                    <button
-                      phx-click="toggle_menu"
-                      phx-value-id={project.id}
-                      class="p-2 text-muted-foreground hover:bg-muted rounded-full"
-                    >
-                      <.icon name="hero-ellipsis-horizontal" class="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <%= if @menu_open == project.id do %>
-                    <div class="absolute right-0 top-14 z-50 w-40 bg-background border border-border rounded-xl shadow-xl py-2" phx-click-away="close_menu">
-                      <button phx-click="confirm_delete_project" phx-value-id={project.id} class="w-full text-left px-4 py-2 text-sm text-destructive flex items-center gap-2">
-                        <.icon name="hero-trash" class="w-4 h-4" /> Delete
+                    <div class="relative">
+                      <button
+                        phx-click="toggle_menu"
+                        phx-value-id={project.id}
+                        class="p-2 text-muted-foreground hover:bg-muted rounded-full"
+                      >
+                        <.icon name="hero-ellipsis-horizontal" class="w-5 h-5" />
                       </button>
+                      <%= if @menu_open == project.id do %>
+                        <div class="absolute right-0 top-full mt-1 z-50 w-40 bg-background border border-border rounded-xl shadow-xl py-2" phx-click-away="close_menu">
+                          <button phx-click="confirm_delete_project" phx-value-id={project.id} class="w-full text-left px-4 py-2 text-sm text-destructive flex items-center gap-2">
+                            <.icon name="hero-trash" class="w-4 h-4" /> Delete
+                          </button>
+                        </div>
+                      <% end %>
                     </div>
-                  <% end %>
+                  </div>
                 </div>
               <% end %>
 
