@@ -247,7 +247,6 @@ defmodule KairosWeb.SidebarComponent do
   # ── Render ─────────────────────────────────────────────────────────────
 
   @impl true
-  @impl true
   def render(assigns) do
     ~H"""
     <nav id="sidebar" class={["w-56 shrink-0 border-r bg-muted/30 flex-col", if(@current_scope, do: "hidden md:flex", else: "hidden")]}>
@@ -305,7 +304,7 @@ defmodule KairosWeb.SidebarComponent do
           <% end %>
 
           <div id="sidebar-areas">
-            <%= for area <- @nav_areas do %>
+            <%= for area <- @areas do %>
               <div id={"sidebar-area-wrapper-#{area.id}"} class="space-y-0.5">
                 <%= if @renaming_area == area.id do %>
                   <form
@@ -409,7 +408,7 @@ defmodule KairosWeb.SidebarComponent do
                   </form>
                 <% end %>
 
-                <%= for project <- Enum.filter(@nav_projects, &(&1.area_id == area.id)) do %>
+                <%= for project <- Enum.filter(@projects, &(&1.area_id == area.id)) do %>
                   <div id={"sidebar-project-wrapper-#{project.id}"} class="relative">
                     <%= if @renaming_project == project.id do %>
                       <form
@@ -527,7 +526,7 @@ defmodule KairosWeb.SidebarComponent do
           <% end %>
 
           <div id="sidebar-projects">
-            <%= for project <- Enum.filter(@nav_projects, &is_nil(&1.area_id)) do %>
+            <%= for project <- Enum.filter(@projects, &is_nil(&1.area_id)) do %>
               <div id={"sidebar-project-wrapper-#{project.id}"} class="relative">
                 <%= if @renaming_project == project.id do %>
                   <form
