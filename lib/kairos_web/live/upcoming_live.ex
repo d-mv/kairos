@@ -2,6 +2,7 @@ defmodule KairosWeb.UpcomingLive do
   use KairosWeb, :live_view
 
   alias Kairos.Tasks
+  import KairosWeb.Components.TaskItem
 
   @impl true
   def mount(_params, _session, socket) do
@@ -29,10 +30,7 @@ defmodule KairosWeb.UpcomingLive do
         <h1 id="upcoming-title" class="text-2xl font-semibold mb-6">Upcoming</h1>
         <ul id="upcoming-task-list" class="space-y-1">
           <%= for task <- @tasks do %>
-            <li id={"task-#{task.id}"} class="flex items-center gap-3 p-2 rounded hover:bg-muted">
-              <span id={"task-title-#{task.id}"} class="flex-1 text-sm"><%= task.title %></span>
-              <span id={"task-due-#{task.id}"} class="text-xs text-muted-foreground"><%= task.due_date %></span>
-            </li>
+            <.task_item task={task} show_checkbox={false} show_due_date={true} />
           <% end %>
         </ul>
         <%= if Enum.empty?(@tasks) do %>

@@ -2,6 +2,7 @@ defmodule KairosWeb.InboxLive do
   use KairosWeb, :live_view
 
   alias Kairos.Tasks
+  import KairosWeb.Components.TaskItem
 
   @impl true
   def mount(_params, _session, socket) do
@@ -124,57 +125,15 @@ defmodule KairosWeb.InboxLive do
 
         <ul id="inbox-task-list" class="space-y-1">
           <%= for task <- @tasks do %>
-            <li
-              id={"task-#{task.id}"}
-              class={[
-                "flex items-center gap-3 p-2 rounded hover:bg-muted group",
-                @selected_task && @selected_task.id == task.id && "bg-muted"
-              ]}
-            >
-              <input
-                id={"task-checkbox-#{task.id}"}
-                type="checkbox"
-                checked={task.status == "completed"}
-                phx-click={if task.status == "completed", do: "reopen_task", else: "complete_task"}
-                phx-value-id={task.id}
-                class="w-4 h-4 cursor-pointer"
-              />
-              <button
-                id={"task-title-#{task.id}"}
-                phx-click="select_task"
-                phx-value-id={task.id}
-                class="flex-1 text-left min-w-0"
-              >
-                <span class={["text-sm block truncate", task.status == "completed" && "line-through text-muted-foreground"]}>
-                  <%= task.title %>
-                </span>
-                <%= if task.notes && task.notes != "" do %>
-                  <span id={"task-desc-#{task.id}"} class="text-xs text-muted-foreground block truncate"><%= task.notes %></span>
-                <% end %>
-              </button>
-              <span
-                id={"task-priority-#{task.id}"}
-                :if={task.priority != "none"}
-                class={[
-                  "w-2 h-2 rounded-full shrink-0",
-                  task.priority == "high" && "bg-red-500",
-                  task.priority == "medium" && "bg-yellow-500",
-                  task.priority == "low" && "bg-blue-400"
-                ]}
-                title={task.priority}
-              />
-              <%= if task.due_date do %>
-                <span id={"task-due-#{task.id}"} class="text-xs text-muted-foreground shrink-0"><%= task.due_date %></span>
-              <% end %>
-              <button
-                id={"task-delete-#{task.id}"}
-                phx-click="delete_task"
-                phx-value-id={task.id}
-                class="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive text-xs"
-              >
-                <.icon name="hero-x-mark" class="w-4 h-4" />
-              </button>
-            </li>
+            <.task_item
+              task={task}
+              selected={@selected_task != nil && @selected_task.id == task.id}
+              show_notes={true}
+              show_priority={true}
+              show_due_date={true}
+              show_delete={true}
+              selectable={true}
+            />
           <% end %>
         </ul>
 

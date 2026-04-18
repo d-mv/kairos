@@ -2,6 +2,7 @@ defmodule KairosWeb.CompletedLive do
   use KairosWeb, :live_view
 
   alias Kairos.Tasks
+  import KairosWeb.Components.TaskItem
 
   @impl true
   def mount(_params, _session, socket) do
@@ -38,17 +39,7 @@ defmodule KairosWeb.CompletedLive do
         <h1 id="completed-title" class="text-2xl font-semibold mb-6">Completed</h1>
         <ul id="completed-task-list" class="space-y-1">
           <%= for task <- @tasks do %>
-            <li id={"task-#{task.id}"} class="flex items-center gap-3 p-2 rounded hover:bg-muted group">
-              <input
-                id={"task-checkbox-#{task.id}"}
-                type="checkbox"
-                checked
-                phx-click="reopen_task"
-                phx-value-id={task.id}
-                class="w-4 h-4 cursor-pointer"
-              />
-              <span id={"task-title-#{task.id}"} class="flex-1 text-sm line-through text-muted-foreground"><%= task.title %></span>
-            </li>
+            <.task_item task={task} />
           <% end %>
         </ul>
         <%= if Enum.empty?(@tasks) do %>

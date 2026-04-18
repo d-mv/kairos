@@ -2,6 +2,7 @@ defmodule KairosWeb.ProjectLive do
   use KairosWeb, :live_view
 
   alias Kairos.{Projects, Tasks}
+  import KairosWeb.Components.TaskItem
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -247,22 +248,7 @@ defmodule KairosWeb.ProjectLive do
 
         <ul id="project-task-list" class="space-y-1">
           <%= for task <- @tasks do %>
-            <li id={"task-#{task.id}"} class="flex items-center gap-3 p-2 rounded hover:bg-muted">
-              <input
-                id={"task-checkbox-#{task.id}"}
-                type="checkbox"
-                checked={task.status == "completed"}
-                phx-click="complete_task"
-                phx-value-id={task.id}
-                class="w-4 h-4 cursor-pointer"
-              />
-              <span id={"task-title-#{task.id}"} class={["flex-1 text-sm", task.status == "completed" && "line-through text-muted-foreground"]}>
-                <%= task.title %>
-              </span>
-              <%= if task.subtasks != [] do %>
-                <span id={"task-subtask-count-#{task.id}"} class="text-xs text-muted-foreground"><%= length(task.subtasks) %> subtasks</span>
-              <% end %>
-            </li>
+            <.task_item task={task} show_subtasks={true} />
           <% end %>
         </ul>
 

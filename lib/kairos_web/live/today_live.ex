@@ -2,6 +2,7 @@ defmodule KairosWeb.TodayLive do
   use KairosWeb, :live_view
 
   alias Kairos.Tasks
+  import KairosWeb.Components.TaskItem
 
   @impl true
   def mount(_params, _session, socket) do
@@ -38,19 +39,7 @@ defmodule KairosWeb.TodayLive do
         <h1 id="today-title" class="text-2xl font-semibold mb-6">Today</h1>
         <ul id="today-task-list" class="space-y-1">
           <%= for task <- @tasks do %>
-            <li id={"task-#{task.id}"} class="flex items-center gap-3 p-2 rounded hover:bg-muted">
-              <input
-                id={"task-checkbox-#{task.id}"}
-                type="checkbox"
-                phx-click="complete_task"
-                phx-value-id={task.id}
-                class="w-4 h-4 cursor-pointer"
-              />
-              <span id={"task-title-#{task.id}"} class="flex-1 text-sm"><%= task.title %></span>
-              <%= if task.due_time do %>
-                <span id={"task-time-#{task.id}"} class="text-xs text-muted-foreground"><%= task.due_time %></span>
-              <% end %>
-            </li>
+            <.task_item task={task} show_due_time={true} />
           <% end %>
         </ul>
         <%= if Enum.empty?(@tasks) do %>
