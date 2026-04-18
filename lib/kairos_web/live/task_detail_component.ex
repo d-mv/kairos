@@ -2,7 +2,6 @@ defmodule KairosWeb.TaskDetailComponent do
   use KairosWeb, :live_component
 
   alias Kairos.{Tasks, Links, Projects, Areas}
-  alias Kairos.UrlParser
 
   @impl true
   def update(%{task: task} = assigns, socket) do
@@ -17,7 +16,7 @@ defmodule KairosWeb.TaskDetailComponent do
      |> assign(assigns)
      |> assign(:changeset, changeset)
      |> assign(:editing_title, false)
-     |> assign(:url_metadata, nil)
+
      |> assign(:links, links)
      |> assign(:link_search_results, [])
      |> assign(:link_search_query, "")
@@ -160,7 +159,7 @@ defmodule KairosWeb.TaskDetailComponent do
         socket =
           socket
           |> assign(:task, updated_task)
-          |> maybe_fetch_url_metadata(field, coerced)
+
 
         {:noreply, socket}
 
@@ -211,39 +210,8 @@ defmodule KairosWeb.TaskDetailComponent do
     {:noreply, assign(socket, :task, updated_task)}
   end
 
-  @impl true
-  def handle_async(:fetch_url_metadata, {:ok, metadata}, socket) do
-    {:noreply, assign(socket, :url_metadata, metadata)}
-  end
 
-  def handle_async(:fetch_url_metadata, {:exit, _reason}, socket) do
-    {:noreply, socket}
-  end
 
-  defp maybe_fetch_url_metadata(socket, "url", nil) do
-    assign(socket, :url_metadata, nil)
-  end
-
-  defp maybe_fetch_url_metadata(socket, "url", url) do
-    start_async(socket, :fetch_url_metadata, fn -> fetch_metadata(url) end)
-  end
-
-  defp maybe_fetch_url_metadata(socket, _field, _value), do: socket
-
-  defp fetch_metadata(url) do
-    case UrlParser.fetch_metadata(url) do
-      {:ok, metadata} -> metadata
-      {:error, _} -> %{title: nil, service: nil}
-    end
-  end
-
-  defp service_label(nil), do: nil
-  defp service_label(:youtube), do: "YouTube"
-  defp service_label(:instagram), do: "Instagram"
-  defp service_label(:twitter), do: "Twitter / X"
-  defp service_label(:github), do: "GitHub"
-  defp service_label(:notion), do: "Notion"
-  defp service_label(:linear), do: "Linear"
 
   @impl true
   def render(assigns) do
@@ -398,43 +366,6 @@ defmodule KairosWeb.TaskDetailComponent do
               class="flex-1 border rounded px-2 py-1 text-sm focus:outline-none"
             />
           </div>
-        </div>
-
-        <!-- URL -->
-        <div id="task-detail-url-section">
-          <span id="task-detail-url-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">URL</span>
-          <input
-            id="task-detail-url"
-            type="url"
-            value={@task.url}
-            phx-blur="save_field"
-            phx-value-field="url"
-            phx-target={@myself}
-            class="mt-1 w-full border rounded px-2 py-1 text-sm focus:outline-none bg-background"
-            placeholder="https://…"
-          />
-          <%= if @task.url && @task.url != "" do %>
-            <div id="task-detail-url-preview" class="mt-2 flex items-center gap-2 text-sm">
-              <a
-                id="task-detail-url-link"
-                href={@task.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-primary underline truncate flex-1"
-              >
-                <%= if @url_metadata && @url_metadata.title do %>
-                  {@url_metadata.title}
-                <% else %>
-                  {@task.url}
-                <% end %>
-              </a>
-              <%= if @url_metadata && @url_metadata.service do %>
-                <span id="task-detail-url-service" class="shrink-0 text-xs font-medium bg-muted px-2 py-0.5 rounded">
-                  {service_label(@url_metadata.service)}
-                </span>
-              <% end %>
-            </div>
-          <% end %>
         </div>
 
         <!-- Move to -->
