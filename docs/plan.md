@@ -65,7 +65,7 @@ Reference implementation: `_old/` (Node.js/React app)
 - [x] Mobile responsive layout (sidebar hidden on small screens, mobile header)
 - [x] Dark mode via DaisyUI themes + theme_toggle component
 - [ ] Salad UI components wired: Button, Input, Modal, Dropdown, Badge (using core_components instead)
-- [ ] Task item reusable component
+- [x] Task item reusable component
 - [x] Keyboard shortcut `e` to edit selected task
 
 ## Phase 6 — MCP Server
@@ -98,7 +98,7 @@ Reference implementation: `_old/` (Node.js/React app)
 
 ### Features & UX
 - [x] **Links UI**: "Dependencies / Related" section in `TaskDetailComponent` with add/remove/search
-- [ ] **Sidebar refactor**: Extract area/project management into dedicated LiveComponents
+- [x] **Sidebar refactor**: Extract `area_row` and `project_row` private components; dropdowns fixed
 
 ---
 
