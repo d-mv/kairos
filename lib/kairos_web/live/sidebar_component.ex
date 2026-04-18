@@ -244,6 +244,189 @@ defmodule KairosWeb.SidebarComponent do
      )}
   end
 
+  # ── Sub-components ─────────────────────────────────────────────────────
+
+  attr :area, :map, required: true
+  attr :renaming, :boolean, required: true
+  attr :menu_open, :boolean, required: true
+  attr :target, :any, required: true
+
+  defp area_row(assigns) do
+    ~H"""
+    <%= if @renaming do %>
+      <form
+        id={"sidebar-rename-area-form-#{@area.id}"}
+        phx-submit="save_rename_area"
+        phx-target={@target}
+        class="flex items-center gap-1 px-2 py-1"
+      >
+        <input type="hidden" name="record_id" value={@area.id} />
+        <.icon name="hero-square-2-stack" class="w-4 h-4 text-muted-foreground shrink-0" />
+        <input
+          type="text"
+          name="name"
+          value={@area.name}
+          class="flex-1 text-sm border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+          phx-mounted={JS.focus()}
+          phx-keydown="cancel_rename"
+          phx-key="Escape"
+          phx-target={@target}
+        />
+      </form>
+    <% else %>
+      <div class="flex items-center rounded hover:bg-muted group/area relative">
+        <.link
+          id={"sidebar-area-#{@area.id}"}
+          navigate={~p"/areas/#{@area.id}"}
+          class="flex items-center gap-2 px-2 py-1.5 text-sm flex-1 min-w-0"
+        >
+          <.icon name="hero-square-2-stack" class="w-4 h-4 text-muted-foreground shrink-0" />
+          <span class="flex-1 truncate">{@area.name}</span>
+        </.link>
+        <div class="flex items-center gap-0.5 pr-1 shrink-0 opacity-0 group-hover/area:opacity-100">
+          <button
+            id={"sidebar-add-project-to-area-#{@area.id}"}
+            phx-click="toggle_create_project"
+            phx-value-area-id={@area.id}
+            phx-target={@target}
+            class="p-0.5 rounded hover:bg-muted text-muted-foreground"
+            title="New project in area"
+          >
+            <.icon name="hero-plus" class="w-3 h-3" />
+          </button>
+          <div class="relative">
+            <button
+              id={"sidebar-area-menu-btn-#{@area.id}"}
+              phx-click="toggle_area_menu"
+              phx-value-id={@area.id}
+              phx-target={@target}
+              class="p-0.5 rounded hover:bg-muted text-muted-foreground"
+              title="Area options"
+            >
+              <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
+            </button>
+            <%= if @menu_open do %>
+              <div
+                id={"sidebar-area-menu-#{@area.id}"}
+                class="absolute right-0 top-full mt-1 z-50 w-36 bg-background border border-border rounded-xl shadow-xl py-1"
+                phx-click-away="close_menus"
+                phx-target={@target}
+              >
+                <button
+                  phx-click="start_rename_area"
+                  phx-value-id={@area.id}
+                  phx-target={@target}
+                  class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
+                >
+                  <.icon name="hero-pencil" class="w-3.5 h-3.5 text-muted-foreground" /> Rename
+                </button>
+                <button
+                  phx-click="confirm_delete_area"
+                  phx-value-id={@area.id}
+                  phx-target={@target}
+                  class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted text-destructive flex items-center gap-2"
+                >
+                  <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
+                </button>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  attr :project, :map, required: true
+  attr :renaming, :boolean, required: true
+  attr :menu_open, :boolean, required: true
+  attr :indent, :boolean, default: false
+  attr :target, :any, required: true
+
+  defp project_row(assigns) do
+    ~H"""
+    <div id={"sidebar-project-wrapper-#{@project.id}"} class="relative">
+      <%= if @renaming do %>
+        <form
+          id={"sidebar-rename-project-form-#{@project.id}"}
+          phx-submit="save_rename_project"
+          phx-target={@target}
+          class={["flex items-center gap-1 py-1", if(@indent, do: "pl-7 pr-2", else: "px-2")]}
+        >
+          <input type="hidden" name="record_id" value={@project.id} />
+          <.icon name="hero-folder" class={["text-muted-foreground shrink-0", if(@indent, do: "w-3.5 h-3.5", else: "w-4 h-4")]} />
+          <input
+            type="text"
+            name="name"
+            value={@project.name}
+            class="flex-1 text-sm border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+            phx-mounted={JS.focus()}
+            phx-keydown="cancel_rename"
+            phx-key="Escape"
+            phx-target={@target}
+          />
+        </form>
+      <% else %>
+        <div class="flex items-center rounded hover:bg-muted group/proj">
+          <.link
+            id={"sidebar-project-#{@project.id}"}
+            navigate={~p"/projects/#{@project.id}"}
+            class={["flex items-center gap-2 py-1.5 text-sm flex-1 min-w-0", if(@indent, do: "pl-7 pr-2 text-muted-foreground", else: "px-2")]}
+          >
+            <.icon name="hero-folder" class={["shrink-0", if(@indent, do: "w-3.5 h-3.5", else: "w-4 h-4 text-muted-foreground")]} />
+            <span class="flex-1 truncate">{@project.name}</span>
+          </.link>
+          <div class="relative">
+            <button
+              id={"sidebar-project-menu-btn-#{@project.id}"}
+              phx-click="toggle_project_menu"
+              phx-value-id={@project.id}
+              phx-target={@target}
+              class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground mr-1 shrink-0"
+              title="Project options"
+            >
+              <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
+            </button>
+            <%= if @menu_open do %>
+              <div
+                id={"sidebar-project-menu-#{@project.id}"}
+                class="absolute right-0 top-full mt-1 z-50 w-40 bg-background border border-border rounded-xl shadow-xl py-1"
+                phx-click-away="close_menus"
+                phx-target={@target}
+              >
+                <button
+                  phx-click="start_rename_project"
+                  phx-value-id={@project.id}
+                  phx-target={@target}
+                  class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
+                >
+                  <.icon name="hero-pencil" class="w-3.5 h-3.5 text-muted-foreground" /> Rename
+                </button>
+                <button
+                  phx-click="confirm_demote_project"
+                  phx-value-id={@project.id}
+                  phx-target={@target}
+                  class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
+                >
+                  <.icon name="hero-arrow-down-circle" class="w-3.5 h-3.5 text-muted-foreground" /> Demote to task
+                </button>
+                <button
+                  phx-click="confirm_delete_project"
+                  phx-value-id={@project.id}
+                  phx-target={@target}
+                  class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted text-destructive flex items-center gap-2"
+                >
+                  <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
+                </button>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
   # ── Render ─────────────────────────────────────────────────────────────
 
   @impl true
@@ -306,86 +489,12 @@ defmodule KairosWeb.SidebarComponent do
           <div id="sidebar-areas">
             <%= for area <- @areas do %>
               <div id={"sidebar-area-wrapper-#{area.id}"} class="space-y-0.5">
-                <%= if @renaming_area == area.id do %>
-                  <form
-                    id={"sidebar-rename-area-form-#{area.id}"}
-                    phx-submit="save_rename_area"
-                    phx-target={@myself}
-                    class="flex items-center gap-1 px-2 py-1"
-                  >
-                    <input type="hidden" name="record_id" value={area.id} />
-                    <.icon name="hero-square-2-stack" class="w-4 h-4 text-muted-foreground shrink-0" />
-                    <input
-                      type="text"
-                      name="name"
-                      value={area.name}
-                      class="flex-1 text-sm border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-                      phx-mounted={JS.focus()}
-                      phx-keydown="cancel_rename"
-                      phx-key="Escape"
-                      phx-target={@myself}
-                    />
-                  </form>
-                <% else %>
-                  <div class="flex items-center rounded hover:bg-muted group/area relative">
-                    <.link
-                      id={"sidebar-area-#{area.id}"}
-                      navigate={~p"/areas/#{area.id}"}
-                      class="flex items-center gap-2 px-2 py-1.5 text-sm flex-1 min-w-0"
-                    >
-                      <.icon name="hero-square-2-stack" class="w-4 h-4 text-muted-foreground shrink-0" />
-                      <span class="flex-1 truncate"><%= area.name %></span>
-                    </.link>
-                    <div class="flex items-center gap-0.5 pr-1 shrink-0 opacity-0 group-hover/area:opacity-100">
-                      <button
-                        id={"sidebar-add-project-to-area-#{area.id}"}
-                        phx-click="toggle_create_project"
-                        phx-value-area-id={area.id}
-                        phx-target={@myself}
-                        class="p-0.5 rounded hover:bg-muted text-muted-foreground"
-                        title="New project in area"
-                      >
-                        <.icon name="hero-plus" class="w-3 h-3" />
-                      </button>
-                      <button
-                        id={"sidebar-area-menu-btn-#{area.id}"}
-                        phx-click="toggle_area_menu"
-                        phx-value-id={area.id}
-                        phx-target={@myself}
-                        class="p-0.5 rounded hover:bg-muted text-muted-foreground"
-                        title="Area options"
-                      >
-                        <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <%= if @area_menu_open == area.id do %>
-                    <div
-                      id={"sidebar-area-menu-#{area.id}"}
-                      class="absolute right-1 top-7 z-50 w-36 bg-background border border-border rounded-xl shadow-xl py-1"
-                      phx-click-away="close_menus"
-                      phx-target={@myself}
-                    >
-                      <button
-                        phx-click="start_rename_area"
-                        phx-value-id={area.id}
-                        phx-target={@myself}
-                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
-                      >
-                        <.icon name="hero-pencil" class="w-3.5 h-3.5 text-muted-foreground" /> Rename
-                      </button>
-                      <button
-                        phx-click="confirm_delete_area"
-                        phx-value-id={area.id}
-                        phx-target={@myself}
-                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted text-destructive flex items-center gap-2"
-                      >
-                        <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
-                      </button>
-                    </div>
-                  <% end %>
-                <% end %>
+                <.area_row
+                  area={area}
+                  renaming={@renaming_area == area.id}
+                  menu_open={@area_menu_open == area.id}
+                  target={@myself}
+                />
 
                 <%= if @creating_project == area.id do %>
                   <form
@@ -409,84 +518,13 @@ defmodule KairosWeb.SidebarComponent do
                 <% end %>
 
                 <%= for project <- Enum.filter(@projects, &(&1.area_id == area.id)) do %>
-                  <div id={"sidebar-project-wrapper-#{project.id}"} class="relative">
-                    <%= if @renaming_project == project.id do %>
-                      <form
-                        id={"sidebar-rename-project-form-#{project.id}"}
-                        phx-submit="save_rename_project"
-                        phx-target={@myself}
-                        class="flex items-center gap-1 pl-7 pr-2 py-1"
-                      >
-                        <input type="hidden" name="record_id" value={project.id} />
-                        <.icon name="hero-folder" class="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <input
-                          type="text"
-                          name="name"
-                          value={project.name}
-                          class="flex-1 text-sm border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-                          phx-mounted={JS.focus()}
-                          phx-keydown="cancel_rename"
-                          phx-key="Escape"
-                          phx-target={@myself}
-                        />
-                      </form>
-                    <% else %>
-                      <div class="flex items-center rounded hover:bg-muted group/proj">
-                        <.link
-                          id={"sidebar-project-#{project.id}"}
-                          navigate={~p"/projects/#{project.id}"}
-                          class="flex items-center gap-2 pl-7 pr-2 py-1.5 text-sm flex-1 min-w-0 text-muted-foreground"
-                        >
-                          <.icon name="hero-folder" class="w-3.5 h-3.5 shrink-0" />
-                          <span class="flex-1 truncate"><%= project.name %></span>
-                        </.link>
-                        <button
-                          id={"sidebar-project-menu-btn-#{project.id}"}
-                          phx-click="toggle_project_menu"
-                          phx-value-id={project.id}
-                          phx-target={@myself}
-                          class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground mr-1 shrink-0"
-                          title="Project options"
-                        >
-                          <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
-                        </button>
-                      </div>
-
-                      <%= if @project_menu_open == project.id do %>
-                        <div
-                          id={"sidebar-project-menu-#{project.id}"}
-                          class="absolute right-1 top-7 z-50 w-40 bg-background border border-border rounded-xl shadow-xl py-1"
-                          phx-click-away="close_menus"
-                          phx-target={@myself}
-                        >
-                          <button
-                            phx-click="start_rename_project"
-                            phx-value-id={project.id}
-                            phx-target={@myself}
-                            class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
-                          >
-                            <.icon name="hero-pencil" class="w-3.5 h-3.5 text-muted-foreground" /> Rename
-                          </button>
-                          <button
-                            phx-click="confirm_demote_project"
-                            phx-value-id={project.id}
-                            phx-target={@myself}
-                            class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
-                          >
-                            <.icon name="hero-arrow-down-circle" class="w-3.5 h-3.5 text-muted-foreground" /> Demote to task
-                          </button>
-                          <button
-                            phx-click="confirm_delete_project"
-                            phx-value-id={project.id}
-                            phx-target={@myself}
-                            class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted text-destructive flex items-center gap-2"
-                          >
-                            <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
-                          </button>
-                        </div>
-                      <% end %>
-                    <% end %>
-                  </div>
+                  <.project_row
+                    project={project}
+                    renaming={@renaming_project == project.id}
+                    menu_open={@project_menu_open == project.id}
+                    indent={true}
+                    target={@myself}
+                  />
                 <% end %>
               </div>
             <% end %>
@@ -527,84 +565,13 @@ defmodule KairosWeb.SidebarComponent do
 
           <div id="sidebar-projects">
             <%= for project <- Enum.filter(@projects, &is_nil(&1.area_id)) do %>
-              <div id={"sidebar-project-wrapper-#{project.id}"} class="relative">
-                <%= if @renaming_project == project.id do %>
-                  <form
-                    id={"sidebar-rename-project-form-#{project.id}"}
-                    phx-submit="save_rename_project"
-                    phx-target={@myself}
-                    class="flex items-center gap-1 px-2 py-1"
-                  >
-                    <input type="hidden" name="record_id" value={project.id} />
-                    <.icon name="hero-folder" class="w-4 h-4 text-muted-foreground shrink-0" />
-                    <input
-                      type="text"
-                      name="name"
-                      value={project.name}
-                      class="flex-1 text-sm border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-                      phx-mounted={JS.focus()}
-                      phx-keydown="cancel_rename"
-                      phx-key="Escape"
-                      phx-target={@myself}
-                    />
-                  </form>
-                <% else %>
-                  <div class="flex items-center rounded hover:bg-muted group/proj">
-                    <.link
-                      id={"sidebar-project-#{project.id}"}
-                      navigate={~p"/projects/#{project.id}"}
-                      class="flex items-center gap-2 px-2 py-1.5 text-sm flex-1 min-w-0"
-                    >
-                      <.icon name="hero-folder" class="w-4 h-4 text-muted-foreground shrink-0" />
-                      <span class="truncate flex-1"><%= project.name %></span>
-                    </.link>
-                    <button
-                      id={"sidebar-project-menu-btn-#{project.id}"}
-                      phx-click="toggle_project_menu"
-                      phx-value-id={project.id}
-                      phx-target={@myself}
-                      class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground mr-1 shrink-0"
-                      title="Project options"
-                    >
-                      <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
-                    </button>
-                  </div>
-
-                  <%= if @project_menu_open == project.id do %>
-                    <div
-                      id={"sidebar-project-menu-#{project.id}"}
-                      class="absolute right-1 top-7 z-50 w-40 bg-background border border-border rounded-xl shadow-xl py-1"
-                      phx-click-away="close_menus"
-                      phx-target={@myself}
-                    >
-                      <button
-                        phx-click="start_rename_project"
-                        phx-value-id={project.id}
-                        phx-target={@myself}
-                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
-                      >
-                        <.icon name="hero-pencil" class="w-3.5 h-3.5 text-muted-foreground" /> Rename
-                      </button>
-                      <button
-                        phx-click="confirm_demote_project"
-                        phx-value-id={project.id}
-                        phx-target={@myself}
-                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted flex items-center gap-2"
-                      >
-                        <.icon name="hero-arrow-down-circle" class="w-3.5 h-3.5 text-muted-foreground" /> Demote to task
-                      </button>
-                      <button
-                        phx-click="confirm_delete_project"
-                        phx-value-id={project.id}
-                        phx-target={@myself}
-                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-muted text-destructive flex items-center gap-2"
-                      >
-                        <.icon name="hero-trash" class="w-3.5 h-3.5" /> Delete
-                      </button>
-                    </div>
-                  <% end %>
-                <% end %>
-              </div>
+              <.project_row
+                project={project}
+                renaming={@renaming_project == project.id}
+                menu_open={@project_menu_open == project.id}
+                indent={false}
+                target={@myself}
+              />
             <% end %>
           </div>
         </div>
