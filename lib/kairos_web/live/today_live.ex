@@ -25,6 +25,14 @@ defmodule KairosWeb.TodayLive do
     {:noreply, assign(socket, tasks: Tasks.list_today(user_id))}
   end
 
+  def handle_event("reopen_task", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    task = Tasks.get_task!(id, user_id)
+    {:ok, _} = Tasks.reopen_task(task)
+    Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+    {:noreply, assign(socket, tasks: Tasks.list_today(user_id))}
+  end
+
   @impl true
   def handle_info({:tasks_changed, _}, socket) do
     user_id = socket.assigns.current_scope.user.id
