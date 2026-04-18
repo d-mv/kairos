@@ -113,7 +113,7 @@ defmodule KairosWeb.InboxLiveTest do
       {:ok, lv, _html} = live(conn, ~p"/inbox")
       lv |> element("#task-title-#{t1.id}") |> render_click()
       lv |> element("#task-detail-add-link") |> render_click()
-      lv |> element("#link-search-input") |> render_keyup(%{"query" => "Beta"})
+      lv |> element("#link-search-input") |> render_keyup(%{"value" => "Beta"})
       assert has_element?(lv, "#link-search-results", "Beta task")
       refute has_element?(lv, "#link-search-results", "Alpha task")
     end
@@ -124,7 +124,7 @@ defmodule KairosWeb.InboxLiveTest do
       {:ok, lv, _html} = live(conn, ~p"/inbox")
       lv |> element("#task-title-#{task.id}") |> render_click()
       lv |> element("#task-detail-add-link") |> render_click()
-      html = lv |> element("#link-search-input") |> render_keyup(%{"query" => "My"})
+      html = lv |> element("#link-search-input") |> render_keyup(%{"value" => "My"})
       assert html =~ "My Project"
     end
 
@@ -170,7 +170,7 @@ defmodule KairosWeb.InboxLiveTest do
       {:ok, lv, _html} = live(conn, ~p"/inbox")
       lv |> element("#task-title-#{t1.id}") |> render_click()
       lv |> element("#task-detail-add-link") |> render_click()
-      lv |> element("#link-search-input") |> render_keyup(%{"query" => "Target"})
+      lv |> element("#link-search-input") |> render_keyup(%{"value" => "Target"})
       lv |> element("button[phx-click='create_link'][phx-value-to_id='#{t2.id}']") |> render_click()
       links = Kairos.Links.list_links_for(t1.id, "task", user.id)
       assert Enum.any?(links, &(&1.to_id == t2.id))

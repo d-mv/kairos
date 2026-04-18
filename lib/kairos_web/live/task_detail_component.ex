@@ -37,7 +37,7 @@ defmodule KairosWeb.TaskDetailComponent do
     {:noreply, assign(socket, show_link_search: !socket.assigns.show_link_search, link_search_results: [])}
   end
 
-  def handle_event("search_links", %{"query" => query}, socket) do
+  def handle_event("search_links", %{"value" => query}, socket) do
     user_id = socket.assigns.current_scope.user.id
     task_id = socket.assigns.task.id
 
