@@ -58,6 +58,15 @@ defmodule KairosWeb.ProjectLive do
     {:noreply, assign(socket, tasks: tasks)}
   end
 
+  def handle_event("reopen_task", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    task = Tasks.get_task!(id, user_id)
+    {:ok, _} = Tasks.reopen_task(task)
+    Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id)
+    {:noreply, assign(socket, tasks: tasks)}
+  end
+
   @impl true
   def handle_event("toggle_header_menu", _params, socket) do
     {:noreply, assign(socket, header_menu_open: !socket.assigns.header_menu_open, confirm_delete: nil, confirm_demote: false, demote_error: nil)}
