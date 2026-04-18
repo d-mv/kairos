@@ -3,7 +3,9 @@ defmodule Kairos.Links do
   alias Kairos.Repo
   alias Kairos.Links.Link
   alias Kairos.Tasks
+  alias Kairos.Tasks.Task
   alias Kairos.Projects
+  alias Kairos.Projects.Project
 
   def list_links_for(entity_id, entity_type, user_id) do
     Link

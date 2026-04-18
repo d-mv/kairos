@@ -3,6 +3,7 @@ defmodule Kairos.LinksTest do
 
   alias Kairos.Links
   alias Kairos.Tasks
+  alias Kairos.Projects
 
   import Kairos.AccountsFixtures
 
@@ -111,6 +112,35 @@ defmodule Kairos.LinksTest do
       links = Links.list_blocking_links_for_user(user.id)
       assert Enum.all?(links, &(&1.user_id == user.id and &1.link_type == "blocks"))
       assert length(links) == 1
+    end
+  end
+
+  describe "list_detailed_links_for/3" do
+    test "returns task-to-task link with title", %{user: user, t1: t1, t2: t2} do
+      {:ok, _} = Links.create_link(%{
+        from_id: t1.id, from_type: "task",
+        to_id: t2.id, to_type: "task",
+        link_type: "related_to",
+        user_id: user.id
+      })
+
+      links = Links.list_detailed_links_for(t1.id, "task", user.id)
+      assert length(links) >= 1
+      assert Enum.any?(links, &(&1.target_title == "B" and &1.target_type == "task"))
+    end
+
+    test "returns task-to-project link with project title", %{user: user, t1: t1} do
+      {:ok, project} = Projects.create_project(%{name: "My Project", user_id: user.id})
+
+      {:ok, _} = Links.create_link(%{
+        from_id: t1.id, from_type: "task",
+        to_id: project.id, to_type: "project",
+        link_type: "related_to",
+        user_id: user.id
+      })
+
+      links = Links.list_detailed_links_for(t1.id, "task", user.id)
+      assert Enum.any?(links, &(&1.target_title == "My Project" and &1.target_type == "project"))
     end
   end
 
