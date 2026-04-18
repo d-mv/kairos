@@ -1,7 +1,7 @@
 defmodule KairosWeb.TaskDetailComponent do
   use KairosWeb, :live_component
 
-  alias Kairos.{Tasks, Links, Projects}
+  alias Kairos.{Tasks, Links, Projects, Areas}
   alias Kairos.UrlParser
 
   @impl true
@@ -9,6 +9,8 @@ defmodule KairosWeb.TaskDetailComponent do
     user_id = assigns.current_scope.user.id
     changeset = Tasks.change_task(task)
     links = Links.list_detailed_links_for(task.id, "task", user_id)
+    projects = Projects.list_projects(user_id)
+    areas = Areas.list_areas(user_id)
 
     {:ok,
      socket
@@ -20,7 +22,9 @@ defmodule KairosWeb.TaskDetailComponent do
      |> assign(:link_search_results, [])
      |> assign(:link_search_query, "")
      |> assign(:show_link_search, false)
-     |> assign(:new_link_type, "related_to")}
+     |> assign(:new_link_type, "related_to")
+     |> assign(:projects, projects)
+     |> assign(:areas, areas)}
   end
 
   @impl true
@@ -38,7 +42,7 @@ defmodule KairosWeb.TaskDetailComponent do
     task_id = socket.assigns.task.id
 
     tasks = Tasks.search_for_linking(user_id, query, task_id)
-    projects = Projects.search_for_linking(user_id, query, "")
+    projects = Projects.search_for_linking(user_id, query)
 
     results =
       Enum.map(tasks, &%{id: &1.id, title: &1.title, type: "task"}) ++
@@ -162,6 +166,32 @@ defmodule KairosWeb.TaskDetailComponent do
 
       {:error, changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}
+    end
+  end
+
+  def handle_event("move_task", %{"container" => container}, socket) do
+    task = socket.assigns.task
+    user_id = socket.assigns.current_scope.user.id
+
+    attrs =
+      case container do
+        "inbox" -> %{project_id: nil, area_id: nil}
+        "project_" <> id -> %{project_id: id, area_id: nil}
+        "area_" <> id -> %{project_id: nil, area_id: id}
+        _ -> nil
+      end
+
+    if attrs do
+      case Tasks.update_task(task, attrs) do
+        {:ok, updated_task} ->
+          Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+          {:noreply, assign(socket, :task, updated_task)}
+
+        {:error, _} ->
+          {:noreply, socket}
+      end
+    else
+      {:noreply, socket}
     end
   end
 
@@ -408,6 +438,34 @@ defmodule KairosWeb.TaskDetailComponent do
               <% end %>
             </div>
           <% end %>
+        </div>
+
+        <!-- Move to -->
+        <div id="task-detail-move-section">
+          <span id="task-detail-move-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Move to</span>
+          <select
+            id="task-detail-move-select"
+            phx-change="move_task"
+            phx-target={@myself}
+            name="container"
+            class="mt-1 w-full border rounded px-2 py-1 text-sm focus:outline-none bg-background"
+          >
+            <option value="inbox" selected={is_nil(@task.project_id) and is_nil(@task.area_id)}>Inbox</option>
+            <%= if Enum.any?(@projects) do %>
+              <optgroup label="Projects">
+                <%= for project <- @projects do %>
+                  <option value={"project_#{project.id}"} selected={@task.project_id == project.id}>{project.name}</option>
+                <% end %>
+              </optgroup>
+            <% end %>
+            <%= if Enum.any?(@areas) do %>
+              <optgroup label="Areas">
+                <%= for area <- @areas do %>
+                  <option value={"area_#{area.id}"} selected={@task.area_id == area.id}>{area.name}</option>
+                <% end %>
+              </optgroup>
+            <% end %>
+          </select>
         </div>
 
         <!-- Links -->

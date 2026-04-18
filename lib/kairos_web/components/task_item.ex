@@ -7,7 +7,7 @@ defmodule KairosWeb.Components.TaskItem do
   attr :selected, :boolean, default: false
   attr :show_checkbox, :boolean, default: true
   attr :show_notes, :boolean, default: false
-  attr :show_priority, :boolean, default: false
+  attr :show_priority, :boolean, default: true
   attr :show_due_date, :boolean, default: false
   attr :show_due_time, :boolean, default: false
   attr :show_subtasks, :boolean, default: false
