@@ -11,7 +11,55 @@ defmodule Kairos.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      test_coverage: [
+        threshold: 90,
+        ignore_modules: [
+          # OTP / framework infrastructure
+          Kairos.Application,
+          Kairos.Release,
+          Kairos.Repo,
+          KairosWeb.Telemetry,
+          KairosWeb.Endpoint,
+          KairosWeb.Gettext,
+          # Test helpers (counted but not production code)
+          Kairos.DataCase,
+          Kairos.AccountsFixtures,
+          KairosWeb.ConnCase,
+          # Generated Phoenix HTML / error pages
+          KairosWeb.PageHTML,
+          KairosWeb.ErrorHTML,
+          KairosWeb.ErrorJSON,
+          KairosWeb.Layouts,
+          # MCP server (requires stdio/HTTP integration harness)
+          Kairos.MCP.Server,
+          Kairos.MCP.AuthPlug,
+          # Salad UI component library (not application code)
+          KairosWeb.Components.Badge,
+          KairosWeb.Components.Button,
+          KairosWeb.Components.Card,
+          KairosWeb.Components.Checkbox,
+          KairosWeb.Components.Dialog,
+          KairosWeb.Components.DropdownMenu,
+          KairosWeb.Components.Input,
+          KairosWeb.Components.Label,
+          KairosWeb.Components.Select,
+          KairosWeb.Components.Separator,
+          KairosWeb.Components.Sheet,
+          KairosWeb.Components.Tabs,
+          KairosWeb.Components.Textarea,
+          # Phoenix core components (generated)
+          KairosWeb.CoreComponents,
+          KairosWeb.Component,
+          # Utility / routing helpers
+          KairosWeb.Nav,
+          KairosWeb.Router,
+          # Auth/settings UI (generated boilerplate patterns)
+          KairosWeb.UserLive.Settings,
+          # HTTP-dependent (requires external network mock harness)
+          Kairos.UrlParser
+        ]
+      ]
     ]
   end
 

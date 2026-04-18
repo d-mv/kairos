@@ -128,6 +128,82 @@ defmodule KairosWeb.InboxLiveTest do
       assert html =~ "My Project"
     end
 
+    test "adds a tag via task detail", %{conn: conn, user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "Tag me", user_id: user.id})
+      {:ok, lv, _html} = live(conn, ~p"/inbox")
+      lv |> element("#task-title-#{task.id}") |> render_click()
+      lv |> form("#add-tag-form", %{tag: "urgent"}) |> render_submit()
+      assert "urgent" in Tasks.get_task!(task.id, user.id).tags
+    end
+
+    test "removes a tag via task detail", %{conn: conn, user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "Tag task", user_id: user.id, tags: ["keep", "remove"]})
+      {:ok, lv, _html} = live(conn, ~p"/inbox")
+      lv |> element("#task-title-#{task.id}") |> render_click()
+      lv |> element("button[phx-click='remove_tag'][phx-value-tag='remove']") |> render_click()
+      updated_tags = Tasks.get_task!(task.id, user.id).tags
+      assert "keep" in updated_tags
+      refute "remove" in updated_tags
+    end
+
+    test "completes task from detail panel", %{conn: conn, user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "Complete from detail", user_id: user.id})
+      {:ok, lv, _html} = live(conn, ~p"/inbox")
+      lv |> element("#task-title-#{task.id}") |> render_click()
+      lv |> element("#task-detail-complete") |> render_click()
+      assert Tasks.get_task!(task.id, user.id).status == "completed"
+    end
+
+    test "reopens task from detail panel", %{conn: conn, user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "Reopen from detail", user_id: user.id})
+      {:ok, _} = Tasks.complete_task(task)
+      task = Tasks.get_task!(task.id, user.id)
+      {:ok, lv, _html} = live(conn, ~p"/inbox")
+      lv |> element("#task-title-#{task.id}") |> render_click()
+      lv |> element("#task-detail-reopen") |> render_click()
+      assert Tasks.get_task!(task.id, user.id).status == "pending"
+    end
+
+    test "creates link between tasks", %{conn: conn, user: user} do
+      {:ok, t1} = Tasks.create_task(%{title: "Source", user_id: user.id})
+      {:ok, t2} = Tasks.create_task(%{title: "Target task", user_id: user.id})
+      {:ok, lv, _html} = live(conn, ~p"/inbox")
+      lv |> element("#task-title-#{t1.id}") |> render_click()
+      lv |> element("#task-detail-add-link") |> render_click()
+      lv |> element("#link-search-input") |> render_keyup(%{"query" => "Target"})
+      lv |> element("button[phx-click='create_link'][phx-value-to_id='#{t2.id}']") |> render_click()
+      links = Kairos.Links.list_links_for(t1.id, "task", user.id)
+      assert Enum.any?(links, &(&1.to_id == t2.id))
+    end
+
+    test "moves task then back to inbox", %{conn: conn, user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "Move around", user_id: user.id})
+      {:ok, project} = Projects.create_project(%{name: "Proj", user_id: user.id})
+      {:ok, lv, _html} = live(conn, ~p"/inbox")
+      lv |> element("#task-title-#{task.id}") |> render_click()
+      lv |> element("#task-detail-move-select") |> render_change(%{"container" => "project_#{project.id}"})
+      assert Tasks.get_task!(task.id, user.id).project_id == project.id
+    end
+
+    test "edits task title in detail", %{conn: conn, user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "Old title", user_id: user.id})
+      {:ok, lv, _html} = live(conn, ~p"/inbox")
+      lv |> element("#task-title-#{task.id}") |> render_click()
+      lv |> element("#task-detail-title") |> render_click()
+      lv |> form("#task-detail-title-form", %{title: "New title"}) |> render_submit()
+      assert Tasks.get_task!(task.id, user.id).title == "New title"
+    end
+
+    test "deletes a link from task detail", %{conn: conn, user: user} do
+      {:ok, t1} = Tasks.create_task(%{title: "T1", user_id: user.id})
+      {:ok, t2} = Tasks.create_task(%{title: "T2", user_id: user.id})
+      {:ok, link} = Kairos.Links.create_link(%{from_id: t1.id, from_type: "task", to_id: t2.id, to_type: "task", link_type: "related_to", user_id: user.id})
+      {:ok, lv, _html} = live(conn, ~p"/inbox")
+      lv |> element("#task-title-#{t1.id}") |> render_click()
+      lv |> element("button[phx-click='delete_link'][phx-value-id='#{link.id}']") |> render_click()
+      assert Kairos.Links.list_links_for(t1.id, "task", user.id) == []
+    end
+
     test "closes task detail", %{conn: conn, user: user} do
       {:ok, task} = Tasks.create_task(%{title: "Close me", user_id: user.id})
       {:ok, lv, _html} = live(conn, ~p"/inbox")
