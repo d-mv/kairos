@@ -500,6 +500,7 @@ defmodule KairosWeb.TaskDetailComponent do
               <input
                 id="link-search-input"
                 type="text"
+                name="query"
                 placeholder="Search tasks or projects…"
                 class="w-full text-sm border rounded px-2 py-1.5 focus:outline-none bg-background"
                 phx-keyup="search_links"
