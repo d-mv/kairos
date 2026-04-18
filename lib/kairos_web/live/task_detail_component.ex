@@ -375,32 +375,29 @@ defmodule KairosWeb.TaskDetailComponent do
           </form>
         </div>
 
-        <!-- Due date -->
-        <div id="task-detail-due-date-section">
-          <span id="task-detail-due-date-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due date</span>
-          <input
-            id="task-detail-due-date"
-            type="date"
-            value={@task.due_date}
-            phx-blur="save_field"
-            phx-value-field="due_date"
-            phx-target={@myself}
-            class="mt-1 w-full border rounded px-2 py-1 text-sm focus:outline-none"
-          />
-        </div>
-
-        <!-- Due time -->
-        <div id="task-detail-due-time-section">
-          <span id="task-detail-due-time-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due time</span>
-          <input
-            id="task-detail-due-time"
-            type="time"
-            value={@task.due_time}
-            phx-blur="save_field"
-            phx-value-field="due_time"
-            phx-target={@myself}
-            class="mt-1 w-full border rounded px-2 py-1 text-sm focus:outline-none"
-          />
+        <!-- Due date + time -->
+        <div id="task-detail-due-section">
+          <span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due</span>
+          <div class="mt-1 flex gap-2">
+            <input
+              id="task-detail-due-date"
+              type="date"
+              value={@task.due_date}
+              phx-blur="save_field"
+              phx-value-field="due_date"
+              phx-target={@myself}
+              class="flex-1 border rounded px-2 py-1 text-sm focus:outline-none"
+            />
+            <input
+              id="task-detail-due-time"
+              type="time"
+              value={@task.due_time}
+              phx-blur="save_field"
+              phx-value-field="due_time"
+              phx-target={@myself}
+              class="flex-1 border rounded px-2 py-1 text-sm focus:outline-none"
+            />
+          </div>
         </div>
 
         <!-- URL -->
