@@ -23,8 +23,11 @@ defmodule KairosWeb.Components.TaskItem do
     <li
       id={"task-#{@task.id}"}
       data-selected={to_string(@selected)}
+      phx-click={if @selectable && (@task.url && @task.url != ""), do: @select_event}
+      phx-value-id={if @selectable && (@task.url && @task.url != ""), do: @task.id}
       class={[
         "flex items-center gap-3 p-2 rounded hover:bg-muted group",
+        @selectable && (@task.url && @task.url != "") && "cursor-pointer",
         @selected && "bg-muted"
       ]}
     >
@@ -39,13 +42,14 @@ defmodule KairosWeb.Components.TaskItem do
         />
       <% end %>
 
-      <%= if @selectable do %>
-        <button
+      <%= if @selectable && (@task.url && @task.url != "") do %>
+        <a
           id={"task-title-#{@task.id}"}
-          phx-click={@select_event}
-          phx-value-id={@task.id}
-          data-shortcut="edit-task"
-          class="flex-1 text-left min-w-0"
+          href={@task.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onclick="event.stopPropagation()"
+          class="flex-1 min-w-0 hover:underline"
         >
           <span class={["text-sm block truncate", @task.status == "completed" && "line-through text-muted-foreground"]}>
             {@task.title}
@@ -53,16 +57,33 @@ defmodule KairosWeb.Components.TaskItem do
           <%= if @show_notes && @task.notes && @task.notes != "" do %>
             <span id={"task-desc-#{@task.id}"} class="text-xs text-muted-foreground block truncate">{@task.notes}</span>
           <% end %>
-        </button>
+        </a>
       <% else %>
-        <div id={"task-title-#{@task.id}"} class="flex-1 min-w-0">
-          <span class={["text-sm block truncate", @task.status == "completed" && "line-through text-muted-foreground"]}>
-            {@task.title}
-          </span>
-          <%= if @show_notes && @task.notes && @task.notes != "" do %>
-            <span id={"task-desc-#{@task.id}"} class="text-xs text-muted-foreground block truncate">{@task.notes}</span>
-          <% end %>
-        </div>
+        <%= if @selectable do %>
+          <button
+            id={"task-title-#{@task.id}"}
+            phx-click={@select_event}
+            phx-value-id={@task.id}
+            data-shortcut="edit-task"
+            class="flex-1 text-left min-w-0"
+          >
+            <span class={["text-sm block truncate", @task.status == "completed" && "line-through text-muted-foreground"]}>
+              {@task.title}
+            </span>
+            <%= if @show_notes && @task.notes && @task.notes != "" do %>
+              <span id={"task-desc-#{@task.id}"} class="text-xs text-muted-foreground block truncate">{@task.notes}</span>
+            <% end %>
+          </button>
+        <% else %>
+          <div id={"task-title-#{@task.id}"} class="flex-1 min-w-0">
+            <span class={["text-sm block truncate", @task.status == "completed" && "line-through text-muted-foreground"]}>
+              {@task.title}
+            </span>
+            <%= if @show_notes && @task.notes && @task.notes != "" do %>
+              <span id={"task-desc-#{@task.id}"} class="text-xs text-muted-foreground block truncate">{@task.notes}</span>
+            <% end %>
+          </div>
+        <% end %>
       <% end %>
 
       <%= if @show_subtasks && @task.subtasks != [] do %>

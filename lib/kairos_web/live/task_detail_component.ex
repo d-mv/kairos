@@ -182,9 +182,10 @@ defmodule KairosWeb.TaskDetailComponent do
 
     if attrs do
       case Tasks.update_task(task, attrs) do
-        {:ok, updated_task} ->
+        {:ok, _updated_task} ->
           Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
-          {:noreply, assign(socket, :task, updated_task)}
+          send(self(), {:close_task_detail})
+          {:noreply, socket}
 
         {:error, _} ->
           {:noreply, socket}
