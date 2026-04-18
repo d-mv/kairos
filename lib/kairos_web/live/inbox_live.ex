@@ -93,7 +93,9 @@ defmodule KairosWeb.InboxLive do
 
   @impl true
   def handle_info({:close_task_detail}, socket) do
-    {:noreply, assign(socket, :selected_task, nil)}
+    user_id = socket.assigns.current_scope.user.id
+    tasks = Tasks.list_inbox(user_id)
+    {:noreply, assign(socket, selected_task: nil, tasks: tasks)}
   end
 
   defp broadcast_tasks_changed(user_id) do
