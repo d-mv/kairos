@@ -65,25 +65,17 @@ defmodule Kairos.UrlParser do
   end
 
   defp fetch_title(url, :instagram) do
-    # Instagram doesn't have a simple oEmbed without a token anymore,
-    # but we can try to extract from OpenGraph tags in HTML
-    case Req.get(url, receive_timeout: 5_000) do
+    headers = [{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"}]
+
+    case Req.get(url, headers: headers, receive_timeout: 5_000, max_redirects: 5) do
       {:ok, %{status: 200, body: body}} when is_binary(body) ->
-        author = extract_og(body, "og:title")
-        description = extract_og(body, "og:description")
+        description = extract_meta_name(body, "description")
 
         title =
-          cond do
-            author && description ->
-              # Clean up author string "Author (@handle) on Instagram"
-              clean_author = author |> String.split("•") |> List.first() |> String.trim()
-              "#{clean_author}: #{description}"
-
-            author ->
-              author
-
-            true ->
-              extract_title_from_html(body)
+          if description do
+            description
+            |> decode_html_entities()
+            |> parse_instagram_description()
           end
 
         {:ok, title}
@@ -93,16 +85,43 @@ defmodule Kairos.UrlParser do
     end
   end
 
-  defp fetch_title(url, _service) do
-    fetch_title_from_html(url)
+  defp fetch_title(url, _), do: fetch_title_from_html(url)
+
+  defp parse_instagram_description(text) do
+    # Format: "15K likes, 142 comments - account on Date: "post text""
+    case Regex.run(~r/^.*? - (.+?) on .+?: "(.+)"$/s, text) do
+      [_, account, content] -> "#{account}: #{String.slice(content, 0, 200)}"
+      _ -> String.slice(text, 0, 200)
+    end
   end
 
-  defp extract_og(html, property) do
-    pattern = ~r/<meta[^>]+property=["']#{property}["'][^>]+content=["']([^"']+)["']/i
-    case Regex.run(pattern, html) do
-      [_, content] -> content
-      _ -> nil
-    end
+  defp extract_meta_name(html, name) do
+    patterns = [
+      ~r/<meta[^>]+name=["']#{name}["'][^>]+content=["']([^"']+)["']/i,
+      ~r/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']#{name}["']/i
+    ]
+
+    Enum.find_value(patterns, fn pattern ->
+      case Regex.run(pattern, html) do
+        [_, content] -> content
+        _ -> nil
+      end
+    end)
+  end
+
+  defp decode_html_entities(text) do
+    text
+    |> String.replace("&quot;", "\"")
+    |> String.replace("&amp;", "&")
+    |> String.replace("&lt;", "<")
+    |> String.replace("&gt;", ">")
+    |> String.replace("&apos;", "'")
+    |> String.replace(~r/&#x([0-9a-fA-F]+);/, fn _, hex ->
+      <<String.to_integer(hex, 16)::utf8>>
+    end)
+    |> String.replace(~r/&#([0-9]+);/, fn _, dec ->
+      <<String.to_integer(dec)::utf8>>
+    end)
   end
 
   defp fetch_title_from_html(url) do
