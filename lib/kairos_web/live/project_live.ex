@@ -1,7 +1,7 @@
 defmodule KairosWeb.ProjectLive do
   use KairosWeb, :live_view
 
-  alias Kairos.{Projects, Tasks}
+  alias Kairos.{Projects, Tasks, Links}
   import KairosWeb.Components.TaskItem
 
   @impl true
@@ -14,6 +14,8 @@ defmodule KairosWeb.ProjectLive do
 
     project = Projects.get_project!(id, user_id)
     tasks = Tasks.list_for_project(id, user_id, show_completed: project.show_completed)
+    today = Date.utc_today()
+    calendar_month = %Date{year: today.year, month: today.month, day: 1}
 
     {:ok,
      assign(socket,
@@ -27,8 +29,60 @@ defmodule KairosWeb.ProjectLive do
        confirm_delete: nil,
        confirm_demote: false,
        demote_error: nil,
-       active_tab: "browse"
+       active_tab: "browse",
+       view: "tasks",
+       calendar_month: calendar_month,
+       gantt_tasks: []
      )}
+  end
+
+  @impl true
+  def handle_event("switch_view", %{"view" => view}, socket) do
+    socket =
+      case view do
+        "gantt" -> assign_gantt_data(socket)
+        _ -> socket
+      end
+
+    {:noreply, assign(socket, view: view)}
+  end
+
+  @impl true
+  def handle_event("prev_month", _params, socket) do
+    m = socket.assigns.calendar_month
+    new_month = Date.add(m, -1) |> then(&%Date{year: &1.year, month: &1.month, day: 1})
+    {:noreply, assign(socket, calendar_month: new_month)}
+  end
+
+  @impl true
+  def handle_event("next_month", _params, socket) do
+    m = socket.assigns.calendar_month
+    new_month =
+      Date.add(m, Date.days_in_month(m)) |> then(&%Date{year: &1.year, month: &1.month, day: 1})
+
+    {:noreply, assign(socket, calendar_month: new_month)}
+  end
+
+  @impl true
+  def handle_event("task_date_changed", %{"id" => id, "end" => end_date}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+
+    case Tasks.get_task(id, user_id) do
+      nil ->
+        {:noreply, socket}
+
+      task ->
+        case Date.from_iso8601(end_date) do
+          {:ok, date} ->
+            {:ok, _} = Tasks.update_task(task, %{due_date: date})
+            Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+
+          _ ->
+            :ok
+        end
+
+        {:noreply, assign_gantt_data(socket)}
+    end
   end
 
   @impl true
@@ -38,7 +92,11 @@ defmodule KairosWeb.ProjectLive do
 
     case Tasks.create_task(%{title: String.trim(title), user_id: user_id, project_id: project_id}) do
       {:ok, _} ->
-        tasks = Tasks.list_for_project(project_id, user_id, show_completed: socket.assigns.project.show_completed)
+        tasks =
+          Tasks.list_for_project(project_id, user_id,
+            show_completed: socket.assigns.project.show_completed
+          )
+
         Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
         {:noreply, assign(socket, tasks: tasks, new_task_title: "")}
 
@@ -62,7 +120,12 @@ defmodule KairosWeb.ProjectLive do
     task = Tasks.get_task!(id, user_id)
     {:ok, _} = Tasks.delete_task(task)
     Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
-    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id, show_completed: socket.assigns.project.show_completed)
+
+    tasks =
+      Tasks.list_for_project(socket.assigns.project.id, user_id,
+        show_completed: socket.assigns.project.show_completed
+      )
+
     {:noreply, assign(socket, tasks: tasks)}
   end
 
@@ -72,9 +135,11 @@ defmodule KairosWeb.ProjectLive do
     task = Tasks.get_task!(id, user_id)
     {:ok, _} = Tasks.complete_task(task)
     Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+
     unless socket.assigns.project.show_completed do
       Process.send_after(self(), {:hide_completed_task, id}, 2000)
     end
+
     {:noreply, socket}
   end
 
@@ -83,7 +148,12 @@ defmodule KairosWeb.ProjectLive do
     task = Tasks.get_task!(id, user_id)
     {:ok, _} = Tasks.reopen_task(task)
     Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
-    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id, show_completed: socket.assigns.project.show_completed)
+
+    tasks =
+      Tasks.list_for_project(socket.assigns.project.id, user_id,
+        show_completed: socket.assigns.project.show_completed
+      )
+
     {:noreply, assign(socket, tasks: tasks)}
   end
 
@@ -96,7 +166,13 @@ defmodule KairosWeb.ProjectLive do
 
   @impl true
   def handle_event("toggle_header_menu", _params, socket) do
-    {:noreply, assign(socket, header_menu_open: !socket.assigns.header_menu_open, confirm_delete: nil, confirm_demote: false, demote_error: nil)}
+    {:noreply,
+     assign(socket,
+       header_menu_open: !socket.assigns.header_menu_open,
+       confirm_delete: nil,
+       confirm_demote: false,
+       demote_error: nil
+     )}
   end
 
   def handle_event("close_header_menu", _params, socket) do
@@ -112,7 +188,8 @@ defmodule KairosWeb.ProjectLive do
 
     case Projects.update_project(project, %{name: String.trim(name)}) do
       {:ok, updated_project} ->
-        {:noreply, assign(socket, project: updated_project, renaming: false, page_title: updated_project.name)}
+        {:noreply,
+         assign(socket, project: updated_project, renaming: false, page_title: updated_project.name)}
 
       {:error, _} ->
         {:noreply, socket}
@@ -154,7 +231,8 @@ defmodule KairosWeb.ProjectLive do
         {:noreply,
          assign(socket,
            confirm_demote: false,
-           demote_error: "Cannot demote: some tasks in this project have subtasks. Remove subtasks first."
+           demote_error:
+             "Cannot demote: some tasks in this project have subtasks. Remove subtasks first."
          )}
     end
   end
@@ -166,7 +244,11 @@ defmodule KairosWeb.ProjectLive do
   @impl true
   def handle_info({:tasks_changed, _}, socket) do
     user_id = socket.assigns.current_scope.user.id
-    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id, show_completed: socket.assigns.project.show_completed)
+
+    tasks =
+      Tasks.list_for_project(socket.assigns.project.id, user_id,
+        show_completed: socket.assigns.project.show_completed
+      )
 
     selected_task =
       case socket.assigns.selected_task do
@@ -174,13 +256,23 @@ defmodule KairosWeb.ProjectLive do
         task -> Enum.find(tasks, &(&1.id == task.id))
       end
 
-    {:noreply, assign(socket, tasks: tasks, selected_task: selected_task)}
+    socket = assign(socket, tasks: tasks, selected_task: selected_task)
+
+    socket =
+      if socket.assigns.view == "gantt", do: assign_gantt_data(socket), else: socket
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_info({:close_task_detail}, socket) do
     user_id = socket.assigns.current_scope.user.id
-    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id, show_completed: socket.assigns.project.show_completed)
+
+    tasks =
+      Tasks.list_for_project(socket.assigns.project.id, user_id,
+        show_completed: socket.assigns.project.show_completed
+      )
+
     {:noreply, assign(socket, selected_task: nil, tasks: tasks)}
   end
 
@@ -190,13 +282,69 @@ defmodule KairosWeb.ProjectLive do
     {:noreply, assign(socket, tasks: tasks)}
   end
 
+  defp assign_gantt_data(socket) do
+    user_id = socket.assigns.current_scope.user.id
+    tasks = socket.assigns.tasks
+    task_ids = MapSet.new(tasks, & &1.id)
+
+    links =
+      Links.list_blocking_links_for_user(user_id)
+      |> Enum.filter(
+        &(MapSet.member?(task_ids, &1.from_id) && MapSet.member?(task_ids, &1.to_id))
+      )
+
+    gantt_tasks =
+      Enum.map(tasks, fn task ->
+        start_date = task.due_date || Date.utc_today()
+        end_date = Date.add(start_date, 1)
+
+        deps =
+          links
+          |> Enum.filter(&(&1.to_id == task.id))
+          |> Enum.map(& &1.from_id)
+          |> Enum.join(", ")
+
+        %{
+          id: task.id,
+          name: task.title,
+          start: Date.to_iso8601(start_date),
+          end: Date.to_iso8601(end_date),
+          progress: if(task.status == "completed", do: 100, else: 0),
+          dependencies: deps
+        }
+      end)
+
+    assign(socket, gantt_tasks: gantt_tasks)
+  end
+
+  defp calendar_weeks(month, tasks) do
+    last_day = Date.days_in_month(month)
+    last = %Date{year: month.year, month: month.month, day: last_day}
+    start_dow = Date.day_of_week(month)
+    end_dow = Date.day_of_week(last)
+    grid_start = Date.add(month, -(start_dow - 1))
+    grid_end = Date.add(last, 7 - end_dow)
+    total_days = Date.diff(grid_end, grid_start) + 1
+
+    tasks_by_date = Enum.group_by(tasks, & &1.due_date)
+
+    0..(total_days - 1)
+    |> Enum.map(&Date.add(grid_start, &1))
+    |> Enum.chunk_every(7)
+    |> Enum.map(fn week ->
+      Enum.map(week, fn date ->
+        {date, Map.get(tasks_by_date, date, [])}
+      end)
+    end)
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} nav_areas={assigns[:nav_areas] || []} nav_projects={assigns[:nav_projects] || []}>
       <div id="project-container" class="w-full py-8 px-4">
         <!-- Header -->
-        <div id="project-header" class="flex items-center gap-2 mb-6">
+        <div id="project-header" class="flex items-center gap-2 mb-4">
           <%= if @renaming do %>
             <form id="project-rename-form" phx-submit="save_rename" class="flex items-center gap-2 flex-1">
               <input
@@ -261,6 +409,34 @@ defmodule KairosWeb.ProjectLive do
           <% end %>
         </div>
 
+        <!-- View tabs -->
+        <div id="project-view-tabs" class="flex gap-1 mb-6 border-b border-border">
+          <button
+            id="project-tab-tasks"
+            phx-click="switch_view"
+            phx-value-view="tasks"
+            class={"px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors " <> if @view == "tasks", do: "border-primary text-primary", else: "border-transparent text-muted-foreground hover:text-foreground"}
+          >
+            Tasks
+          </button>
+          <button
+            id="project-tab-calendar"
+            phx-click="switch_view"
+            phx-value-view="calendar"
+            class={"px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors " <> if @view == "calendar", do: "border-primary text-primary", else: "border-transparent text-muted-foreground hover:text-foreground"}
+          >
+            Calendar
+          </button>
+          <button
+            id="project-tab-gantt"
+            phx-click="switch_view"
+            phx-value-view="gantt"
+            class={"px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors " <> if @view == "gantt", do: "border-primary text-primary", else: "border-transparent text-muted-foreground hover:text-foreground"}
+          >
+            Gantt
+          </button>
+        </div>
+
         <!-- Delete confirmation -->
         <%= if @confirm_delete do %>
           <div id="project-confirm-delete" class="mb-6 p-3 rounded border border-destructive/30 bg-destructive/5 text-sm">
@@ -297,36 +473,126 @@ defmodule KairosWeb.ProjectLive do
           </div>
         <% end %>
 
-        <form id="project-add-form" phx-submit="create_task" class="flex gap-2 mb-6">
-          <input
-            id="new-task-input"
-            type="text"
-            name="title"
-            value={@new_task_title}
-            placeholder="Add a task…"
-            class="flex-1 border rounded px-3 py-2 text-sm"
-            autocomplete="off"
-          />
-          <button id="add-task-btn" type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">Add</button>
-        </form>
-
-        <ul id="project-task-list" class="space-y-1">
-          <%= for task <- @tasks do %>
-            <.task_item
-              task={task}
-              selected={@selected_task != nil && @selected_task.id == task.id}
-              show_subtasks={true}
-              show_notes={true}
-              show_priority={true}
-              show_due_date={true}
-              show_delete={true}
-              selectable={true}
+        <!-- Tasks view -->
+        <%= if @view == "tasks" do %>
+          <form id="project-add-form" phx-submit="create_task" class="flex gap-2 mb-6">
+            <input
+              id="new-task-input"
+              type="text"
+              name="title"
+              value={@new_task_title}
+              placeholder="Add a task…"
+              class="flex-1 border rounded px-3 py-2 text-sm"
+              autocomplete="off"
             />
-          <% end %>
-        </ul>
+            <button id="add-task-btn" type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">Add</button>
+          </form>
 
-        <%= if Enum.empty?(@tasks) do %>
-          <p id="project-empty" class="text-muted-foreground text-sm text-center py-12">No tasks yet</p>
+          <ul id="project-task-list" class="space-y-1">
+            <%= for task <- @tasks do %>
+              <.task_item
+                task={task}
+                selected={@selected_task != nil && @selected_task.id == task.id}
+                show_subtasks={true}
+                show_notes={true}
+                show_priority={true}
+                show_due_date={true}
+                show_delete={true}
+                selectable={true}
+              />
+            <% end %>
+          </ul>
+
+          <%= if Enum.empty?(@tasks) do %>
+            <p id="project-empty" class="text-muted-foreground text-sm text-center py-12">No tasks yet</p>
+          <% end %>
+        <% end %>
+
+        <!-- Calendar view -->
+        <%= if @view == "calendar" do %>
+          <%
+            weeks = calendar_weeks(@calendar_month, @tasks)
+            month_label = Calendar.strftime(@calendar_month, "%B %Y")
+            today = Date.utc_today()
+          %>
+          <div id="project-calendar" class="select-none">
+            <!-- Month navigation -->
+            <div id="calendar-nav" class="flex items-center justify-between mb-4">
+              <button id="calendar-prev" phx-click="prev_month" class="p-1 rounded hover:bg-muted text-muted-foreground">
+                <.icon name="hero-chevron-left" class="w-5 h-5" />
+              </button>
+              <span id="calendar-month-label" class="font-medium text-sm"><%= month_label %></span>
+              <button id="calendar-next" phx-click="next_month" class="p-1 rounded hover:bg-muted text-muted-foreground">
+                <.icon name="hero-chevron-right" class="w-5 h-5" />
+              </button>
+            </div>
+
+            <!-- Day headers -->
+            <div class="grid grid-cols-7 mb-1">
+              <%= for day <- ~w(Mon Tue Wed Thu Fri Sat Sun) do %>
+                <div class="text-center text-xs text-muted-foreground py-1 font-medium"><%= day %></div>
+              <% end %>
+            </div>
+
+            <!-- Weeks -->
+            <div id="calendar-grid" class="grid grid-cols-7 border-l border-t border-border">
+              <%= for week <- weeks do %>
+                <%= for {date, day_tasks} <- week do %>
+                  <%
+                    in_month = date.month == @calendar_month.month
+                    is_today = date == today
+                  %>
+                  <div
+                    id={"calendar-day-#{date}"}
+                    class={"border-r border-b border-border min-h-20 p-1 " <> if(in_month, do: "bg-background", else: "bg-muted/20")}
+                  >
+                    <div class={"text-xs mb-1 w-6 h-6 flex items-center justify-center rounded-full " <>
+                      cond do
+                        is_today -> "bg-primary text-primary-foreground font-semibold"
+                        in_month -> "text-foreground"
+                        true -> "text-muted-foreground"
+                      end}>
+                      <%= date.day %>
+                    </div>
+                    <div class="space-y-0.5">
+                      <%= for task <- Enum.take(day_tasks, 3) do %>
+                        <button
+                          phx-click="select_task"
+                          phx-value-id={task.id}
+                          class={"w-full text-left text-xs px-1 py-0.5 rounded truncate " <>
+                            if task.status == "completed",
+                              do: "line-through text-muted-foreground",
+                              else: "hover:bg-muted text-foreground"}
+                        >
+                          <%= task.title %>
+                        </button>
+                      <% end %>
+                      <%= if length(day_tasks) > 3 do %>
+                        <div class="text-xs text-muted-foreground px-1">+<%= length(day_tasks) - 3 %> more</div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Gantt view -->
+        <%= if @view == "gantt" do %>
+          <div id="project-gantt" class="flex flex-col gap-3">
+            <div class="flex gap-2 justify-end">
+              <button phx-click={JS.dispatch("gantt:view-mode", detail: %{mode: "Day"})} class="px-3 py-1 text-xs border rounded hover:bg-muted">Day</button>
+              <button phx-click={JS.dispatch("gantt:view-mode", detail: %{mode: "Week"})} class="px-3 py-1 text-xs border rounded hover:bg-muted">Week</button>
+              <button phx-click={JS.dispatch("gantt:view-mode", detail: %{mode: "Month"})} class="px-3 py-1 text-xs border rounded hover:bg-muted">Month</button>
+            </div>
+            <div id="project-gantt-canvas-wrapper" class="overflow-auto" phx-update="ignore">
+              <div id="project-gantt-chart" phx-hook="GanttChart" data-tasks={Jason.encode!(@gantt_tasks)}></div>
+            </div>
+            <%= if Enum.empty?(@gantt_tasks) do %>
+              <p class="text-muted-foreground text-sm text-center py-12">No tasks to display in Gantt</p>
+            <% end %>
+          </div>
         <% end %>
       </div>
 

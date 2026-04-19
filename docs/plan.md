@@ -14,13 +14,13 @@ Reference implementation: `_old/` (Node.js/React app)
 - [x] Confirm Heroicons available via `<.icon name="hero-*" />` (built into Phoenix 1.8)
 - [x] Add `hermes_mcp` to `mix.exs`
 - [x] Fly.io — `fly.toml` written for `kairos-app` (fra, 512mb)
-- [ ] Set prod secrets: `DATABASE_URL` (Supabase), `SECRET_KEY_BASE`, `PHX_HOST`
+- [x] Set prod secrets: `DATABASE_URL` (Supabase), `SECRET_KEY_BASE`, `PHX_HOST`
 
 ## Phase 1 — Auth
 
 - [x] `mix phx.gen.auth Accounts User users`
 - [x] Run migrations
-- [ ] Verify login / register / logout flow in browser
+- [x] Verify login / register / logout flow in browser
 - [x] Lock all LiveView routes behind auth
 
 ## Phase 2 — Database Schema
@@ -64,7 +64,7 @@ Reference implementation: `_old/` (Node.js/React app)
 - [x] Keyboard shortcuts: `n` new task, `/` search (JS-based, data-shortcut attrs)
 - [x] Mobile responsive layout (sidebar hidden on small screens, mobile header)
 - [x] Dark mode via DaisyUI themes + theme_toggle component
-- [ ] Salad UI components wired: Button, Input, Modal, Dropdown, Badge (using core_components instead)
+- [x] Salad UI components wired: Button, Input, Modal, Dropdown, Badge (using core_components instead)
 - [x] Task item reusable component
 - [x] Keyboard shortcut `e` to edit selected task
 
@@ -102,11 +102,14 @@ Reference implementation: `_old/` (Node.js/React app)
 
 ---
 
-## Phase 8 — Gantt (Phase 2)
+## Phase 8 — Gantt + Calendar (Phase 2)
 
 - [x] Add frappe-gantt to `assets/package.json`
 - [x] `GanttHook` in `assets/js/hooks/gantt_hook.js`
-- [x] `GanttLive` — assigns tasks + links as JSON
+- [x] `GanttLive` — assigns tasks + links as JSON (global, all tasks)
 - [x] Hook mounts frappe-gantt on `mounted()`, updates on `updated()`
 - [x] Drag interaction pushes `date_update` events to LiveView
 - [x] LiveView handles events, updates DB, broadcasts
+- [x] ProjectLive: 3-tab view switcher (Tasks / Calendar / Gantt)
+- [x] Calendar tab: monthly grid, prev/next month, tasks by due date
+- [x] Gantt tab: frappe-gantt scoped to project tasks + dependency links
