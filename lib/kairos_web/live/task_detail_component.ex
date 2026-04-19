@@ -260,7 +260,9 @@ defmodule KairosWeb.TaskDetailComponent do
               class="shrink-0 rounded-full hover:bg-muted text-foreground/40 hover:text-foreground/70"
               title="Mark complete"
             >
-              <.icon name="hero-check-circle" class="w-6 h-6" />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <circle cx="12" cy="12" r="9" />
+              </svg>
             </button>
           <% end %>
 
