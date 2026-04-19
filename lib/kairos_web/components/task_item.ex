@@ -106,7 +106,7 @@ defmodule KairosWeb.Components.TaskItem do
 
       <%= if @show_due_date && @task.due_date do %>
         <span id={"task-due-#{@task.id}"} class="text-xs text-muted-foreground shrink-0">
-          {@task.due_date}<%= if @show_due_time && @task.due_time do %> @ {@task.due_time}<% end %>
+          {@task.due_date}<%= if @task.due_time do %> @ {@task.due_time}<% end %>
         </span>
       <% end %>
 
