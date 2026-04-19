@@ -132,6 +132,10 @@ defmodule KairosWeb.TaskDetailComponent do
     {:noreply, assign(socket, :editing_title, true)}
   end
 
+  def handle_event("cancel_title_edit", _params, socket) do
+    {:noreply, assign(socket, :editing_title, false)}
+  end
+
   def handle_event("save_title", %{"title" => title}, socket) do
     task = socket.assigns.task
     user_id = socket.assigns.current_scope.user.id
@@ -269,7 +273,9 @@ defmodule KairosWeb.TaskDetailComponent do
                 value={@task.title}
                 class="w-full text-lg font-medium border rounded px-2 py-1 focus:outline-none"
                 phx-mounted={JS.focus()}
-                phx-blur="save_title"
+                phx-blur="cancel_title_edit"
+                phx-keydown="cancel_title_edit"
+                phx-key="Escape"
                 phx-target={@myself}
                 autocomplete="off"
               />
