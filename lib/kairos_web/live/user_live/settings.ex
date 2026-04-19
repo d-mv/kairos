@@ -147,7 +147,7 @@ defmodule KairosWeb.UserLive.Settings do
       <%!-- Raw Token Modal --%>
       <%= if @new_raw_token do %>
         <div id="token-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div class="bg-card w-full max-w-md p-6 border border-border rounded-lg shadow-lg">
+          <div class="bg-card w-full max-w-screen-lg p-6 border border-border rounded-lg shadow-lg">
             <h3 class="text-lg font-semibold mb-2">Token Created Successfully</h3>
             <p class="text-sm text-muted-foreground mb-4">
               Copy this token now. For security, it will <strong>never be shown again</strong>.

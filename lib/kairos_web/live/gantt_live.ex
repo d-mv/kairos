@@ -11,10 +11,16 @@ defmodule KairosWeb.GanttLive do
       Phoenix.PubSub.subscribe(Kairos.PubSub, "user:#{user_id}")
     end
 
-    {:ok, 
-     socket 
+    {:ok,
+     socket
      |> assign_data()
      |> assign(page_title: "Gantt Chart", active_tab: "gantt")}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    view_mode = Map.get(params, "view", "Week")
+    {:noreply, assign(socket, view_mode: view_mode)}
   end
 
   @impl true
@@ -27,14 +33,19 @@ defmodule KairosWeb.GanttLive do
     user_id = socket.assigns.current_scope.user.id
 
     case Tasks.get_task(id, user_id) do
-      nil -> {:noreply, socket}
+      nil ->
+        {:noreply, socket}
+
       task ->
         case Date.from_iso8601(end_date) do
           {:ok, date} ->
             {:ok, _} = Tasks.update_task(task, %{due_date: date})
             Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
-          _ -> :ok
+
+          _ ->
+            :ok
         end
+
         {:noreply, assign_data(socket)}
     end
   end
@@ -42,31 +53,29 @@ defmodule KairosWeb.GanttLive do
   defp assign_data(socket) do
     user_id = socket.assigns.current_scope.user.id
     tasks = Tasks.list_tasks(user_id)
-    
-    # We need to format tasks for frappe-gantt
-    # [{id: '1', name: 'Task 1', start: '2026-04-18', end: '2026-04-19', progress: 0, dependencies: '2, 3'}]
-    
     links = Links.list_blocking_links_for_user(user_id)
 
-    gantt_tasks = Enum.map(tasks, fn task ->
-      start_date = task.due_date || Date.utc_today()
-      end_date = Date.add(start_date, 1)
-      
-      deps = 
-        links
-        |> Enum.filter(&(&1.to_id == task.id))
-        |> Enum.map(& &1.from_id)
-        |> Enum.join(", ")
+    gantt_tasks =
+      tasks
+      |> Enum.map(fn task ->
+        start_date = task.due_date || Date.utc_today()
+        end_date = Date.add(start_date, 1)
 
-      %{
-        id: task.id,
-        name: task.title,
-        start: Date.to_iso8601(start_date),
-        end: Date.to_iso8601(end_date),
-        progress: if(task.status == "completed", do: 100, else: 0),
-        dependencies: deps
-      }
-    end)
+        deps =
+          links
+          |> Enum.filter(&(&1.to_id == task.id))
+          |> Enum.map(& &1.from_id)
+          |> Enum.join(", ")
+
+        %{
+          id: task.id,
+          name: task.title,
+          start: Date.to_iso8601(start_date),
+          end: Date.to_iso8601(end_date),
+          progress: if(task.status == "completed", do: 100, else: 0),
+          dependencies: deps
+        }
+      end)
 
     assign(socket, gantt_tasks: gantt_tasks)
   end
@@ -90,17 +99,6 @@ defmodule KairosWeb.GanttLive do
         </div>
       </div>
     </Layouts.app>
-    
-    <style>
-      /* Basic Frappe Gantt styles if not imported */
-      .gantt .grid-header { fill: hsl(var(--muted-foreground) / 0.05); stroke: hsl(var(--border)); }
-      .gantt .grid-row { fill: transparent; }
-      .gantt .grid-row:nth-child(even) { fill: hsl(var(--muted) / 0.3); }
-      .gantt .bar { fill: hsl(var(--primary)); }
-      .gantt .bar-progress { fill: hsl(var(--primary) / 0.7); }
-      .gantt .bar-label { fill: hsl(var(--foreground)); font-size: 12px; }
-      .gantt .handle { fill: hsl(var(--primary-foreground)); }
-    </style>
     """
   end
 end
