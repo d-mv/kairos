@@ -118,14 +118,16 @@ defmodule Kairos.Tasks do
       if is_binary(title) do
         case URI.parse(title) do
           %URI{scheme: s, host: h} when s in ["http", "https"] and is_binary(h) ->
-            case UrlParser.fetch_metadata(title) do
-              {:ok, %{title: fetched_title}} when is_binary(fetched_title) ->
+            task = Elixir.Task.async(fn -> UrlParser.fetch_metadata(title) end)
+
+            case Elixir.Task.yield(task, 6_000) || Elixir.Task.shutdown(task, :brutal_kill) do
+              {:ok, {:ok, %{title: fetched_title}}} when is_binary(fetched_title) ->
                 attrs
                 |> Map.put(:title, fetched_title)
                 |> Map.put(:url, title)
 
               _ ->
-                attrs
+                Map.put(attrs, :url, title)
             end
 
           _ ->

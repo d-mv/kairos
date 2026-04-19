@@ -68,8 +68,8 @@ defmodule Kairos.UrlParser do
     # Instagram doesn't have a simple oEmbed without a token anymore,
     # but we can try to extract from OpenGraph tags in HTML
     case Req.get(url, receive_timeout: 5_000) do
-      {:ok, %{status: 200, body: body}} ->
-        author = extract_og(body, "og:title") # Often "Author (@handle) • Instagram..."
+      {:ok, %{status: 200, body: body}} when is_binary(body) ->
+        author = extract_og(body, "og:title")
         description = extract_og(body, "og:description")
 
         title =
