@@ -37,14 +37,21 @@ defmodule KairosWeb.ProjectLive do
   end
 
   @impl true
-  def handle_event("switch_view", %{"view" => view}, socket) do
+  def handle_params(params, _uri, socket) do
+    view = params["view"] || "tasks"
+
     socket =
       case view do
-        "gantt" -> assign_gantt_data(socket)
-        _ -> socket
+        "gantt" -> assign_gantt_data(assign(socket, view: view))
+        _ -> assign(socket, view: view)
       end
 
-    {:noreply, assign(socket, view: view)}
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("switch_view", %{"view" => view}, socket) do
+    {:noreply, push_patch(socket, to: ~p"/projects/#{socket.assigns.project.id}?view=#{view}")}
   end
 
   @impl true
@@ -605,6 +612,18 @@ defmodule KairosWeb.ProjectLive do
         />
       <% end %>
     </Layouts.app>
+
+    <style>
+      .gantt .grid-header { fill: hsl(var(--muted-foreground) / 0.05); stroke: hsl(var(--border)); }
+      .gantt .grid-row { fill: transparent; }
+      .gantt .grid-row:nth-child(even) { fill: hsl(var(--muted) / 0.3); }
+      .gantt .bar { fill: hsl(var(--primary)); }
+      .gantt .bar-progress { fill: hsl(var(--primary) / 0.7); }
+      .gantt .bar-label { fill: hsl(var(--foreground)); font-size: 12px; }
+      .gantt .handle { fill: hsl(var(--primary-foreground)); }
+      .gantt-container { background: transparent; }
+      svg.gantt { background: transparent; }
+    </style>
     """
   end
 end
