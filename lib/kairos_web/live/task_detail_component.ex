@@ -257,10 +257,10 @@ defmodule KairosWeb.TaskDetailComponent do
               id="task-detail-complete"
               phx-click="complete"
               phx-target={@myself}
-              class="shrink-0 rounded-full hover:bg-muted text-muted-foreground"
+              class="shrink-0 rounded-full hover:bg-muted text-foreground/40 hover:text-foreground/70"
               title="Mark complete"
             >
-              <.icon name="hero-circle" class="w-6 h-6" />
+              <.icon name="hero-check-circle" class="w-6 h-6" />
             </button>
           <% end %>
 
