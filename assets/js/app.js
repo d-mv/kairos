@@ -118,3 +118,7 @@ window.addEventListener("phx:js-exec", ({detail}) => {
     liveSocket.execJS(el, el.getAttribute(detail.attr))
   })
 })
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js")
+}

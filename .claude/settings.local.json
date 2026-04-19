@@ -66,7 +66,9 @@
       "Bash(echo \"exit:$?\")",
       "Bash(xargs ls *)",
       "Bash(sed -n '27,65p' /Users/dmelnikov/code/kairos/lib/kairos_web/live/upcoming_live.ex)",
-      "Bash(sed -n '27,65p' /Users/dmelnikov/code/kairos/lib/kairos_web/live/completed_live.ex)"
+      "Bash(sed -n '27,65p' /Users/dmelnikov/code/kairos/lib/kairos_web/live/completed_live.ex)",
+      "Bash(rsvg-convert -w 192 -h 192 /Users/dmelnikov/code/kairos/priv/static/images/icon.svg -o /Users/dmelnikov/code/kairos/priv/static/images/icon-192.png)",
+      "Bash(rsvg-convert -w 512 -h 512 /Users/dmelnikov/code/kairos/priv/static/images/icon.svg -o /Users/dmelnikov/code/kairos/priv/static/images/icon-512.png)"
     ]
   }
 }
