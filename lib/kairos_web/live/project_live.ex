@@ -3,7 +3,6 @@ defmodule KairosWeb.ProjectLive do
 
   alias Kairos.{Projects, Tasks}
   import KairosWeb.Components.TaskItem
-  alias KairosWeb.TaskDetailComponent
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do

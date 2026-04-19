@@ -292,7 +292,7 @@ defmodule KairosWeb.SidebarComponent do
             class="p-0.5 rounded hover:bg-muted text-muted-foreground"
             title="New project in area"
           >
-            <.icon name="hero-plus" class="w-3 h-3" />
+            <.icon name="hero-plus" class="w-6 h-6" />
           </button>
           <div class="relative">
             <button
@@ -303,7 +303,7 @@ defmodule KairosWeb.SidebarComponent do
               class="p-0.5 rounded hover:bg-muted text-muted-foreground"
               title="Area options"
             >
-              <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
+              <.icon name="hero-ellipsis-horizontal" class="w-6 h-6" />
             </button>
             <%= if @menu_open do %>
               <div
@@ -382,10 +382,10 @@ defmodule KairosWeb.SidebarComponent do
               phx-click="toggle_project_menu"
               phx-value-id={@project.id}
               phx-target={@target}
-              class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground mr-1 shrink-0"
+              class="opacity-0 group-hover/proj:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground mr-2 shrink-0"
               title="Project options"
             >
-              <.icon name="hero-ellipsis-horizontal" class="w-3 h-3" />
+              <.icon name="hero-ellipsis-horizontal" class="w-6 h-6" />
             </button>
             <%= if @menu_open do %>
               <div
@@ -465,7 +465,7 @@ defmodule KairosWeb.SidebarComponent do
               class="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
               title="New area"
             >
-              <.icon name="hero-plus" class="w-3.5 h-3.5" />
+              <.icon name="hero-plus" class="w-6 h-6" />
             </button>
           </div>
 
@@ -542,7 +542,7 @@ defmodule KairosWeb.SidebarComponent do
               class="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
               title="New project"
             >
-              <.icon name="hero-plus" class="w-3.5 h-3.5" />
+              <.icon name="hero-plus" class="w-6 h-6" />
             </button>
           </div>
 
