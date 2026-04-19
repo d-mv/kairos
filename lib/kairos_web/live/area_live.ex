@@ -73,8 +73,8 @@ defmodule KairosWeb.AreaLive do
     task = Tasks.get_task!(id, user_id)
     {:ok, _} = Tasks.complete_task(task)
     Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
-    tasks = Tasks.list_for_area(socket.assigns.area.id, user_id)
-    {:noreply, assign(socket, tasks: tasks)}
+    Process.send_after(self(), {:hide_completed_task, id}, 2000)
+    {:noreply, socket}
   end
 
   def handle_event("reopen_task", %{"id" => id}, socket) do
@@ -133,6 +133,12 @@ defmodule KairosWeb.AreaLive do
 
   def handle_event("cancel_delete", _params, socket) do
     {:noreply, assign(socket, confirm_delete: nil)}
+  end
+
+  @impl true
+  def handle_info({:hide_completed_task, id}, socket) do
+    tasks = Enum.reject(socket.assigns.tasks, &(&1.id == id))
+    {:noreply, assign(socket, tasks: tasks)}
   end
 
   @impl true

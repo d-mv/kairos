@@ -69,6 +69,10 @@ defmodule Kairos.Projects do
     Repo.delete(project)
   end
 
+  def toggle_show_completed(%Project{} = project) do
+    update_project(project, %{show_completed: !project.show_completed})
+  end
+
   def count_tasks(project_id) do
     Task |> where([t], t.project_id == ^project_id) |> Repo.aggregate(:count)
   end

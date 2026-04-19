@@ -63,7 +63,10 @@
       "Bash(fly ssh *)",
       "Bash(echo \"exit: $?\")",
       "Bash(MIX_ENV=dev mix phx.server)",
-      "Bash(echo \"exit:$?\")"
+      "Bash(echo \"exit:$?\")",
+      "Bash(xargs ls *)",
+      "Bash(sed -n '27,65p' /Users/dmelnikov/code/kairos/lib/kairos_web/live/upcoming_live.ex)",
+      "Bash(sed -n '27,65p' /Users/dmelnikov/code/kairos/lib/kairos_web/live/completed_live.ex)"
     ]
   }
 }

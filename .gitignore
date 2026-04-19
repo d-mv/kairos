@@ -42,3 +42,4 @@ _temp/
 _old/**/dist/
 _old/**/node_modules/
 .claude/worktrees/
+.claude/settings.local.json

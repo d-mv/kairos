@@ -106,7 +106,7 @@ defmodule KairosWeb.Components.TaskItem do
 
       <%= if @show_due_date && @task.due_date do %>
         <span id={"task-due-#{@task.id}"} class="text-xs text-muted-foreground shrink-0">
-          {@task.due_date}<%= if @task.due_time do %> @ {@task.due_time}<% end %>
+          {format_due_date(@task.due_date)}<%= if @task.due_time do %> @ {format_due_time(@task.due_time)}<% end %>
         </span>
       <% end %>
 
@@ -123,4 +123,33 @@ defmodule KairosWeb.Components.TaskItem do
     </li>
     """
   end
+
+  @months ~w(January February March April May June July August September October November December)
+
+  defp format_due_date(%Date{} = date) do
+    month = Enum.at(@months, date.month - 1)
+    current_year = Date.utc_today().year
+
+    if date.year == current_year do
+      "#{month} #{date.day}"
+    else
+      "#{month} #{date.day}, #{date.year}"
+    end
+  end
+
+  defp format_due_date(date) when is_binary(date) do
+    case Date.from_iso8601(date) do
+      {:ok, d} -> format_due_date(d)
+      _ -> date
+    end
+  end
+
+  defp format_due_time(time) when is_binary(time) do
+    case String.split(time, ":") do
+      [h, m | _] -> "#{h}:#{m}"
+      _ -> time
+    end
+  end
+
+  defp format_due_time(%Time{} = t), do: format_due_time(Time.to_string(t))
 end

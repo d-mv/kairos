@@ -14,7 +14,7 @@ defmodule KairosWeb.ProjectLive do
     end
 
     project = Projects.get_project!(id, user_id)
-    tasks = Tasks.list_for_project(id, user_id)
+    tasks = Tasks.list_for_project(id, user_id, show_completed: project.show_completed)
 
     {:ok,
      assign(socket,
@@ -39,7 +39,7 @@ defmodule KairosWeb.ProjectLive do
 
     case Tasks.create_task(%{title: String.trim(title), user_id: user_id, project_id: project_id}) do
       {:ok, _} ->
-        tasks = Tasks.list_for_project(project_id, user_id)
+        tasks = Tasks.list_for_project(project_id, user_id, show_completed: socket.assigns.project.show_completed)
         Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
         {:noreply, assign(socket, tasks: tasks, new_task_title: "")}
 
@@ -63,7 +63,7 @@ defmodule KairosWeb.ProjectLive do
     task = Tasks.get_task!(id, user_id)
     {:ok, _} = Tasks.delete_task(task)
     Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
-    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id)
+    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id, show_completed: socket.assigns.project.show_completed)
     {:noreply, assign(socket, tasks: tasks)}
   end
 
@@ -73,8 +73,10 @@ defmodule KairosWeb.ProjectLive do
     task = Tasks.get_task!(id, user_id)
     {:ok, _} = Tasks.complete_task(task)
     Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
-    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id)
-    {:noreply, assign(socket, tasks: tasks)}
+    unless socket.assigns.project.show_completed do
+      Process.send_after(self(), {:hide_completed_task, id}, 2000)
+    end
+    {:noreply, socket}
   end
 
   def handle_event("reopen_task", %{"id" => id}, socket) do
@@ -82,8 +84,15 @@ defmodule KairosWeb.ProjectLive do
     task = Tasks.get_task!(id, user_id)
     {:ok, _} = Tasks.reopen_task(task)
     Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
-    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id)
+    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id, show_completed: socket.assigns.project.show_completed)
     {:noreply, assign(socket, tasks: tasks)}
+  end
+
+  def handle_event("toggle_show_completed", _params, socket) do
+    {:ok, project} = Projects.toggle_show_completed(socket.assigns.project)
+    user_id = socket.assigns.current_scope.user.id
+    tasks = Tasks.list_for_project(project.id, user_id, show_completed: project.show_completed)
+    {:noreply, assign(socket, project: project, tasks: tasks, header_menu_open: false)}
   end
 
   @impl true
@@ -158,7 +167,7 @@ defmodule KairosWeb.ProjectLive do
   @impl true
   def handle_info({:tasks_changed, _}, socket) do
     user_id = socket.assigns.current_scope.user.id
-    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id)
+    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id, show_completed: socket.assigns.project.show_completed)
 
     selected_task =
       case socket.assigns.selected_task do
@@ -172,8 +181,14 @@ defmodule KairosWeb.ProjectLive do
   @impl true
   def handle_info({:close_task_detail}, socket) do
     user_id = socket.assigns.current_scope.user.id
-    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id)
+    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id, show_completed: socket.assigns.project.show_completed)
     {:noreply, assign(socket, selected_task: nil, tasks: tasks)}
+  end
+
+  @impl true
+  def handle_info({:hide_completed_task, id}, socket) do
+    tasks = Enum.reject(socket.assigns.tasks, &(&1.id == id))
+    {:noreply, assign(socket, tasks: tasks)}
   end
 
   @impl true
@@ -215,6 +230,14 @@ defmodule KairosWeb.ProjectLive do
                   class="absolute right-0 top-8 z-50 w-44 bg-background border border-border rounded-md shadow-md py-1"
                   phx-click-away="close_header_menu"
                 >
+                  <button
+                    id="project-menu-show-completed"
+                    phx-click="toggle_show_completed"
+                    class="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"
+                  >
+                    <.icon name={if @project.show_completed, do: "hero-eye-slash", else: "hero-eye"} class="w-4 h-4" />
+                    <%= if @project.show_completed, do: "Hide completed", else: "Show completed" %>
+                  </button>
                   <button
                     phx-click="start_rename"
                     class="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"

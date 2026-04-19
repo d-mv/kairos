@@ -38,6 +38,7 @@ defmodule KairosWeb.ProjectLiveTest do
   end
 
   test "reopens a completed task", %{conn: conn, user: user, project: project} do
+    {:ok, project} = Projects.update_project(project, %{show_completed: true})
     {:ok, task} = Tasks.create_task(%{title: "Reopen", user_id: user.id, project_id: project.id})
     {:ok, _} = Tasks.complete_task(task)
     {:ok, lv, _html} = live(conn, ~p"/projects/#{project.id}")

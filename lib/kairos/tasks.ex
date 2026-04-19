@@ -48,11 +48,16 @@ defmodule Kairos.Tasks do
     |> Repo.all()
   end
 
-  def list_for_project(project_id, user_id) do
+  def list_for_project(project_id, user_id, opts \\ []) do
+    show_completed = Keyword.get(opts, :show_completed, false)
+
     Task
     |> Repo.scope(user_id)
     |> where([t], t.project_id == ^project_id)
     |> where([t], is_nil(t.parent_id))
+    |> then(fn q ->
+      if show_completed, do: q, else: where(q, [t], t.status != "completed")
+    end)
     |> order_by([t], [t.position, t.inserted_at])
     |> preload(:subtasks)
     |> Repo.all()

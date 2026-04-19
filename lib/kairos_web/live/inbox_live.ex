@@ -48,9 +48,9 @@ defmodule KairosWeb.InboxLive do
 
     {:ok, _} = Tasks.complete_task(task)
     broadcast_tasks_changed(user_id)
+    Process.send_after(self(), {:hide_completed_task, id}, 2000)
 
-    tasks = Tasks.list_inbox(user_id)
-    {:noreply, assign(socket, tasks: tasks)}
+    {:noreply, socket}
   end
 
   @impl true
@@ -74,6 +74,12 @@ defmodule KairosWeb.InboxLive do
     broadcast_tasks_changed(user_id)
 
     tasks = Tasks.list_inbox(user_id)
+    {:noreply, assign(socket, tasks: tasks)}
+  end
+
+  @impl true
+  def handle_info({:hide_completed_task, id}, socket) do
+    tasks = Enum.reject(socket.assigns.tasks, &(&1.id == id))
     {:noreply, assign(socket, tasks: tasks)}
   end
 
