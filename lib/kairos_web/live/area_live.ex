@@ -3,6 +3,7 @@ defmodule KairosWeb.AreaLive do
 
   alias Kairos.{Areas, Projects, Tasks}
   import KairosWeb.Components.TaskItem
+  alias KairosWeb.TaskDetailComponent
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -22,6 +23,7 @@ defmodule KairosWeb.AreaLive do
        projects: projects,
        tasks: tasks,
        new_task_title: "",
+       selected_task: nil,
        page_title: area.name,
        header_menu_open: false,
        renaming: false,
@@ -47,6 +49,23 @@ defmodule KairosWeb.AreaLive do
   end
 
   def handle_event("create_task", _params, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_event("select_task", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    task = Tasks.get_task!(id, user_id)
+    {:noreply, assign(socket, :selected_task, task)}
+  end
+
+  @impl true
+  def handle_event("delete_task", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    task = Tasks.get_task!(id, user_id)
+    {:ok, _} = Tasks.delete_task(task)
+    Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+    tasks = Tasks.list_for_area(socket.assigns.area.id, user_id)
+    {:noreply, assign(socket, tasks: tasks)}
+  end
 
   @impl true
   def handle_event("complete_task", %{"id" => id}, socket) do
@@ -121,7 +140,21 @@ defmodule KairosWeb.AreaLive do
     user_id = socket.assigns.current_scope.user.id
     tasks = Tasks.list_for_area(socket.assigns.area.id, user_id)
     projects = Projects.list_for_area(socket.assigns.area.id, user_id)
-    {:noreply, assign(socket, tasks: tasks, projects: projects)}
+
+    selected_task =
+      case socket.assigns.selected_task do
+        nil -> nil
+        task -> Enum.find(tasks, &(&1.id == task.id))
+      end
+
+    {:noreply, assign(socket, tasks: tasks, projects: projects, selected_task: selected_task)}
+  end
+
+  @impl true
+  def handle_info({:close_task_detail}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    tasks = Tasks.list_for_area(socket.assigns.area.id, user_id)
+    {:noreply, assign(socket, selected_task: nil, tasks: tasks)}
   end
 
   @impl true
@@ -234,11 +267,28 @@ defmodule KairosWeb.AreaLive do
 
           <ul id="area-task-list" class="space-y-1">
             <%= for task <- @tasks do %>
-              <.task_item task={task} />
+              <.task_item
+                task={task}
+                selected={@selected_task != nil && @selected_task.id == task.id}
+                show_notes={true}
+                show_priority={true}
+                show_due_date={true}
+                show_delete={true}
+                selectable={true}
+              />
             <% end %>
           </ul>
         </section>
       </div>
+
+      <%= if @selected_task do %>
+        <.live_component
+          module={KairosWeb.TaskDetailComponent}
+          id="task-detail"
+          task={@selected_task}
+          current_scope={@current_scope}
+        />
+      <% end %>
     </Layouts.app>
     """
   end

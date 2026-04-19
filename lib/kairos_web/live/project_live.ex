@@ -3,6 +3,7 @@ defmodule KairosWeb.ProjectLive do
 
   alias Kairos.{Projects, Tasks}
   import KairosWeb.Components.TaskItem
+  alias KairosWeb.TaskDetailComponent
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -20,6 +21,7 @@ defmodule KairosWeb.ProjectLive do
        project: project,
        tasks: tasks,
        new_task_title: "",
+       selected_task: nil,
        page_title: project.name,
        header_menu_open: false,
        renaming: false,
@@ -47,6 +49,23 @@ defmodule KairosWeb.ProjectLive do
   end
 
   def handle_event("create_task", _params, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_event("select_task", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    task = Tasks.get_task!(id, user_id)
+    {:noreply, assign(socket, :selected_task, task)}
+  end
+
+  @impl true
+  def handle_event("delete_task", %{"id" => id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    task = Tasks.get_task!(id, user_id)
+    {:ok, _} = Tasks.delete_task(task)
+    Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id)
+    {:noreply, assign(socket, tasks: tasks)}
+  end
 
   @impl true
   def handle_event("complete_task", %{"id" => id}, socket) do
@@ -140,7 +159,21 @@ defmodule KairosWeb.ProjectLive do
   def handle_info({:tasks_changed, _}, socket) do
     user_id = socket.assigns.current_scope.user.id
     tasks = Tasks.list_for_project(socket.assigns.project.id, user_id)
-    {:noreply, assign(socket, tasks: tasks)}
+
+    selected_task =
+      case socket.assigns.selected_task do
+        nil -> nil
+        task -> Enum.find(tasks, &(&1.id == task.id))
+      end
+
+    {:noreply, assign(socket, tasks: tasks, selected_task: selected_task)}
+  end
+
+  @impl true
+  def handle_info({:close_task_detail}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    tasks = Tasks.list_for_project(socket.assigns.project.id, user_id)
+    {:noreply, assign(socket, selected_task: nil, tasks: tasks)}
   end
 
   @impl true
@@ -257,7 +290,16 @@ defmodule KairosWeb.ProjectLive do
 
         <ul id="project-task-list" class="space-y-1">
           <%= for task <- @tasks do %>
-            <.task_item task={task} show_subtasks={true} />
+            <.task_item
+              task={task}
+              selected={@selected_task != nil && @selected_task.id == task.id}
+              show_subtasks={true}
+              show_notes={true}
+              show_priority={true}
+              show_due_date={true}
+              show_delete={true}
+              selectable={true}
+            />
           <% end %>
         </ul>
 
@@ -265,6 +307,15 @@ defmodule KairosWeb.ProjectLive do
           <p id="project-empty" class="text-muted-foreground text-sm text-center py-12">No tasks yet</p>
         <% end %>
       </div>
+
+      <%= if @selected_task do %>
+        <.live_component
+          module={KairosWeb.TaskDetailComponent}
+          id="task-detail"
+          task={@selected_task}
+          current_scope={@current_scope}
+        />
+      <% end %>
     </Layouts.app>
     """
   end
