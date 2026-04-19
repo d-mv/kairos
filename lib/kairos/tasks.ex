@@ -114,33 +114,40 @@ defmodule Kairos.Tasks do
     user_id = Map.get(attrs, :user_id) || Map.get(attrs, "user_id")
     title = Map.get(attrs, :title) || Map.get(attrs, "title")
 
-    attrs =
+    url_to_enrich =
       if is_binary(title) do
         case URI.parse(title) do
-          %URI{scheme: s, host: h} when s in ["http", "https"] and is_binary(h) ->
-            task = Elixir.Task.async(fn -> UrlParser.fetch_metadata(title) end)
-
-            case Elixir.Task.yield(task, 6_000) || Elixir.Task.shutdown(task, :brutal_kill) do
-              {:ok, {:ok, %{title: fetched_title}}} when is_binary(fetched_title) ->
-                attrs
-                |> Map.put(:title, fetched_title)
-                |> Map.put(:url, title)
-
-              _ ->
-                Map.put(attrs, :url, title)
-            end
-
-          _ ->
-            attrs
+          %URI{scheme: s, host: h} when s in ["http", "https"] and is_binary(h) -> title
+          _ -> nil
         end
-      else
-        attrs
       end
 
+    attrs =
+      if url_to_enrich, do: Map.put(attrs, :url, url_to_enrich), else: attrs
+
     with :ok <- check_max_depth(parent_id, user_id) do
-      %Task{}
-      |> Task.changeset(attrs)
-      |> Repo.insert()
+      case %Task{} |> Task.changeset(attrs) |> Repo.insert() do
+        {:ok, task} = result ->
+          if url_to_enrich do
+            Elixir.Task.start(fn -> enrich_task_title(task, url_to_enrich, user_id) end)
+          end
+          result
+
+        error ->
+          error
+      end
+    end
+  end
+
+  defp enrich_task_title(task, url, user_id) do
+    case UrlParser.fetch_metadata(url) do
+      {:ok, %{title: title}} when is_binary(title) ->
+        case update_task(task, %{title: title}) do
+          {:ok, _} ->
+            Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+          _ -> :ok
+        end
+      _ -> :ok
     end
   end
 
