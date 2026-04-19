@@ -290,33 +290,34 @@ defmodule KairosWeb.TaskDetailComponent do
         <!-- Priority -->
         <div id="task-detail-priority-section">
           <span id="task-detail-priority-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Priority</span>
-          <select
-            id="task-detail-priority"
-            phx-change="save_field"
-            phx-value-field="priority"
-            phx-target={@myself}
-            name="value"
-            class="mt-1 w-full border rounded px-2 py-1 text-sm focus:outline-none bg-background"
-          >
-            <option value="none" selected={@task.priority == "none"}>None</option>
-            <option value="low" selected={@task.priority == "low"}>Low</option>
-            <option value="medium" selected={@task.priority == "medium"}>Medium</option>
-            <option value="high" selected={@task.priority == "high"}>High</option>
-          </select>
+          <form id="task-detail-priority-form" phx-change="save_field" phx-target={@myself}>
+            <input type="hidden" name="field" value="priority" />
+            <select
+              id="task-detail-priority"
+              name="value"
+              class="mt-1 w-full border rounded px-2 py-1 text-sm focus:outline-none bg-background"
+            >
+              <option value="none" selected={@task.priority == "none"}>None</option>
+              <option value="low" selected={@task.priority == "low"}>Low</option>
+              <option value="medium" selected={@task.priority == "medium"}>Medium</option>
+              <option value="high" selected={@task.priority == "high"}>High</option>
+            </select>
+          </form>
         </div>
 
         <!-- Notes -->
         <div id="task-detail-notes-section">
           <span id="task-detail-notes-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</span>
-          <textarea
-            id="task-detail-notes"
-            phx-change="save_field"
-            phx-debounce="1000"
-            phx-value-field="notes"
-            phx-target={@myself}
-            class="mt-1 w-full border rounded px-2 py-1 text-sm min-h-24 resize-none focus:outline-none bg-background"
-            placeholder="Add notes…"
-          >{@task.notes}</textarea>
+          <form id="task-detail-notes-form" phx-change="save_field" phx-target={@myself}>
+            <input type="hidden" name="field" value="notes" />
+            <textarea
+              id="task-detail-notes"
+              name="value"
+              phx-debounce="1000"
+              class="mt-1 w-full border rounded px-2 py-1 text-sm min-h-24 resize-none focus:outline-none bg-background"
+              placeholder="Add notes…"
+            >{@task.notes}</textarea>
+          </form>
         </div>
 
         <!-- Tags -->
@@ -372,10 +373,9 @@ defmodule KairosWeb.TaskDetailComponent do
         <!-- Move to -->
         <div id="task-detail-move-section">
           <span id="task-detail-move-label" class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Move to</span>
+          <form id="task-detail-move-form" phx-change="move_task" phx-target={@myself}>
           <select
             id="task-detail-move-select"
-            phx-change="move_task"
-            phx-target={@myself}
             name="container"
             class="mt-1 w-full border rounded px-2 py-1 text-sm focus:outline-none bg-background"
           >
@@ -395,6 +395,7 @@ defmodule KairosWeb.TaskDetailComponent do
               </optgroup>
             <% end %>
           </select>
+          </form>
         </div>
 
         <!-- Links -->

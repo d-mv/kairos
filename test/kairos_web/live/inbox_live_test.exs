@@ -73,7 +73,7 @@ defmodule KairosWeb.InboxLiveTest do
       {:ok, task} = Tasks.create_task(%{title: "Prio task", user_id: user.id})
       {:ok, lv, _html} = live(conn, ~p"/inbox")
       lv |> element("#task-title-#{task.id}") |> render_click()
-      lv |> element("#task-detail-priority") |> render_change(%{"value" => "high", "field" => "priority"})
+      lv |> element("#task-detail-priority-form") |> render_change(%{"value" => "high", "field" => "priority"})
       assert Tasks.get_task!(task.id, user.id).priority == "high"
     end
 
@@ -81,7 +81,7 @@ defmodule KairosWeb.InboxLiveTest do
       {:ok, task} = Tasks.create_task(%{title: "Notes task", user_id: user.id})
       {:ok, lv, _html} = live(conn, ~p"/inbox")
       lv |> element("#task-title-#{task.id}") |> render_click()
-      lv |> element("#task-detail-notes") |> render_change(%{"value" => "my note", "field" => "notes"})
+      lv |> element("#task-detail-notes-form") |> render_change(%{"value" => "my note", "field" => "notes"})
       assert Tasks.get_task!(task.id, user.id).notes == "my note"
     end
 
@@ -90,7 +90,7 @@ defmodule KairosWeb.InboxLiveTest do
       {:ok, project} = Projects.create_project(%{name: "P1", user_id: user.id})
       {:ok, lv, _html} = live(conn, ~p"/inbox")
       lv |> element("#task-title-#{task.id}") |> render_click()
-      lv |> element("#task-detail-move-select") |> render_change(%{"container" => "project_#{project.id}"})
+      lv |> element("#task-detail-move-form") |> render_change(%{"container" => "project_#{project.id}"})
       updated = Tasks.get_task!(task.id, user.id)
       assert updated.project_id == project.id
       assert is_nil(updated.area_id)
@@ -101,7 +101,7 @@ defmodule KairosWeb.InboxLiveTest do
       {:ok, area} = Areas.create_area(%{name: "A1", user_id: user.id})
       {:ok, lv, _html} = live(conn, ~p"/inbox")
       lv |> element("#task-title-#{task.id}") |> render_click()
-      lv |> element("#task-detail-move-select") |> render_change(%{"container" => "area_#{area.id}"})
+      lv |> element("#task-detail-move-form") |> render_change(%{"container" => "area_#{area.id}"})
       updated = Tasks.get_task!(task.id, user.id)
       assert updated.area_id == area.id
       assert is_nil(updated.project_id)
@@ -181,7 +181,7 @@ defmodule KairosWeb.InboxLiveTest do
       {:ok, project} = Projects.create_project(%{name: "Proj", user_id: user.id})
       {:ok, lv, _html} = live(conn, ~p"/inbox")
       lv |> element("#task-title-#{task.id}") |> render_click()
-      lv |> element("#task-detail-move-select") |> render_change(%{"container" => "project_#{project.id}"})
+      lv |> element("#task-detail-move-form") |> render_change(%{"container" => "project_#{project.id}"})
       assert Tasks.get_task!(task.id, user.id).project_id == project.id
     end
 
