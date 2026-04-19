@@ -236,56 +236,55 @@ defmodule KairosWeb.TaskDetailComponent do
       </div>
 
       <div id="task-detail-body" class="flex-1 overflow-y-auto p-4 space-y-4">
-        <!-- Status toggle -->
-        <div id="task-detail-status" class="flex items-center gap-2">
+        <!-- Title with status icon -->
+        <div id="task-detail-title-row" class="flex items-center gap-2">
           <%= if @task.status == "completed" do %>
             <button
               id="task-detail-reopen"
               phx-click="reopen"
               phx-target={@myself}
-              class="p-1 rounded-full text-primary hover:bg-muted"
+              class="shrink-0 rounded-full text-primary hover:bg-muted"
+              title="Mark pending"
             >
-              <.icon name="hero-check-circle" class="w-5 h-5" />
+              <.icon name="hero-check-circle" class="w-6 h-6" />
             </button>
-            <span class="text-sm text-muted-foreground">Completed</span>
           <% else %>
             <button
               id="task-detail-complete"
               phx-click="complete"
               phx-target={@myself}
-              class="p-1 rounded-full hover:bg-muted text-muted-foreground"
+              class="shrink-0 rounded-full hover:bg-muted text-muted-foreground"
+              title="Mark complete"
             >
-              <.icon name="hero-circle" class="w-5 h-5" />
+              <.icon name="hero-circle" class="w-6 h-6" />
             </button>
-            <span class="text-sm text-muted-foreground">Pending</span>
+          <% end %>
+
+          <%= if @editing_title do %>
+            <form id="task-detail-title-form" phx-submit="save_title" phx-target={@myself} class="flex-1">
+              <input
+                id="task-detail-title-input"
+                type="text"
+                name="title"
+                value={@task.title}
+                class="w-full text-lg font-medium border rounded px-2 py-1 focus:outline-none"
+                phx-mounted={JS.focus()}
+                phx-blur="save_title"
+                phx-target={@myself}
+                autocomplete="off"
+              />
+            </form>
+          <% else %>
+            <button
+              id="task-detail-title"
+              phx-click="edit_title"
+              phx-target={@myself}
+              class="flex-1 text-left text-lg font-medium hover:bg-muted rounded px-2 py-1"
+            >
+              {@task.title}
+            </button>
           <% end %>
         </div>
-
-        <!-- Title -->
-        <%= if @editing_title do %>
-          <form id="task-detail-title-form" phx-submit="save_title" phx-target={@myself}>
-            <input
-              id="task-detail-title-input"
-              type="text"
-              name="title"
-              value={@task.title}
-              class="w-full text-lg font-medium border rounded px-2 py-1 focus:outline-none"
-              phx-mounted={JS.focus()}
-              phx-blur="save_title"
-              phx-target={@myself}
-              autocomplete="off"
-            />
-          </form>
-        <% else %>
-          <button
-            id="task-detail-title"
-            phx-click="edit_title"
-            phx-target={@myself}
-            class="w-full text-left text-lg font-medium hover:bg-muted rounded px-2 py-1"
-          >
-            {@task.title}
-          </button>
-        <% end %>
 
         <!-- Priority -->
         <div id="task-detail-priority-section">
