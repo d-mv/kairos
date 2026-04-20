@@ -1,20 +1,31 @@
 defmodule Kairos.Accounts.UserNotifier do
   import Swoosh.Email
+  require Logger
 
   alias Kairos.Mailer
   alias Kairos.Accounts.User
 
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body) do
+    from = Application.get_env(:kairos, :mailer_from, "onboarding@resend.dev")
+
     email =
       new()
       |> to(recipient)
-      |> from({"Kairos", Application.get_env(:kairos, :mailer_from, "onboarding@resend.dev")})
+      |> from({"Kairos", from})
       |> subject(subject)
       |> text_body(body)
 
-    with {:ok, _metadata} <- Mailer.deliver(email) do
-      {:ok, email}
+    Logger.info("Delivering email to=#{recipient} subject=#{subject} from=#{from}")
+
+    case Mailer.deliver(email) do
+      {:ok, _metadata} ->
+        Logger.info("Email delivered ok to=#{recipient}")
+        {:ok, email}
+
+      {:error, reason} = err ->
+        Logger.error("Email delivery failed to=#{recipient} reason=#{inspect(reason)}")
+        err
     end
   end
 
