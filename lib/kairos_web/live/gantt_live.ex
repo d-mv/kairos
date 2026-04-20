@@ -94,7 +94,7 @@ defmodule KairosWeb.GanttLive do
           </div>
         </div>
         
-        <div id="gantt-canvas-wrapper" class="flex-1 overflow-auto bg-card" phx-update="ignore">
+        <div id="gantt-canvas-wrapper" class="flex-1 overflow-auto bg-card">
           <div id="gantt-chart" phx-hook="GanttChart" data-tasks={Jason.encode!(@gantt_tasks)}></div>
         </div>
       </div>
