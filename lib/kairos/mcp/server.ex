@@ -100,7 +100,7 @@ defmodule Kairos.MCP.Server do
     tasks = Tasks.list_tasks(user_id)
 
     tasks =
-      case params["status"] do
+      case params[:status] do
         nil -> tasks
         status -> Enum.filter(tasks, &(&1.status == status))
       end
@@ -112,10 +112,10 @@ defmodule Kairos.MCP.Server do
     user_id = frame.assigns.user_id
 
     attrs = %{
-      title: params["title"],
+      title: params[:title],
       user_id: user_id,
-      notes: params["notes"],
-      due_date: parse_date(params["due_date"])
+      notes: params[:notes],
+      due_date: parse_date(params[:due_date])
     }
 
     case Tasks.create_task(attrs) do
@@ -127,13 +127,13 @@ defmodule Kairos.MCP.Server do
   def handle_tool_call("update_task", params, frame) do
     user_id = frame.assigns.user_id
 
-    with {:ok, task} <- fetch_task(params["id"], user_id) do
+    with {:ok, task} <- fetch_task(params[:id], user_id) do
       attrs =
         %{}
-        |> maybe_put(:title, params["title"])
-        |> maybe_put(:notes, params["notes"])
-        |> maybe_put(:due_date, parse_date(params["due_date"]))
-        |> maybe_put(:url, parse_optional_string(params["url"]))
+        |> maybe_put(:title, params[:title])
+        |> maybe_put(:notes, params[:notes])
+        |> maybe_put(:due_date, parse_date(params[:due_date]))
+        |> maybe_put(:url, parse_optional_string(params[:url]))
 
       case Tasks.update_task(task, attrs) do
         {:ok, updated} -> reply(Jason.encode!(task_to_map(updated)), frame)
@@ -147,7 +147,7 @@ defmodule Kairos.MCP.Server do
   def handle_tool_call("complete_task", params, frame) do
     user_id = frame.assigns.user_id
 
-    with {:ok, task} <- fetch_task(params["id"], user_id),
+    with {:ok, task} <- fetch_task(params[:id], user_id),
          {:ok, updated} <- Tasks.complete_task(task) do
       reply(Jason.encode!(task_to_map(updated)), frame)
     else
@@ -159,7 +159,7 @@ defmodule Kairos.MCP.Server do
   def handle_tool_call("reopen_task", params, frame) do
     user_id = frame.assigns.user_id
 
-    with {:ok, task} <- fetch_task(params["id"], user_id),
+    with {:ok, task} <- fetch_task(params[:id], user_id),
          {:ok, updated} <- Tasks.reopen_task(task) do
       reply(Jason.encode!(task_to_map(updated)), frame)
     else
@@ -171,7 +171,7 @@ defmodule Kairos.MCP.Server do
   def handle_tool_call("delete_task", params, frame) do
     user_id = frame.assigns.user_id
 
-    with {:ok, task} <- fetch_task(params["id"], user_id),
+    with {:ok, task} <- fetch_task(params[:id], user_id),
          {:ok, _} <- Tasks.delete_task(task) do
       reply("deleted", frame)
     else
@@ -190,10 +190,10 @@ defmodule Kairos.MCP.Server do
     user_id = frame.assigns.user_id
 
     attrs = %{
-      name: params["name"],
+      name: params[:name],
       user_id: user_id,
-      notes: params["notes"],
-      area_id: params["area_id"]
+      notes: params[:notes],
+      area_id: params[:area_id]
     }
 
     case Projects.create_project(attrs) do
@@ -205,7 +205,7 @@ defmodule Kairos.MCP.Server do
   def handle_tool_call("promote_task", params, frame) do
     user_id = frame.assigns.user_id
 
-    with {:ok, task} <- fetch_task(params["id"], user_id) do
+    with {:ok, task} <- fetch_task(params[:id], user_id) do
       case Tasks.promote_to_project(task) do
         {:ok, project} -> reply(Jason.encode!(project_to_map(project)), frame)
         {:error, reason} -> error(inspect(reason), frame)
@@ -218,7 +218,7 @@ defmodule Kairos.MCP.Server do
   def handle_tool_call("demote_project", params, frame) do
     user_id = frame.assigns.user_id
 
-    with {:ok, project} <- fetch_project(params["id"], user_id) do
+    with {:ok, project} <- fetch_project(params[:id], user_id) do
       case Projects.demote_to_task(project) do
         {:ok, task} -> reply(Jason.encode!(task_to_map(task)), frame)
         {:error, :has_subtasks} -> error("Cannot demote: project tasks have subtasks", frame)
