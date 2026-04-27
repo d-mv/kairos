@@ -24,7 +24,6 @@ defmodule Kairos.MCP.AuthPlug do
     else
       _ ->
         conn
-        |> put_resp_header("www-authenticate", "Bearer")
         |> put_resp_content_type("application/json")
         |> send_resp(401, ~s({"error":"invalid_token","error_description":"Unauthorized"}))
         |> halt()
