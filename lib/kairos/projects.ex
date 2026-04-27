@@ -73,6 +73,10 @@ defmodule Kairos.Projects do
     update_project(project, %{show_completed: !project.show_completed})
   end
 
+  def complete_project(%Project{} = project), do: update_project(project, %{status: "completed"})
+
+  def reopen_project(%Project{} = project), do: update_project(project, %{status: "active"})
+
   def count_tasks(project_id) do
     Task |> where([t], t.project_id == ^project_id) |> Repo.aggregate(:count)
   end

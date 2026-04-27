@@ -12,9 +12,18 @@ defmodule KairosWeb.InboxLive do
       Phoenix.PubSub.subscribe(Kairos.PubSub, "user:#{user_id}")
     end
 
-    tasks = Tasks.list_inbox(user_id)
+    show_completed = false
+    tasks = Tasks.list_inbox(user_id, show_completed: show_completed)
 
-    {:ok, assign(socket, tasks: tasks, new_task_title: "", selected_task: nil, page_title: "Inbox", active_tab: "inbox")}
+    {:ok, assign(socket, tasks: tasks, new_task_title: "", selected_task: nil, page_title: "Inbox", active_tab: "inbox", show_completed: show_completed)}
+  end
+
+  @impl true
+  def handle_event("toggle_show_completed", _params, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    show_completed = !socket.assigns.show_completed
+    tasks = Tasks.list_inbox(user_id, show_completed: show_completed)
+    {:noreply, assign(socket, show_completed: show_completed, tasks: tasks)}
   end
 
   @impl true
@@ -23,7 +32,7 @@ defmodule KairosWeb.InboxLive do
 
     case Tasks.create_task(%{title: String.trim(title), user_id: user_id}) do
       {:ok, _task} ->
-        tasks = Tasks.list_inbox(user_id)
+        tasks = Tasks.list_inbox(user_id, show_completed: socket.assigns.show_completed)
         broadcast_tasks_changed(user_id)
         {:noreply, assign(socket, tasks: tasks, new_task_title: "")}
 
@@ -61,7 +70,7 @@ defmodule KairosWeb.InboxLive do
     {:ok, _} = Tasks.reopen_task(task)
     broadcast_tasks_changed(user_id)
 
-    tasks = Tasks.list_inbox(user_id)
+    tasks = Tasks.list_inbox(user_id, show_completed: socket.assigns.show_completed)
     {:noreply, assign(socket, tasks: tasks)}
   end
 
@@ -73,7 +82,7 @@ defmodule KairosWeb.InboxLive do
     {:ok, _} = Tasks.delete_task(task)
     broadcast_tasks_changed(user_id)
 
-    tasks = Tasks.list_inbox(user_id)
+    tasks = Tasks.list_inbox(user_id, show_completed: socket.assigns.show_completed)
     {:noreply, assign(socket, tasks: tasks)}
   end
 
@@ -86,7 +95,7 @@ defmodule KairosWeb.InboxLive do
   @impl true
   def handle_info({:tasks_changed, _}, socket) do
     user_id = socket.assigns.current_scope.user.id
-    tasks = Tasks.list_inbox(user_id)
+    tasks = Tasks.list_inbox(user_id, show_completed: socket.assigns.show_completed)
 
     selected_task =
       case socket.assigns.selected_task do
@@ -100,7 +109,7 @@ defmodule KairosWeb.InboxLive do
   @impl true
   def handle_info({:close_task_detail}, socket) do
     user_id = socket.assigns.current_scope.user.id
-    tasks = Tasks.list_inbox(user_id)
+    tasks = Tasks.list_inbox(user_id, show_completed: socket.assigns.show_completed)
     {:noreply, assign(socket, selected_task: nil, tasks: tasks)}
   end
 
@@ -113,7 +122,17 @@ defmodule KairosWeb.InboxLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} nav_areas={assigns[:nav_areas] || []} nav_projects={assigns[:nav_projects] || []}>
       <div id="inbox-container" class="w-full py-8 px-4">
-        <h1 id="inbox-title" class="text-2xl font-semibold mb-6">Inbox</h1>
+        <div class="flex items-center justify-between mb-6">
+          <h1 id="inbox-title" class="text-2xl font-semibold">Inbox</h1>
+          <button
+            id="inbox-toggle-completed"
+            phx-click="toggle_show_completed"
+            class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <.icon name={if @show_completed, do: "hero-eye-slash", else: "hero-eye"} class="w-4 h-4" />
+            <%= if @show_completed, do: "Hide completed", else: "Show completed" %>
+          </button>
+        </div>
 
         <form id="inbox-add-form" phx-submit="create_task" class="flex gap-2 mb-6">
           <input

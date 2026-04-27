@@ -249,6 +249,16 @@ defmodule KairosWeb.ProjectLive do
     {:noreply, assign(socket, confirm_demote: false, demote_error: nil)}
   end
 
+  def handle_event("complete_project", _params, socket) do
+    {:ok, project} = Projects.complete_project(socket.assigns.project)
+    {:noreply, assign(socket, project: project, header_menu_open: false)}
+  end
+
+  def handle_event("reopen_project", _params, socket) do
+    {:ok, project} = Projects.reopen_project(socket.assigns.project)
+    {:noreply, assign(socket, project: project, header_menu_open: false)}
+  end
+
   @impl true
   def handle_info({:tasks_changed, _}, socket) do
     user_id = socket.assigns.current_scope.user.id
@@ -370,7 +380,12 @@ defmodule KairosWeb.ProjectLive do
               />
             </form>
           <% else %>
-            <h1 id="project-title" class="text-2xl font-semibold flex-1"><%= @project.name %></h1>
+            <h1 id="project-title" class={"text-2xl font-semibold flex-1 #{if @project.status == "completed", do: "line-through text-muted-foreground"}"}>
+              <%= @project.name %>
+              <%= if @project.status == "completed" do %>
+                <span id="project-completed-badge" class="ml-2 text-xs font-normal no-underline bg-muted text-muted-foreground px-2 py-0.5 rounded-full align-middle" style="text-decoration: none;">Completed</span>
+              <% end %>
+            </h1>
             <div class="relative">
               <button
                 id="project-menu-btn"
@@ -395,6 +410,23 @@ defmodule KairosWeb.ProjectLive do
                     <.icon name={if @project.show_completed, do: "hero-eye-slash", else: "hero-eye"} class="w-4 h-4" />
                     <%= if @project.show_completed, do: "Hide completed", else: "Show completed" %>
                   </button>
+                  <%= if @project.status == "completed" do %>
+                    <button
+                      id="project-menu-reopen"
+                      phx-click="reopen_project"
+                      class="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"
+                    >
+                      <.icon name="hero-arrow-path" class="w-4 h-4" /> Mark as active
+                    </button>
+                  <% else %>
+                    <button
+                      id="project-menu-complete"
+                      phx-click="complete_project"
+                      class="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"
+                    >
+                      <.icon name="hero-check-circle" class="w-4 h-4" /> Mark as completed
+                    </button>
+                  <% end %>
                   <button
                     phx-click="start_rename"
                     class="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"

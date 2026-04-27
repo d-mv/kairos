@@ -67,21 +67,35 @@ defmodule Kairos.UrlParser do
   defp fetch_title(url, :instagram) do
     headers = [{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"}]
 
-    case Req.get(url, headers: headers, receive_timeout: 5_000, max_redirects: 5) do
-      {:ok, %{status: 200, body: body}} when is_binary(body) ->
-        description = extract_meta_name(body, "description")
+    title =
+      case Req.get(url, headers: headers, receive_timeout: 5_000, max_redirects: 5) do
+        {:ok, %{status: 200, body: body}} when is_binary(body) ->
+          description = extract_meta_name(body, "description")
 
-        title =
           if description do
             description
             |> decode_html_entities()
             |> parse_instagram_description()
           end
 
-        {:ok, title}
+        _ ->
+          nil
+      end
 
-      _ ->
-        {:ok, nil}
+    {:ok, title || instagram_title_from_url(url)}
+  end
+
+  defp instagram_title_from_url(url) do
+    case URI.parse(url) do
+      %URI{path: path} when is_binary(path) ->
+        case String.split(path, "/", trim: true) do
+          ["p", code | _] -> "Instagram post #{code}"
+          ["reel", code | _] -> "Instagram reel #{code}"
+          ["reels", code | _] -> "Instagram reel #{code}"
+          [account | _] -> "Instagram @#{account}"
+          _ -> "Instagram"
+        end
+      _ -> "Instagram"
     end
   end
 
@@ -117,10 +131,12 @@ defmodule Kairos.UrlParser do
     |> String.replace("&gt;", ">")
     |> String.replace("&apos;", "'")
     |> String.replace(~r/&#x([0-9a-fA-F]+);/, fn _, hex ->
-      <<String.to_integer(hex, 16)::utf8>>
+      code = String.to_integer(hex, 16)
+      if code <= 0x10FFFF, do: <<code::utf8>>, else: ""
     end)
     |> String.replace(~r/&#([0-9]+);/, fn _, dec ->
-      <<String.to_integer(dec)::utf8>>
+      code = String.to_integer(dec)
+      if code <= 0x10FFFF, do: <<code::utf8>>, else: ""
     end)
   end
 

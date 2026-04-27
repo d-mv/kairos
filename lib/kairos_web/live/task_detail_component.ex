@@ -241,7 +241,7 @@ defmodule KairosWeb.TaskDetailComponent do
 
       <div id="task-detail-body" class="flex-1 overflow-y-auto p-4 space-y-4">
         <!-- Title with status icon -->
-        <div id="task-detail-title-row" class="flex items-center gap-2">
+        <div id="task-detail-title-row" class="flex items-center gap-2 min-w-0">
           <%= if @task.status == "completed" do %>
             <button
               id="task-detail-reopen"
@@ -267,7 +267,7 @@ defmodule KairosWeb.TaskDetailComponent do
           <% end %>
 
           <%= if @editing_title do %>
-            <form id="task-detail-title-form" phx-submit="save_title" phx-target={@myself} class="flex-1">
+            <form id="task-detail-title-form" phx-submit="save_title" phx-target={@myself} class="flex-1 min-w-0">
               <input
                 id="task-detail-title-input"
                 type="text"
@@ -287,7 +287,7 @@ defmodule KairosWeb.TaskDetailComponent do
               id="task-detail-title"
               phx-click="edit_title"
               phx-target={@myself}
-              class="flex-1 text-left text-lg font-medium hover:bg-muted rounded px-2 py-1"
+              class="flex-1 text-left text-lg font-medium hover:bg-muted rounded px-2 py-1 min-w-0 break-words"
             >
               {@task.title}
             </button>

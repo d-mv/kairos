@@ -12,20 +12,29 @@ defmodule Kairos.Tasks do
     |> Repo.all()
   end
 
-  def list_inbox(user_id) do
+  def list_inbox(user_id, opts \\ []) do
+    show_completed = Keyword.get(opts, :show_completed, false)
+
     Task
     |> Repo.scope(user_id)
     |> where([t], is_nil(t.project_id) and is_nil(t.area_id) and is_nil(t.parent_id))
+    |> then(fn q ->
+      if show_completed, do: q, else: where(q, [t], t.status != "completed")
+    end)
     |> order_by([t], [t.position, t.inserted_at])
     |> Repo.all()
   end
 
-  def list_today(user_id) do
+  def list_today(user_id, opts \\ []) do
     today = Date.utc_today()
+    show_completed = Keyword.get(opts, :show_completed, false)
 
     Task
     |> Repo.scope(user_id)
-    |> where([t], t.due_date == ^today and t.status == "pending")
+    |> where([t], t.due_date == ^today)
+    |> then(fn q ->
+      if show_completed, do: q, else: where(q, [t], t.status == "pending")
+    end)
     |> order_by([t], [t.position, t.inserted_at])
     |> Repo.all()
   end

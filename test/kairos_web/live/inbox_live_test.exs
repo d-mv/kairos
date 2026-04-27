@@ -43,6 +43,7 @@ defmodule KairosWeb.InboxLiveTest do
       {:ok, task} = Tasks.create_task(%{title: "Reopen me", user_id: user.id})
       {:ok, _} = Tasks.complete_task(task)
       {:ok, lv, _html} = live(conn, ~p"/inbox")
+      lv |> element("#inbox-toggle-completed") |> render_click()
       lv |> element("#task-checkbox-#{task.id}") |> render_click()
       assert Tasks.get_task!(task.id, user.id).status == "pending"
     end
@@ -159,6 +160,7 @@ defmodule KairosWeb.InboxLiveTest do
       {:ok, _} = Tasks.complete_task(task)
       task = Tasks.get_task!(task.id, user.id)
       {:ok, lv, _html} = live(conn, ~p"/inbox")
+      lv |> element("#inbox-toggle-completed") |> render_click()
       lv |> element("#task-title-#{task.id}") |> render_click()
       lv |> element("#task-detail-reopen") |> render_click()
       assert Tasks.get_task!(task.id, user.id).status == "pending"

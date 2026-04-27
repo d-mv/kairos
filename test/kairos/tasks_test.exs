@@ -120,6 +120,36 @@ defmodule Kairos.TasksTest do
       assert Enum.any?(inbox, &(&1.id == t1.id))
       refute Enum.any?(inbox, &(&1.title == "Area task"))
     end
+
+    test "hides completed tasks by default", %{user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "Done", user_id: user.id})
+      {:ok, _} = Tasks.complete_task(task)
+      assert Tasks.list_inbox(user.id) == []
+    end
+
+    test "shows completed tasks when show_completed: true", %{user: user} do
+      {:ok, task} = Tasks.create_task(%{title: "Done", user_id: user.id})
+      {:ok, _} = Tasks.complete_task(task)
+      result = Tasks.list_inbox(user.id, show_completed: true)
+      assert Enum.any?(result, &(&1.id == task.id))
+    end
+  end
+
+  describe "list_today/1" do
+    test "shows completed tasks when show_completed: true", %{user: user} do
+      today = Date.utc_today()
+      {:ok, task} = Tasks.create_task(%{title: "Today done", user_id: user.id, due_date: today})
+      {:ok, _} = Tasks.complete_task(task)
+      result = Tasks.list_today(user.id, show_completed: true)
+      assert Enum.any?(result, &(&1.id == task.id))
+    end
+
+    test "hides completed tasks by default", %{user: user} do
+      today = Date.utc_today()
+      {:ok, task} = Tasks.create_task(%{title: "Today done", user_id: user.id, due_date: today})
+      {:ok, _} = Tasks.complete_task(task)
+      assert Tasks.list_today(user.id) == []
+    end
   end
 
   describe "search/2" do
