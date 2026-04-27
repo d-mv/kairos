@@ -103,4 +103,4 @@ fly deploy           # production deploy
 - Domain rules live in contexts, not in LiveViews or controllers
 - All domain rule violations return tagged error tuples, never raise
 - Keep LiveViews focused: assign data, handle events, broadcast/subscribe
-- Every item done - commit (semantic) and push; then update the plan
+- Every item done - commit (semantic), push, and `fly deploy`; then update the plan
