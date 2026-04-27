@@ -65,22 +65,6 @@ defmodule KairosWeb.Router do
     delete "/users/log-out", UserSessionController, :delete
   end
 
-  # OAuth discovery + registration — no auth required
-  scope "/", KairosWeb do
-    pipe_through :api
-    get "/.well-known/oauth-protected-resource", MCPController, :oauth_protected_resource
-    get "/.well-known/oauth-protected-resource/*path", MCPController, :oauth_protected_resource
-    get "/.well-known/oauth-authorization-server", MCPController, :oauth_authorization_server
-    get "/.well-known/:discovery", MCPController, :well_known_not_found
-    post "/register", MCPController, :oauth_register
-  end
-
-  # OAuth token issuance — validates Bearer token, returns it as access_token
-  scope "/", KairosWeb do
-    pipe_through :mcp
-    post "/oauth/token", MCPController, :oauth_token
-  end
-
   # MCP server endpoint — requires Bearer token auth
   scope "/mcp" do
     pipe_through :mcp
