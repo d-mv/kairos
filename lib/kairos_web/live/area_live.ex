@@ -27,7 +27,8 @@ defmodule KairosWeb.AreaLive do
        header_menu_open: false,
        renaming: false,
        confirm_delete: nil,
-       active_tab: "browse"
+       active_tab: "browse",
+       show_completed_projects: false
      )}
   end
 
@@ -134,6 +135,14 @@ defmodule KairosWeb.AreaLive do
     {:noreply, assign(socket, confirm_delete: nil)}
   end
 
+  def handle_event("toggle_show_completed_projects", _params, socket) do
+    {:noreply,
+     assign(socket,
+       show_completed_projects: !socket.assigns.show_completed_projects,
+       header_menu_open: false
+     )}
+  end
+
   @impl true
   def handle_info({:hide_completed_task, id}, socket) do
     tasks = Enum.reject(socket.assigns.tasks, &(&1.id == id))
@@ -208,6 +217,14 @@ defmodule KairosWeb.AreaLive do
                     <.icon name="hero-pencil" class="w-4 h-4" /> Rename
                   </button>
                   <button
+                    id="area-toggle-completed-projects-btn"
+                    phx-click="toggle_show_completed_projects"
+                    class="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"
+                  >
+                    <.icon name={if @show_completed_projects, do: "hero-eye-slash", else: "hero-eye"} class="w-4 h-4" />
+                    <%= if @show_completed_projects, do: "Hide completed projects", else: "Show completed projects" %>
+                  </button>
+                  <button
                     phx-click="confirm_delete"
                     class="w-full text-left px-3 py-2 text-sm hover:bg-muted text-destructive flex items-center gap-2"
                   >
@@ -238,11 +255,12 @@ defmodule KairosWeb.AreaLive do
           </div>
         <% end %>
 
-        <%= if Enum.any?(@projects) do %>
+        <% visible_projects = Enum.filter(@projects, &(&1.status != "completed" || @show_completed_projects)) %>
+        <%= if Enum.any?(visible_projects) do %>
           <section id="area-projects-section" class="mb-8">
             <h2 class="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">Projects</h2>
             <ul id="area-project-list" class="space-y-1">
-              <%= for project <- @projects do %>
+              <%= for project <- visible_projects do %>
                 <li id={"project-#{project.id}"}>
                   <.link navigate={~p"/projects/#{project.id}"} class="flex items-center gap-2 p-2 rounded hover:bg-muted text-sm">
                     <.icon name="hero-folder" class="w-4 h-4 text-muted-foreground" />

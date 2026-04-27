@@ -13,7 +13,8 @@ defmodule KairosWeb.SidebarComponent do
        projects: [],
        creating_area: false,
        creating_project: nil,
-       new_name: ""
+       new_name: "",
+       show_completed_projects: false
      )}
   end
 
@@ -96,6 +97,10 @@ defmodule KairosWeb.SidebarComponent do
 
   def handle_event("create_project", _params, socket), do: {:noreply, socket}
 
+  def handle_event("toggle_show_completed_projects", _params, socket) do
+    {:noreply, assign(socket, show_completed_projects: !socket.assigns.show_completed_projects)}
+  end
+
   # ── Render ─────────────────────────────────────────────────────────────
 
   @impl true
@@ -161,7 +166,7 @@ defmodule KairosWeb.SidebarComponent do
                 module={KairosWeb.SidebarAreaComponent}
                 id={"sidebar-area-#{area.id}"}
                 area={area}
-                projects={Enum.filter(@projects, &(&1.area_id == area.id))}
+                projects={Enum.filter(@projects, &(&1.area_id == area.id && (&1.status != "completed" || @show_completed_projects)))}
                 current_scope={@current_scope}
               />
             <% end %>
@@ -172,15 +177,26 @@ defmodule KairosWeb.SidebarComponent do
         <div id="sidebar-projects-section" class="pt-4">
           <div class="flex items-center justify-between px-2 pb-1">
             <span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Projects</span>
-            <button
-              id="sidebar-create-project-btn"
-              phx-click="toggle_create_project"
-              phx-target={@myself}
-              class="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-              title="New project"
-            >
-              <.icon name="hero-plus" class="w-6 h-6" />
-            </button>
+            <div class="flex items-center gap-0.5">
+              <button
+                id="sidebar-toggle-completed-projects"
+                phx-click="toggle_show_completed_projects"
+                phx-target={@myself}
+                class="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                title={if @show_completed_projects, do: "Hide completed projects", else: "Show completed projects"}
+              >
+                <.icon name={if @show_completed_projects, do: "hero-eye-slash", else: "hero-eye"} class="w-4 h-4" />
+              </button>
+              <button
+                id="sidebar-create-project-btn"
+                phx-click="toggle_create_project"
+                phx-target={@myself}
+                class="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                title="New project"
+              >
+                <.icon name="hero-plus" class="w-6 h-6" />
+              </button>
+            </div>
           </div>
 
           <%= if @creating_project == "_none" do %>
@@ -201,7 +217,7 @@ defmodule KairosWeb.SidebarComponent do
           <% end %>
 
           <div id="sidebar-projects">
-            <%= for project <- Enum.filter(@projects, &is_nil(&1.area_id)) do %>
+            <%= for project <- Enum.filter(@projects, &(is_nil(&1.area_id) && (&1.status != "completed" || @show_completed_projects))) do %>
               <.live_component
                 module={KairosWeb.SidebarProjectComponent}
                 id={"sidebar-project-#{project.id}"}

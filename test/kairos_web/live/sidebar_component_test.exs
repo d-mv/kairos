@@ -85,4 +85,19 @@ defmodule KairosWeb.SidebarComponentTest do
     lv |> element("#sidebar-create-area-btn") |> render_click()
     refute has_element?(lv, "#sidebar-new-area-form")
   end
+
+  test "hides completed projects by default in sidebar", %{conn: conn, user: user} do
+    {:ok, project} = Projects.create_project(%{name: "Completed Sidebar Proj", user_id: user.id})
+    {:ok, _} = Projects.complete_project(project)
+    {:ok, _lv, html} = live_inbox(conn)
+    refute html =~ "Completed Sidebar Proj"
+  end
+
+  test "shows completed projects after clicking toggle in sidebar", %{conn: conn, user: user} do
+    {:ok, project} = Projects.create_project(%{name: "Completed Sidebar Proj", user_id: user.id})
+    {:ok, _} = Projects.complete_project(project)
+    {:ok, lv, _html} = live_inbox(conn)
+    lv |> element("#sidebar-toggle-completed-projects") |> render_click()
+    assert render(lv) =~ "Completed Sidebar Proj"
+  end
 end

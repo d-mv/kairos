@@ -75,4 +75,20 @@ defmodule KairosWeb.AreaLiveTest do
       live(conn, ~p"/areas/#{other_area.id}")
     end
   end
+
+  test "hides completed projects by default", %{conn: conn, user: user, area: area} do
+    {:ok, project} = Projects.create_project(%{name: "Done Project", user_id: user.id, area_id: area.id})
+    {:ok, _} = Projects.complete_project(project)
+    {:ok, _lv, html} = live(conn, ~p"/areas/#{area.id}")
+    refute html =~ "Done Project"
+  end
+
+  test "shows completed projects after toggling in dropdown", %{conn: conn, user: user, area: area} do
+    {:ok, project} = Projects.create_project(%{name: "Done Project", user_id: user.id, area_id: area.id})
+    {:ok, _} = Projects.complete_project(project)
+    {:ok, lv, _html} = live(conn, ~p"/areas/#{area.id}")
+    lv |> element("#area-menu-btn") |> render_click()
+    lv |> element("button", "Show completed projects") |> render_click()
+    assert render(lv) =~ "Done Project"
+  end
 end
