@@ -18,9 +18,7 @@ defmodule Kairos.MCP.AuthPlug do
   def call(conn, _opts) do
     with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
          %{id: user_id} <- Accounts.get_user_by_mcp_token(token) do
-      conn
-      |> put_req_header("accept", "application/json, text/event-stream")
-      |> assign(:user_id, user_id)
+      assign(conn, :user_id, user_id)
     else
       _ ->
         conn
