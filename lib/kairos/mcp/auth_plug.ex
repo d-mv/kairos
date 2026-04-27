@@ -18,12 +18,15 @@ defmodule Kairos.MCP.AuthPlug do
   def call(conn, _opts) do
     with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
          %{id: user_id} <- Accounts.get_user_by_mcp_token(token) do
-      assign(conn, :user_id, user_id)
+      conn
+      |> put_req_header("accept", "application/json, text/event-stream")
+      |> assign(:user_id, user_id)
     else
       _ ->
         conn
+        |> put_resp_header("www-authenticate", "Bearer")
         |> put_resp_content_type("application/json")
-        |> send_resp(401, ~s({"error":"unauthorized"}))
+        |> send_resp(401, ~s({"error":"invalid_token","error_description":"Unauthorized"}))
         |> halt()
     end
   end

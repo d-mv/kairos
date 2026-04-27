@@ -21,6 +21,7 @@ defmodule KairosWeb.ProjectLive do
      assign(socket,
        project: project,
        tasks: tasks,
+       has_dated_tasks: has_dated_tasks?(tasks),
        new_task_title: "",
        selected_task: nil,
        page_title: project.name,
@@ -105,7 +106,7 @@ defmodule KairosWeb.ProjectLive do
           )
 
         Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
-        {:noreply, assign(socket, tasks: tasks, new_task_title: "")}
+        {:noreply, assign(socket, tasks: tasks, has_dated_tasks: has_dated_tasks?(tasks), new_task_title: "")}
 
       {:error, _} ->
         {:noreply, socket}
@@ -133,7 +134,7 @@ defmodule KairosWeb.ProjectLive do
         show_completed: socket.assigns.project.show_completed
       )
 
-    {:noreply, assign(socket, tasks: tasks)}
+    {:noreply, assign(socket, tasks: tasks, has_dated_tasks: has_dated_tasks?(tasks))}
   end
 
   @impl true
@@ -161,7 +162,7 @@ defmodule KairosWeb.ProjectLive do
         show_completed: socket.assigns.project.show_completed
       )
 
-    {:noreply, assign(socket, tasks: tasks)}
+    {:noreply, assign(socket, tasks: tasks, has_dated_tasks: has_dated_tasks?(tasks))}
   end
 
   def handle_event("toggle_show_completed", _params, socket) do
@@ -263,7 +264,7 @@ defmodule KairosWeb.ProjectLive do
         task -> Enum.find(tasks, &(&1.id == task.id))
       end
 
-    socket = assign(socket, tasks: tasks, selected_task: selected_task)
+    socket = assign(socket, tasks: tasks, has_dated_tasks: has_dated_tasks?(tasks), selected_task: selected_task)
 
     socket =
       if socket.assigns.view == "gantt", do: assign_gantt_data(socket), else: socket
@@ -286,7 +287,7 @@ defmodule KairosWeb.ProjectLive do
   @impl true
   def handle_info({:hide_completed_task, id}, socket) do
     tasks = Enum.reject(socket.assigns.tasks, &(&1.id == id))
-    {:noreply, assign(socket, tasks: tasks)}
+    {:noreply, assign(socket, tasks: tasks, has_dated_tasks: has_dated_tasks?(tasks))}
   end
 
   defp assign_gantt_data(socket) do
@@ -323,6 +324,8 @@ defmodule KairosWeb.ProjectLive do
 
     assign(socket, gantt_tasks: gantt_tasks)
   end
+
+  defp has_dated_tasks?(tasks), do: Enum.any?(tasks, & &1.due_date)
 
   defp calendar_weeks(month, tasks) do
     last_day = Date.days_in_month(month)
@@ -426,22 +429,24 @@ defmodule KairosWeb.ProjectLive do
           >
             Tasks
           </button>
-          <button
-            id="project-tab-calendar"
-            phx-click="switch_view"
-            phx-value-view="calendar"
-            class={"px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors " <> if @view == "calendar", do: "border-primary text-primary", else: "border-transparent text-muted-foreground hover:text-foreground"}
-          >
-            Calendar
-          </button>
-          <button
-            id="project-tab-gantt"
-            phx-click="switch_view"
-            phx-value-view="gantt"
-            class={"px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors " <> if @view == "gantt", do: "border-primary text-primary", else: "border-transparent text-muted-foreground hover:text-foreground"}
-          >
-            Gantt
-          </button>
+          <%= if @has_dated_tasks do %>
+            <button
+              id="project-tab-calendar"
+              phx-click="switch_view"
+              phx-value-view="calendar"
+              class={"px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors " <> if @view == "calendar", do: "border-primary text-primary", else: "border-transparent text-muted-foreground hover:text-foreground"}
+            >
+              Calendar
+            </button>
+            <button
+              id="project-tab-gantt"
+              phx-click="switch_view"
+              phx-value-view="gantt"
+              class={"px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors " <> if @view == "gantt", do: "border-primary text-primary", else: "border-transparent text-muted-foreground hover:text-foreground"}
+            >
+              Gantt
+            </button>
+          <% end %>
         </div>
 
         <!-- Delete confirmation -->

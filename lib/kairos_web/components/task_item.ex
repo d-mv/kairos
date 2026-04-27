@@ -23,11 +23,8 @@ defmodule KairosWeb.Components.TaskItem do
     <li
       id={"task-#{@task.id}"}
       data-selected={to_string(@selected)}
-      phx-click={if @selectable && (@task.url && @task.url != ""), do: @select_event}
-      phx-value-id={if @selectable && (@task.url && @task.url != ""), do: @task.id}
       class={[
         "flex items-center gap-3 p-2 rounded hover:bg-muted group",
-        @selectable && (@task.url && @task.url != "") && "cursor-pointer",
         @selected && "bg-muted"
       ]}
     >
@@ -48,7 +45,6 @@ defmodule KairosWeb.Components.TaskItem do
           href={@task.url}
           target="_blank"
           rel="noopener noreferrer"
-          onclick="event.stopPropagation()"
           class="flex-1 min-w-0 hover:underline"
         >
           <span class={["text-sm block truncate", @task.status == "completed" && "line-through text-muted-foreground"]}>
@@ -58,6 +54,15 @@ defmodule KairosWeb.Components.TaskItem do
             <span id={"task-desc-#{@task.id}"} class="text-xs text-muted-foreground block truncate">{@task.notes}</span>
           <% end %>
         </a>
+        <button
+          id={"task-detail-btn-#{@task.id}"}
+          phx-click={@select_event}
+          phx-value-id={@task.id}
+          class="opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 shrink-0 text-muted-foreground hover:text-foreground p-1"
+          title="Open details"
+        >
+          <.icon name="hero-information-circle" class="w-4 h-4" />
+        </button>
       <% else %>
         <%= if @selectable do %>
           <button
@@ -115,7 +120,7 @@ defmodule KairosWeb.Components.TaskItem do
           id={"task-delete-#{@task.id}"}
           phx-click={@delete_event}
           phx-value-id={@task.id}
-          class="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive shrink-0"
+          class="opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 text-muted-foreground hover:text-destructive shrink-0"
         >
           <.icon name="hero-x-mark" class="w-4 h-4" />
         </button>

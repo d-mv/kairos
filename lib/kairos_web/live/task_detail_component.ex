@@ -223,7 +223,7 @@ defmodule KairosWeb.TaskDetailComponent do
     ~H"""
     <div
       id={@id}
-      class="fixed inset-y-0 right-0 w-96 bg-background border-l border-border shadow-xl flex flex-col z-50"
+      class="fixed inset-y-0 right-0 w-full sm:w-96 bg-background border-l border-border shadow-xl flex flex-col z-50"
       phx-click-away="close"
       phx-target={@myself}
     >
@@ -482,7 +482,7 @@ defmodule KairosWeb.TaskDetailComponent do
                   phx-click="delete_link"
                   phx-value-id={link.id}
                   phx-target={@myself}
-                  class="p-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                  class="p-1 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 text-muted-foreground hover:text-destructive"
                   title="Remove link"
                 >
                   <.icon name="hero-x-mark" class="w-3.5 h-3.5" />

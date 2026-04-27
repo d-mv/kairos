@@ -46,7 +46,7 @@ defmodule KairosWeb.SidebarComponentTest do
     {:ok, area} = Areas.create_area(%{name: "Old Area Name", user_id: user.id})
     {:ok, lv, _html} = live_inbox(conn)
     lv |> element("#sidebar-area-menu-btn-#{area.id}") |> render_click()
-    lv |> element("button[phx-click='start_rename_area'][phx-value-id='#{area.id}']") |> render_click()
+    lv |> element("#sidebar-area-menu-#{area.id} button", "Rename") |> render_click()
     lv |> form("#sidebar-rename-area-form-#{area.id}", %{name: "New Area Name"}) |> render_submit()
     assert Areas.get_area!(area.id, user.id).name == "New Area Name"
   end
@@ -55,7 +55,7 @@ defmodule KairosWeb.SidebarComponentTest do
     {:ok, project} = Projects.create_project(%{name: "Old Project", user_id: user.id})
     {:ok, lv, _html} = live_inbox(conn)
     lv |> element("#sidebar-project-menu-btn-#{project.id}") |> render_click()
-    lv |> element("button[phx-click='start_rename_project'][phx-value-id='#{project.id}']") |> render_click()
+    lv |> element("#sidebar-project-menu-#{project.id} button", "Rename") |> render_click()
     lv |> form("#sidebar-rename-project-form-#{project.id}", %{name: "New Project Name"}) |> render_submit()
     assert Projects.get_project!(project.id, user.id).name == "New Project Name"
   end
@@ -64,8 +64,8 @@ defmodule KairosWeb.SidebarComponentTest do
     {:ok, area} = Areas.create_area(%{name: "Delete Me", user_id: user.id})
     {:ok, lv, _html} = live_inbox(conn)
     lv |> element("#sidebar-area-menu-btn-#{area.id}") |> render_click()
-    lv |> element("button[phx-click='confirm_delete_area'][phx-value-id='#{area.id}']") |> render_click()
-    lv |> element("#confirm-delete-area-modal button", "Delete") |> render_click()
+    lv |> element("#sidebar-area-menu-#{area.id} button", "Delete") |> render_click()
+    lv |> element("#confirm-delete-area-modal-#{area.id} button", "Delete") |> render_click()
     assert_raise Ecto.NoResultsError, fn -> Areas.get_area!(area.id, user.id) end
   end
 
@@ -73,8 +73,8 @@ defmodule KairosWeb.SidebarComponentTest do
     {:ok, project} = Projects.create_project(%{name: "Delete Project", user_id: user.id})
     {:ok, lv, _html} = live_inbox(conn)
     lv |> element("#sidebar-project-menu-btn-#{project.id}") |> render_click()
-    lv |> element("button[phx-click='confirm_delete_project'][phx-value-id='#{project.id}']") |> render_click()
-    lv |> element("#confirm-delete-project-modal button", "Delete") |> render_click()
+    lv |> element("#sidebar-project-menu-#{project.id} button", "Delete") |> render_click()
+    lv |> element("#confirm-delete-project-modal-#{project.id} button", "Delete") |> render_click()
     assert Projects.get_project(project.id, user.id) == nil
   end
 

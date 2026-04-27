@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "kairos": {
+      "url": "https://kairos-app.fly.dev/mcp",
+      "type": "sse",
+      "headers": {
+        "Authorization": "Bearer f9e0aee3-7fa1-4193-8aef-b03d8ea9fc54"
+      },
+      "trust": true,
+      "description": "Kairos Task Management (SSE)"
+    }
+  }
+}
