@@ -18,13 +18,10 @@ defmodule KairosWeb.MCPController do
     base_url = get_base_url(conn)
     json(conn, %{
       issuer: base_url,
-      authorization_endpoint: "#{base_url}/oauth/authorize",
       token_endpoint: "#{base_url}/oauth/token",
       registration_endpoint: "#{base_url}/register",
-      response_types_supported: ["code"],
       grant_types_supported: ["client_credentials"],
-      token_endpoint_auth_methods_supported: ["none"],
-      code_challenge_methods_supported: ["S256"]
+      token_endpoint_auth_methods_supported: ["none"]
     })
   end
 

@@ -20,9 +20,9 @@ defmodule KairosWeb.MCPControllerTest do
 
       base_url = "http://www.example.com:80"
       assert json["issuer"] == base_url
-      assert json["authorization_endpoint"] == "#{base_url}/oauth/authorize"
       assert json["token_endpoint"] == "#{base_url}/oauth/token"
       assert json["registration_endpoint"] == "#{base_url}/register"
+      assert json["grant_types_supported"] == ["client_credentials"]
     end
   end
 
