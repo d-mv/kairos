@@ -65,6 +65,12 @@ defmodule KairosWeb.Router do
     delete "/users/log-out", UserSessionController, :delete
   end
 
+  # Return JSON 404 for any .well-known discovery so the MCP SDK doesn't crash on plain-text 404
+  scope "/", KairosWeb do
+    pipe_through :api
+    get "/.well-known/:discovery", MCPController, :well_known_not_found
+  end
+
   # MCP server endpoint — requires Bearer token auth
   scope "/mcp" do
     pipe_through :mcp
