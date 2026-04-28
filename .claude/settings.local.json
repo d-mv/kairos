@@ -71,7 +71,12 @@
       "Bash(rsvg-convert -w 512 -h 512 /Users/dmelnikov/code/kairos/priv/static/images/icon.svg -o /Users/dmelnikov/code/kairos/priv/static/images/icon-512.png)",
       "Bash(brew list *)",
       "mcp__logger-api__analyze_logs",
-      "Bash(awk '{print $2}')"
+      "Bash(awk '{print $2}')",
+      "Read(//Users/dmelnikov/**)",
+      "Read(//Users/dmelnikov/.claude/**)",
+      "Bash(claude mcp *)",
+      "Bash(xargs -I{} sh -c 'jq -r \"select\\(.message.content != null\\) | .message.content[] | select\\(.type == \\\\\"tool_use\\\\\"\\) | [.name, \\(.input.command // \\\\\"\\\\\"\\)] | @tsv\" {} 2>/dev/null')",
+      "mcp__kairos__reopen_task"
     ]
   }
 }
