@@ -9,6 +9,7 @@ defmodule Kairos.Projects.Project do
 
   schema "projects" do
     field :name, :string
+    field :notes, :string
     field :status, :string, default: "active"
     field :position, :integer, default: 0
     field :show_completed, :boolean, default: false
@@ -22,7 +23,7 @@ defmodule Kairos.Projects.Project do
 
   def changeset(project, attrs) do
     project
-    |> cast(attrs, [:name, :status, :position, :show_completed, :area_id, :user_id])
+    |> cast(attrs, [:name, :notes, :status, :position, :show_completed, :area_id, :user_id])
     |> validate_required([:name, :user_id])
     |> validate_length(:name, min: 1, max: 255)
     |> validate_inclusion(:status, @statuses)
