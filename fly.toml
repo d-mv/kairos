@@ -1,6 +1,9 @@
 app = "kairos-app"
 primary_region = "fra"
 
+[deploy]
+  release_command = "/app/bin/kairos eval 'Kairos.Release.migrate()'"
+
 [build]
 
 [env]
