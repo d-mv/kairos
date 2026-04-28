@@ -119,7 +119,9 @@ defmodule Kairos.MCP.Server do
     }
 
     case Tasks.create_task(attrs) do
-      {:ok, task} -> reply(Jason.encode!(task_to_map(task)), frame)
+      {:ok, task} ->
+        Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+        reply(Jason.encode!(task_to_map(task)), frame)
       {:error, changeset} -> error(format_errors(changeset), frame)
     end
   end
@@ -136,7 +138,9 @@ defmodule Kairos.MCP.Server do
         |> maybe_put(:url, parse_optional_string(params[:url]))
 
       case Tasks.update_task(task, attrs) do
-        {:ok, updated} -> reply(Jason.encode!(task_to_map(updated)), frame)
+        {:ok, updated} ->
+          Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+          reply(Jason.encode!(task_to_map(updated)), frame)
         {:error, changeset} -> error(format_errors(changeset), frame)
       end
     else
@@ -149,6 +153,7 @@ defmodule Kairos.MCP.Server do
 
     with {:ok, task} <- fetch_task(params[:id], user_id),
          {:ok, updated} <- Tasks.complete_task(task) do
+      Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
       reply(Jason.encode!(task_to_map(updated)), frame)
     else
       {:error, msg} when is_binary(msg) -> error(msg, frame)
@@ -161,6 +166,7 @@ defmodule Kairos.MCP.Server do
 
     with {:ok, task} <- fetch_task(params[:id], user_id),
          {:ok, updated} <- Tasks.reopen_task(task) do
+      Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
       reply(Jason.encode!(task_to_map(updated)), frame)
     else
       {:error, msg} when is_binary(msg) -> error(msg, frame)
@@ -173,6 +179,7 @@ defmodule Kairos.MCP.Server do
 
     with {:ok, task} <- fetch_task(params[:id], user_id),
          {:ok, _} <- Tasks.delete_task(task) do
+      Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
       reply("deleted", frame)
     else
       {:error, msg} when is_binary(msg) -> error(msg, frame)
@@ -197,7 +204,9 @@ defmodule Kairos.MCP.Server do
     }
 
     case Projects.create_project(attrs) do
-      {:ok, project} -> reply(Jason.encode!(project_to_map(project)), frame)
+      {:ok, project} ->
+        Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+        reply(Jason.encode!(project_to_map(project)), frame)
       {:error, changeset} -> error(format_errors(changeset), frame)
     end
   end
@@ -207,7 +216,9 @@ defmodule Kairos.MCP.Server do
 
     with {:ok, task} <- fetch_task(params[:id], user_id) do
       case Tasks.promote_to_project(task) do
-        {:ok, project} -> reply(Jason.encode!(project_to_map(project)), frame)
+        {:ok, project} ->
+          Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+          reply(Jason.encode!(project_to_map(project)), frame)
         {:error, reason} -> error(inspect(reason), frame)
       end
     else
@@ -220,7 +231,9 @@ defmodule Kairos.MCP.Server do
 
     with {:ok, project} <- fetch_project(params[:id], user_id) do
       case Projects.demote_to_task(project) do
-        {:ok, task} -> reply(Jason.encode!(task_to_map(task)), frame)
+        {:ok, task} ->
+          Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+          reply(Jason.encode!(task_to_map(task)), frame)
         {:error, :has_subtasks} -> error("Cannot demote: project tasks have subtasks", frame)
         {:error, reason} -> error(inspect(reason), frame)
       end
