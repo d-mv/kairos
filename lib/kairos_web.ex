@@ -17,7 +17,10 @@ defmodule KairosWeb do
   those modules here.
   """
 
-  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt manifest.json sw.js)
+  def static_paths,
+    do:
+      ~w(assets fonts images favicon.ico favicon.svg robots.txt manifest.json sw.js
+         apple-touch-icon-180x180.png pwa-192x192.png pwa-512x512.png maskable-icon-512x512.png)
 
   def router do
     quote do

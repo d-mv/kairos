@@ -26,7 +26,8 @@ import topbar from "../vendor/topbar"
 import GanttChart from "./hooks/gantt_hook"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-const liveSocket = new LiveSocket("/live", Socket, {
+const socketPath = document.querySelector("meta[name='phx-socket-path']")?.getAttribute("content") || "/live"
+const liveSocket = new LiveSocket(socketPath, Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
   hooks: { GanttChart },
@@ -120,5 +121,6 @@ window.addEventListener("phx:js-exec", ({detail}) => {
 })
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js")
+  const swPath = document.querySelector("meta[name='phx-sw-path']")?.getAttribute("content") || "/sw.js"
+  navigator.serviceWorker.register(swPath)
 }

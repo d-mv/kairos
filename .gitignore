@@ -43,3 +43,6 @@ _old/**/dist/
 _old/**/node_modules/
 .claude/worktrees/
 .claude/settings.local.json
+
+.gemini
+.claude

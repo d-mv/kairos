@@ -95,6 +95,11 @@ defmodule Kairos.MCP.Server do
   end
 
   @impl true
+  def handle_notification(_notification, frame) do
+    {:noreply, frame}
+  end
+
+  @impl true
   def handle_tool_call("list_tasks", params, frame) do
     user_id = frame.assigns.user_id
     tasks = Tasks.list_tasks(user_id)

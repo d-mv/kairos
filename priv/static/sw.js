@@ -4,7 +4,7 @@ const OFFLINE_URL = "/offline";
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches.open(CACHE).then((c) =>
-      c.addAll(["/assets/css/app.css", "/assets/js/app.js"])
+      c.addAll(["assets/css/app.css", "assets/js/app.js"])
     )
   );
   self.skipWaiting();

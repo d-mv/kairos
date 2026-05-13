@@ -23,9 +23,7 @@ defmodule KairosWeb.Endpoint do
   plug Plug.Static,
     at: "/",
     from: :kairos,
-    gzip: not code_reloading?,
-    only: KairosWeb.static_paths(),
-    raise_on_missing_only: code_reloading?
+    gzip: not code_reloading?
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

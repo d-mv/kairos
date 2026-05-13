@@ -1,0 +1,3 @@
+- Join CLAUDE.md into AGENTS.md
+- Update README & REVIEW
+- Migrate DB, the DB URL is in .env
