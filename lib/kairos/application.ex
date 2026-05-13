@@ -12,9 +12,11 @@ defmodule Kairos.Application do
       KairosWeb.Telemetry,
       Kairos.Repo,
       {DNSCluster, query: Application.get_env(:kairos, :dns_cluster_query) || :ignore},
+      {Finch, name: Kairos.Finch},
       {Phoenix.PubSub, name: Kairos.PubSub},
       Hermes.Server.Registry,
       {Kairos.MCP.Server, transport: :streamable_http},
+      Kairos.Mailer,
       KairosWeb.Endpoint
     ]
 
