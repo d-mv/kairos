@@ -85,6 +85,8 @@ defmodule Kairos.UrlParser do
     {:ok, title || instagram_title_from_url(url)}
   end
 
+  defp fetch_title(url, _), do: fetch_title_from_html(url)
+
   defp instagram_title_from_url(url) do
     case URI.parse(url) do
       %URI{path: path} when is_binary(path) ->
@@ -98,8 +100,6 @@ defmodule Kairos.UrlParser do
       _ -> "Instagram"
     end
   end
-
-  defp fetch_title(url, _), do: fetch_title_from_html(url)
 
   defp parse_instagram_description(text) do
     # Format: "15K likes, 142 comments - account on Date: "post text""
