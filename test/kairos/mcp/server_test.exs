@@ -48,7 +48,7 @@ defmodule Kairos.MCP.ServerTest do
 
   describe "create_task broadcasts PubSub" do
     test "broadcasts tasks_changed after creating", %{frame: frame} do
-      Server.handle_tool_call("create_task", %{title: "New task"}, frame)
+      Server.handle_tool_call("create_task", %{title: "New task", inbox: true}, frame)
       assert_receive {:tasks_changed, nil}, 1000
     end
   end

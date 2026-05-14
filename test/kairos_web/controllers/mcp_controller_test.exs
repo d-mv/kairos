@@ -9,7 +9,7 @@ defmodule KairosWeb.MCPControllerTest do
       conn = get(conn, "/.well-known/oauth-protected-resource")
       json = json_response(conn, 200)
 
-      base_url = "http://www.example.com:80"
+      base_url = KairosWeb.Endpoint.url()
       assert json["resource"] == base_url
       assert json["authorization_servers"] == [base_url]
     end
@@ -18,7 +18,7 @@ defmodule KairosWeb.MCPControllerTest do
       conn = get(conn, "/.well-known/oauth-authorization-server")
       json = json_response(conn, 200)
 
-      base_url = "http://www.example.com:80"
+      base_url = KairosWeb.Endpoint.url()
       assert json["issuer"] == base_url
       assert json["authorization_endpoint"] == "#{base_url}/oauth/authorize"
       assert json["token_endpoint"] == "#{base_url}/oauth/token"

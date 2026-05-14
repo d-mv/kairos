@@ -33,8 +33,15 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
+  ssl_opts =
+    if System.get_env("DATABASE_SSL_VERIFY") == "verify_none" do
+      [verify: :verify_none]
+    else
+      true
+    end
+
   config :kairos, Kairos.Repo,
-    ssl: true,
+    ssl: ssl_opts,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     # For machines with several cores, consider starting multiple pools of `pool_size`

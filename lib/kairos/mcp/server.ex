@@ -15,7 +15,6 @@ defmodule Kairos.MCP.Server do
 
   import Hermes.Server.Frame
 
-  alias Hermes.MCP.Error
   alias Hermes.Server.Response
   alias Kairos.Tasks
   alias Kairos.Projects
@@ -31,11 +30,14 @@ defmodule Kairos.MCP.Server do
         }
       )
       |> register_tool("create_task",
-        description: "Create a new task in the inbox.",
+        description: "Create a new task. One of project_id, area_id, or inbox MUST be provided.",
         input_schema: %{
           title: {:required, :string, description: "Task title"},
           notes: {:string, description: "Optional notes"},
-          due_date: {:string, description: "Due date in YYYY-MM-DD format"}
+          due_date: {:string, description: "Due date in YYYY-MM-DD format"},
+          project_id: {:string, description: "Project ID to place the task in"},
+          area_id: {:string, description: "Area ID to place the task in"},
+          inbox: {:boolean, description: "Set to true to place the task in the inbox"}
         }
       )
       |> register_tool("update_task",
@@ -115,19 +117,37 @@ defmodule Kairos.MCP.Server do
 
   def handle_tool_call("create_task", params, frame) do
     user_id = frame.assigns.user_id
+    project_id = params[:project_id]
+    area_id = params[:area_id]
+    inbox = params[:inbox]
 
-    attrs = %{
-      title: params[:title],
-      user_id: user_id,
-      notes: params[:notes],
-      due_date: parse_date(params[:due_date])
-    }
+    locations = Enum.count([project_id, area_id, inbox], &(&1 != nil and &1 != false))
 
-    case Tasks.create_task(attrs) do
-      {:ok, task} ->
-        Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
-        reply(Jason.encode!(task_to_map(task)), frame)
-      {:error, changeset} -> error(format_errors(changeset), frame)
+    cond do
+      locations == 0 ->
+        error("Missing task location: must provide project_id, area_id, or set inbox to true", frame)
+
+      locations > 1 ->
+        error("Ambiguous task location: provide only one of project_id, area_id, or inbox", frame)
+
+      true ->
+        attrs = %{
+          title: params[:title],
+          user_id: user_id,
+          notes: params[:notes],
+          due_date: parse_date(params[:due_date]),
+          project_id: project_id,
+          area_id: area_id
+        }
+
+        case Tasks.create_task(attrs) do
+          {:ok, task} ->
+            Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+            reply(Jason.encode!(task_to_map(task)), frame)
+
+          {:error, changeset} ->
+            error(format_errors(changeset), frame)
+        end
     end
   end
 
@@ -137,10 +157,10 @@ defmodule Kairos.MCP.Server do
     with {:ok, task} <- fetch_task(params[:id], user_id) do
       attrs =
         %{}
-        |> maybe_put(:title, params[:title])
-        |> maybe_put(:notes, params[:notes])
-        |> maybe_put(:due_date, parse_date(params[:due_date]))
-        |> maybe_put(:url, parse_optional_string(params[:url]))
+        |> put_if_present(params, :title)
+        |> put_if_present(params, :notes)
+        |> put_if_present(params, :due_date, &parse_date/1)
+        |> put_if_present(params, :url, &parse_optional_string/1)
 
       case Tasks.update_task(task, attrs) do
         {:ok, updated} ->
@@ -255,7 +275,8 @@ defmodule Kairos.MCP.Server do
   end
 
   defp error(message, frame) do
-    {:error, Error.protocol(:internal_error, %{message: message}), frame}
+    response = Response.tool() |> Response.error(message)
+    {:reply, response, frame}
   end
 
   defp fetch_task(id, user_id) do
@@ -309,8 +330,13 @@ defmodule Kairos.MCP.Server do
   defp parse_optional_string(""), do: nil
   defp parse_optional_string(str), do: str
 
-  defp maybe_put(map, _key, nil), do: map
-  defp maybe_put(map, key, value), do: Map.put(map, key, value)
+  defp put_if_present(attrs, params, key, transform_fun \\ fn x -> x end) do
+    if Map.has_key?(params, key) do
+      Map.put(attrs, key, transform_fun.(params[key]))
+    else
+      attrs
+    end
+  end
 
   defp format_errors(changeset) do
     changeset

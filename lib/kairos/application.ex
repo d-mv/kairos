@@ -16,7 +16,6 @@ defmodule Kairos.Application do
       {Phoenix.PubSub, name: Kairos.PubSub},
       Hermes.Server.Registry,
       {Kairos.MCP.Server, transport: :streamable_http},
-      Kairos.Mailer,
       KairosWeb.Endpoint
     ]
 
