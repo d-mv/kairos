@@ -1,7 +1,7 @@
 defmodule KairosWeb.ProjectLive do
   use KairosWeb, :live_view
 
-  alias Kairos.{Projects, Tasks, Links}
+  alias Kairos.{Projects, Tasks, Links, Areas}
   import KairosWeb.Components.TaskItem
 
   @impl true
@@ -29,6 +29,9 @@ defmodule KairosWeb.ProjectLive do
        renaming: false,
        confirm_delete: nil,
        confirm_demote: false,
+       confirm_move: false,
+       confirm_move_out: false,
+       areas: Areas.list_areas(user_id),
        demote_error: nil,
        active_tab: "browse",
        view: "tasks",
@@ -179,12 +182,63 @@ defmodule KairosWeb.ProjectLive do
        header_menu_open: !socket.assigns.header_menu_open,
        confirm_delete: nil,
        confirm_demote: false,
+       confirm_move: false,
+       confirm_move_out: false,
        demote_error: nil
      )}
   end
 
   def handle_event("close_header_menu", _params, socket) do
-    {:noreply, assign(socket, header_menu_open: false)}
+    {:noreply,
+     assign(socket,
+       header_menu_open: false,
+       confirm_move: false,
+       confirm_move_out: false
+     )}
+  end
+
+  def handle_event("confirm_move", _params, socket) do
+    {:noreply, assign(socket, confirm_move: true, header_menu_open: false)}
+  end
+
+  def handle_event("cancel_move", _params, socket) do
+    {:noreply, assign(socket, confirm_move: false)}
+  end
+
+  def handle_event("move_project", %{"area-id" => area_id}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    project = socket.assigns.project
+
+    case Projects.update_project(project, %{area_id: area_id}) do
+      {:ok, updated} ->
+        Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+        {:noreply, assign(socket, project: updated, confirm_move: false)}
+
+      {:error, _} ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("confirm_move_out", _params, socket) do
+    {:noreply, assign(socket, confirm_move_out: true, header_menu_open: false)}
+  end
+
+  def handle_event("cancel_move_out", _params, socket) do
+    {:noreply, assign(socket, confirm_move_out: false)}
+  end
+
+  def handle_event("move_project_out", _params, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    project = socket.assigns.project
+
+    case Projects.update_project(project, %{area_id: nil}) do
+      {:ok, updated} ->
+        Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+        {:noreply, assign(socket, project: updated, confirm_move_out: false)}
+
+      {:error, _} ->
+        {:noreply, socket}
+    end
   end
 
   def handle_event("start_rename", _params, socket) do
@@ -433,6 +487,29 @@ defmodule KairosWeb.ProjectLive do
                   >
                     <.icon name="hero-pencil" class="w-4 h-4" /> Rename
                   </button>
+
+                  <%= if is_nil(@project.area_id) do %>
+                    <button
+                      phx-click="confirm_move"
+                      class="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"
+                    >
+                      <.icon name="hero-arrows-right-left" class="w-4 h-4" /> Move...
+                    </button>
+                  <% else %>
+                    <button
+                      phx-click="confirm_move"
+                      class="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"
+                    >
+                      <.icon name="hero-arrows-right-left" class="w-4 h-4" /> Move...
+                    </button>
+                    <button
+                      phx-click="confirm_move_out"
+                      class="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"
+                    >
+                      <.icon name="hero-minus-circle" class="w-4 h-4" /> Move Out
+                    </button>
+                  <% end %>
+
                   <button
                     phx-click="confirm_demote"
                     class="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"
@@ -514,6 +591,48 @@ defmodule KairosWeb.ProjectLive do
         <%= if @demote_error do %>
           <div id="project-demote-error" class="mb-6 p-3 rounded border border-destructive/30 bg-destructive/5 text-sm text-destructive">
             <%= @demote_error %>
+          </div>
+        <% end %>
+
+        <!-- Move Out confirmation -->
+        <%= if @confirm_move_out do %>
+          <div id="project-confirm-move-out" class="mb-6 p-3 rounded border border-border bg-muted/30 text-sm">
+            <p class="text-muted-foreground mb-2">
+              Move project "<%= @project.name %>" out of its current area?
+            </p>
+            <div class="flex gap-4">
+              <button phx-click="move_project_out" class="font-medium hover:underline">Move Out</button>
+              <button phx-click="cancel_move_out" class="text-muted-foreground hover:underline">Cancel</button>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Move confirmation -->
+        <%= if @confirm_move do %>
+          <div id="project-confirm-move" class="mb-6 p-4 rounded border border-border bg-background shadow-lg">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold">Move project to Area</h3>
+              <button phx-click="cancel_move" class="text-muted-foreground hover:text-foreground">
+                <.icon name="hero-x-mark" class="w-4 h-4" />
+              </button>
+            </div>
+            <div class="space-y-1 max-h-48 overflow-y-auto">
+              <%= for area <- @areas do %>
+                <button
+                  phx-click="move_project"
+                  phx-value-area-id={area.id}
+                  class={"w-full text-left px-3 py-2 text-sm rounded hover:bg-muted flex items-center justify-between #{if @project.area_id == area.id, do: "bg-muted font-medium", else: ""}"}
+                >
+                  <%= area.name %>
+                  <%= if @project.area_id == area.id do %>
+                    <.icon name="hero-check" class="w-4 h-4 text-primary" />
+                  <% end %>
+                </button>
+              <% end %>
+              <%= if Enum.empty?(@areas) do %>
+                <p class="text-xs text-muted-foreground p-3 text-center">No areas created yet.</p>
+              <% end %>
+            </div>
           </div>
         <% end %>
 

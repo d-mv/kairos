@@ -24,8 +24,11 @@ defmodule Kairos.MCP.Server do
     frame =
       frame
       |> register_tool("list_tasks",
-        description: "List all tasks for the user. Optionally filter by status.",
+        description: "List tasks for the user. One of project_id, area_id, or inbox MUST be provided to restrict scope.",
         input_schema: %{
+          project_id: {:string, description: "Filter by project ID"},
+          area_id: {:string, description: "Filter by area ID"},
+          inbox: {:boolean, description: "Set to true to list tasks from the inbox"},
           status: {:string, description: "Filter by status: pending or completed"}
         }
       )
@@ -80,6 +83,15 @@ defmodule Kairos.MCP.Server do
           area_id: {:string, description: "Area ID to place the project in"}
         }
       )
+      |> register_tool("update_project",
+        description: "Update an existing project's fields.",
+        input_schema: %{
+          id: {:required, :string, description: "Project ID"},
+          name: {:string, description: "New name"},
+          notes: {:string, description: "New notes"},
+          area_id: {:string, description: "Area ID to place the project in, or empty string to clear"}
+        }
+      )
       |> register_tool("promote_task",
         description: "Promote a task to a project. Subtasks become project tasks.",
         input_schema: %{
@@ -102,23 +114,52 @@ defmodule Kairos.MCP.Server do
   end
 
   @impl true
-  def handle_tool_call("list_tasks", params, frame) do
-    user_id = frame.assigns.user_id
-    tasks = Tasks.list_tasks(user_id)
-
-    tasks =
-      case params[:status] do
-        nil -> tasks
-        status -> Enum.filter(tasks, &(&1.status == status))
-      end
-
-    reply(Jason.encode!(Enum.map(tasks, &task_to_map/1)), frame)
+  def handle_tool_call(name, params, frame) do
+    do_handle_tool_call(name, params, frame)
+  rescue
+    e ->
+      error("Internal error: #{inspect(e)}", frame)
   end
 
-  def handle_tool_call("create_task", params, frame) do
+  defp do_handle_tool_call("list_tasks", params, frame) do
     user_id = frame.assigns.user_id
-    project_id = params[:project_id]
-    area_id = params[:area_id]
+    project_id = presence(params[:project_id])
+    area_id = presence(params[:area_id])
+    inbox = params[:inbox]
+    status = params[:status]
+
+    show_completed = status == "completed"
+
+    cond do
+      project_id ->
+        tasks = Tasks.list_for_project(project_id, user_id, show_completed: show_completed)
+        reply(Jason.encode!(Enum.map(tasks, &task_to_map/1)), frame)
+
+      area_id ->
+        tasks = Tasks.list_for_area(area_id, user_id)
+        
+        tasks =
+          if status do
+            Enum.filter(tasks, &(&1.status == status))
+          else
+            tasks
+          end
+          
+        reply(Jason.encode!(Enum.map(tasks, &task_to_map/1)), frame)
+
+      inbox ->
+        tasks = Tasks.list_inbox(user_id, show_completed: show_completed)
+        reply(Jason.encode!(Enum.map(tasks, &task_to_map/1)), frame)
+
+      true ->
+        error("Missing filter: provide project_id, area_id, or set inbox to true", frame)
+    end
+  end
+
+  defp do_handle_tool_call("create_task", params, frame) do
+    user_id = frame.assigns.user_id
+    project_id = presence(params[:project_id])
+    area_id = presence(params[:area_id])
     inbox = params[:inbox]
 
     locations = Enum.count([project_id, area_id, inbox], &(&1 != nil and &1 != false))
@@ -151,7 +192,7 @@ defmodule Kairos.MCP.Server do
     end
   end
 
-  def handle_tool_call("update_task", params, frame) do
+  defp do_handle_tool_call("update_task", params, frame) do
     user_id = frame.assigns.user_id
 
     with {:ok, task} <- fetch_task(params[:id], user_id) do
@@ -160,7 +201,7 @@ defmodule Kairos.MCP.Server do
         |> put_if_present(params, :title)
         |> put_if_present(params, :notes)
         |> put_if_present(params, :due_date, &parse_date/1)
-        |> put_if_present(params, :url, &parse_optional_string/1)
+        |> put_if_present(params, :url, &presence/1)
 
       case Tasks.update_task(task, attrs) do
         {:ok, updated} ->
@@ -173,7 +214,7 @@ defmodule Kairos.MCP.Server do
     end
   end
 
-  def handle_tool_call("complete_task", params, frame) do
+  defp do_handle_tool_call("complete_task", params, frame) do
     user_id = frame.assigns.user_id
 
     with {:ok, task} <- fetch_task(params[:id], user_id),
@@ -186,7 +227,7 @@ defmodule Kairos.MCP.Server do
     end
   end
 
-  def handle_tool_call("reopen_task", params, frame) do
+  defp do_handle_tool_call("reopen_task", params, frame) do
     user_id = frame.assigns.user_id
 
     with {:ok, task} <- fetch_task(params[:id], user_id),
@@ -199,7 +240,7 @@ defmodule Kairos.MCP.Server do
     end
   end
 
-  def handle_tool_call("delete_task", params, frame) do
+  defp do_handle_tool_call("delete_task", params, frame) do
     user_id = frame.assigns.user_id
 
     with {:ok, task} <- fetch_task(params[:id], user_id),
@@ -212,20 +253,20 @@ defmodule Kairos.MCP.Server do
     end
   end
 
-  def handle_tool_call("list_projects", _params, frame) do
+  defp do_handle_tool_call("list_projects", _params, frame) do
     user_id = frame.assigns.user_id
     projects = Projects.list_projects(user_id)
     reply(Jason.encode!(Enum.map(projects, &project_to_map/1)), frame)
   end
 
-  def handle_tool_call("create_project", params, frame) do
+  defp do_handle_tool_call("create_project", params, frame) do
     user_id = frame.assigns.user_id
 
     attrs = %{
       name: params[:name],
       user_id: user_id,
       notes: params[:notes],
-      area_id: params[:area_id]
+      area_id: presence(params[:area_id])
     }
 
     case Projects.create_project(attrs) do
@@ -236,7 +277,28 @@ defmodule Kairos.MCP.Server do
     end
   end
 
-  def handle_tool_call("promote_task", params, frame) do
+  defp do_handle_tool_call("update_project", params, frame) do
+    user_id = frame.assigns.user_id
+
+    with {:ok, project} <- fetch_project(params[:id], user_id) do
+      attrs =
+        %{}
+        |> put_if_present(params, :name)
+        |> put_if_present(params, :notes)
+        |> put_if_present(params, :area_id, &presence/1)
+
+      case Projects.update_project(project, attrs) do
+        {:ok, updated} ->
+          Phoenix.PubSub.broadcast(Kairos.PubSub, "user:#{user_id}", {:tasks_changed, nil})
+          reply(Jason.encode!(project_to_map(updated)), frame)
+        {:error, changeset} -> error(format_errors(changeset), frame)
+      end
+    else
+      {:error, msg} -> error(msg, frame)
+    end
+  end
+
+  defp do_handle_tool_call("promote_task", params, frame) do
     user_id = frame.assigns.user_id
 
     with {:ok, task} <- fetch_task(params[:id], user_id) do
@@ -251,7 +313,7 @@ defmodule Kairos.MCP.Server do
     end
   end
 
-  def handle_tool_call("demote_project", params, frame) do
+  defp do_handle_tool_call("demote_project", params, frame) do
     user_id = frame.assigns.user_id
 
     with {:ok, project} <- fetch_project(params[:id], user_id) do
@@ -326,9 +388,10 @@ defmodule Kairos.MCP.Server do
     end
   end
 
-  defp parse_optional_string(nil), do: nil
-  defp parse_optional_string(""), do: nil
-  defp parse_optional_string(str), do: str
+  defp presence(nil), do: nil
+  defp presence(""), do: nil
+  defp presence(str) when is_binary(str), do: String.trim(str) |> then(fn s -> if s == "", do: nil, else: s end)
+  defp presence(other), do: other
 
   defp put_if_present(attrs, params, key, transform_fun \\ fn x -> x end) do
     if Map.has_key?(params, key) do

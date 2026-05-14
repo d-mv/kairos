@@ -8,9 +8,9 @@ defmodule Kairos.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      TwMerge.Cache,
-      KairosWeb.Telemetry,
       Kairos.Repo,
+      KairosWeb.Telemetry,
+      TwMerge.Cache,
       {DNSCluster, query: Application.get_env(:kairos, :dns_cluster_query) || :ignore},
       {Finch, name: Kairos.Finch},
       {Phoenix.PubSub, name: Kairos.PubSub},

@@ -3,6 +3,7 @@ defmodule Kairos.MCP.ServerTest do
 
   alias Kairos.MCP.Server
   alias Kairos.Tasks
+  alias Kairos.Projects
   alias Hermes.Server.Frame
 
   import Kairos.AccountsFixtures
@@ -64,6 +65,26 @@ defmodule Kairos.MCP.ServerTest do
     test "broadcasts tasks_changed after deleting", %{task: task, frame: frame} do
       Server.handle_tool_call("delete_task", %{id: task.id}, frame)
       assert_receive {:tasks_changed, nil}, 1000
+    end
+  end
+
+  describe "update_project broadcasts PubSub" do
+    def project_fixture(attrs) do
+      {:ok, project} = Projects.create_project(Enum.into(attrs, %{name: "Test Project"}))
+      project
+    end
+
+    test "broadcasts tasks_changed after updating project", %{user: user, frame: frame} do
+      project = project_fixture(user_id: user.id)
+      Server.handle_tool_call("update_project", %{id: project.id, name: "Updated Name"}, frame)
+      assert_receive {:tasks_changed, nil}, 1000
+    end
+
+    test "project is actually updated in DB", %{user: user, frame: frame} do
+      project = project_fixture(user_id: user.id)
+      Server.handle_tool_call("update_project", %{id: project.id, name: "Updated Name"}, frame)
+      updated = Projects.get_project!(project.id, user.id)
+      assert updated.name == "Updated Name"
     end
   end
 end
